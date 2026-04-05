@@ -1,0 +1,128 @@
+.
+├── app/                         # Next.js App Router (ENTRY POINT)
+│   ├── (public)/                # 🌍 PUBLIC (SEO FIRST)
+│   │   ├── layout.tsx           # Layout publik (Navbar, Footer, SEO base)
+│   │   ├── page.tsx             # Homepage (Landing SEO)
+│   │   ├── villas/
+│   │   │   ├── page.tsx         # Listing villa (SSR + filter)
+│   │   │   └── [slug]/
+│   │   │       ├── page.tsx     # Detail villa (SEO + booking)
+│   │   │       ├── loading.tsx  # Skeleton loading (UX + LCP)
+│   │   │       └── error.tsx    # Error boundary
+│   │   ├── blog/
+│   │   │   ├── page.tsx         # Blog listing
+│   │   │   └── [slug]/page.tsx  # Detail artikel (SEO boost)
+│   │   └── sitemap.ts           # Dynamic sitemap (SEO)
+│   │
+│   ├── (admin)/                 # 🔐 ADMIN (PROTECTED ROUTES)
+│   │   ├── layout.tsx           # Layout dashboard (sidebar)
+│   │   ├── login/page.tsx       # Login admin
+│   │   ├── dashboard/page.tsx   # Overview (stats)
+│   │   ├── villas/
+│   │   │   ├── page.tsx         # List + CRUD UI
+│   │   │   ├── create/page.tsx  # Create villa
+│   │   │   └── [id]/edit/page.tsx # Edit villa
+│   │   ├── bookings/page.tsx    # Leads management
+│   │   └── calendar/page.tsx    # Pricing & blocked dates
+│   │
+│   ├── api/                     # API ROUTES (edge / webhook)
+│   │   ├── webhook/route.ts     # Payment / external webhook
+│   │   └── revalidate/route.ts  # ISR trigger
+│   │
+│   ├── layout.tsx               # Root layout (font, provider)
+│   ├── error.tsx                # Global error boundary
+│   └── globals.css              # Global styling
+│
+├── components/                  # 🧩 UI SYSTEM
+│   ├── ui/                      # Base UI (shadcn)
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── dialog.tsx
+│   │   └── input.tsx
+│   │
+│   ├── shared/                  # GLOBAL COMPONENT
+│   │   ├── Navbar.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Container.tsx        # Layout wrapper
+│   │   └── WhatsAppButton.tsx
+│   │
+│   ├── features/                # 💡 FEATURE-BASED COMPONENTS
+│   │   ├── villas/
+│   │   │   ├── VillaCard.tsx
+│   │   │   ├── VillaGallery.tsx
+│   │   │   ├── VillaAmenities.tsx
+│   │   │   └── VillaMap.tsx
+│   │   │
+│   │   ├── booking/
+│   │   │   ├── BookingForm.tsx
+│   │   │   ├── DatePicker.tsx
+│   │   │   └── PriceSummary.tsx
+│   │   │
+│   │   ├── blog/
+│   │   │   └── ArticleCard.tsx
+│   │
+│   ├── sections/                # 🧱 LANDING BLOCKS
+│   │   ├── Hero.tsx
+│   │   ├── FeaturedVillas.tsx
+│   │   ├── Testimonials.tsx
+│   │   └── CTASection.tsx
+│   │
+│   └── seo/                     # 📈 SEO COMPONENT
+│       ├── JsonLd.tsx
+│       └── MetaTags.tsx
+│
+├── lib/                         # ⚙️ CORE LOGIC (BACKEND SIDE)
+│   ├── supabase/
+│   │   ├── client.ts            # Client-side supabase
+│   │   └── server.ts            # Server-side supabase (SSR)
+│   │
+│   ├── queries/                 # ✅ READ (DATA FETCHING)
+│   │   ├── villas.ts            # getVillas, getVillaBySlug
+│   │   ├── blog.ts              # getArticles
+│   │   └── availability.ts      # cek availability
+│   │
+│   ├── actions/                 # ✅ WRITE (SERVER ACTION)
+│   │   ├── booking.ts           # create booking
+│   │   └── leads.ts             # save lead + WA trigger
+│   │
+│   ├── services/                # 🧠 BUSINESS LOGIC
+│   │   ├── pricing.ts           # hitung harga dinamis
+│   │   ├── availability.ts      # merge blocked_dates + room_prices
+│   │   └── whatsapp.ts          # generate link WA
+│   │
+│   ├── validations/             # 🛡️ VALIDATION
+│   │   ├── booking.schema.ts
+│   │   └── villa.schema.ts
+│   │
+│   ├── constants/               # static config
+│   │   ├── site.ts
+│   │   └── seo.ts
+│   │
+│   └── utils/
+│       ├── format.ts            # rupiah, date
+│       ├── slug.ts
+│       └── helpers.ts
+│
+├── hooks/                       # 🪝 CUSTOM HOOKS
+│   ├── useBooking.ts
+│   └── useAvailability.ts
+│
+├── types/                       # 📦 TYPE SAFETY
+│   ├── database.ts              # generated supabase types
+│   ├── villa.ts
+│   └── booking.ts
+│
+├── public/                      # 🖼️ STATIC FILES
+│   ├── images/
+│   ├── icons/
+│   └── favicon.ico
+│
+├── styles/                      # 🎨 DESIGN SYSTEM
+│   └── globals.css
+│
+├── middleware.ts                # 🔐 PROTECT ADMIN ROUTES
+├── next.config.js               # Next config (image, caching)
+├── tailwind.config.ts           # Theme (olive, sage)
+├── tsconfig.json                # TS strict mode
+├── .env.local                   # ENV (Supabase, WA, dll)
+└── package.json
