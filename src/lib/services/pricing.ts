@@ -1,56 +1,77 @@
 import { createClient } from "@/lib/supabase/server";
 
-interface PricingParams {
-  roomTypeId: string;
-  checkIn: Date;
-  checkOut: Date;
+export interface DailyPriceEntry {
+  date: string; // "YYYY-MM-DD"
+  price: number;
+  source: "override" | "base";
 }
 
-interface PriceBreakdown {
+export interface PriceBreakdown {
   basePrice: number;
   nights: number;
-  effectivePrice: number;
   totalPrice: number;
+  dailyBreakdown: DailyPriceEntry[];
 }
 
 /**
- * Calculate the total price for a stay.
- * base_price lives on room_types (not villas).
- * room_prices can override the price for specific dates.
+ * Iterates every night in the stay and looks up room_prices for each date.
+ * Falls back to base_price when no override exists.
  */
-export async function calculatePrice(params: PricingParams): Promise<PriceBreakdown> {
+export async function calculateDailyPrice(params: {
+  roomTypeId: string;
+  checkIn: Date;
+  checkOut: Date;
+}): Promise<PriceBreakdown> {
   const supabase = await createClient();
 
-  const nights = Math.ceil(
+  const nights = Math.round(
     (params.checkOut.getTime() - params.checkIn.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  // Fetch room type base price
+  // Fetch base price
   const { data: roomType } = await supabase
     .from("room_types")
     .select("base_price")
     .eq("id", params.roomTypeId)
     .single();
 
-  const basePrice = roomType?.base_price ?? 0;
+  const basePrice = Number(roomType?.base_price ?? 0);
 
-  // Fetch seasonal pricing override (first one found in range)
-  const { data: roomPrice } = await supabase
+  // Fetch all price overrides for the date range in one query
+  const checkInStr = params.checkIn.toISOString().split("T")[0];
+  const checkOutStr = params.checkOut.toISOString().split("T")[0];
+
+  const { data: priceOverrides } = await supabase
     .from("room_prices")
-    .select("price")
+    .select("date, price")
     .eq("room_type_id", params.roomTypeId)
-    .gte("date", params.checkIn.toISOString().split("T")[0])
-    .lt("date", params.checkOut.toISOString().split("T")[0])
-    .order("price", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .gte("date", checkInStr)
+    .lt("date", checkOutStr);
 
-  const effectivePrice = roomPrice?.price ?? basePrice;
+  // Build a lookup map: "YYYY-MM-DD" → overridePrice
+  const overrideMap = new Map<string, number>();
+  if (priceOverrides) {
+    for (const row of priceOverrides) {
+      overrideMap.set(row.date, Number(row.price));
+    }
+  }
 
-  return {
-    basePrice,
-    nights,
-    effectivePrice,
-    totalPrice: effectivePrice * nights,
-  };
+  // Iterate each night and accumulate
+  const dailyBreakdown: DailyPriceEntry[] = [];
+  let totalPrice = 0;
+
+  for (let i = 0; i < nights; i++) {
+    const d = new Date(params.checkIn);
+    d.setDate(d.getDate() + i);
+    const dateStr = d.toISOString().split("T")[0];
+
+    const override = overrideMap.get(dateStr);
+    const nightPrice = override !== undefined ? override : basePrice;
+    const source: "override" | "base" = override !== undefined ? "override" : "base";
+
+    dailyBreakdown.push({ date: dateStr, price: nightPrice, source });
+    totalPrice += nightPrice;
+  }
+
+  return { basePrice, nights, totalPrice, dailyBreakdown };
 }

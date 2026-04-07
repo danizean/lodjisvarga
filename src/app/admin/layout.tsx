@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/lib/actions/auth";
-import { LayoutDashboard, Home, Calendar, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Home, Calendar, Users, LogOut, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -17,6 +17,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const sidebarLinks = [
     { name: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Manage Villas", href: "/admin/villas", icon: Home },
+    { name: "Promo", href: "/admin/promos", icon: Tag },
     { name: "Bookings", href: "/admin/bookings", icon: Users },
     { name: "Calendar", href: "/admin/calendar", icon: Calendar },
   ];
@@ -54,12 +55,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
         
         <div className="p-4 border-t border-gray-100 flex-shrink-0">
-          <form action={logout}>
-            <Button type="submit" variant="ghost" className="w-full flex items-center justify-start gap-3 px-4 rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700 font-medium">
-              <LogOut className="w-5 h-5" />
-              Sign Out
-            </Button>
-          </form>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={async () => { await logout(); }}
+            className="w-full flex items-center justify-start gap-3 px-4 rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700 font-medium"
+          >
+            <LogOut className="w-5 h-5" />
+            Sign Out
+          </Button>
         </div>
       </aside>
 

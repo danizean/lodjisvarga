@@ -1,0 +1,20 @@
+﻿src/app/admin/layout.tsx(57,17): error TS2322: Type '() => Promise<{ error: string; }>' is not assignable to type 'string | ((formData: FormData) => void | Promise<void>) | undefined'.
+  Type '() => Promise<{ error: string; }>' is not assignable to type '(formData: FormData) => void | Promise<void>'.
+    Type 'Promise<{ error: string; }>' is not assignable to type 'void | Promise<void>'.
+      Type 'Promise<{ error: string; }>' is not assignable to type 'Promise<void>'.
+        Type '{ error: string; }' is not assignable to type 'void'.
+src/app/admin/villas/new/page.tsx(115,13): error TS7034: Variable 'villaGallery' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/app/admin/villas/new/page.tsx(128,15): error TS7034: Variable 'roomGallery' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/app/admin/villas/new/page.tsx(140,22): error TS7005: Variable 'roomGallery' implicitly has an 'any[]' type.
+src/app/admin/villas/new/page.tsx(153,20): error TS7005: Variable 'villaGallery' implicitly has an 'any[]' type.
+src/components/features/villas/VillaCard.tsx(72,63): error TS2353: Object literal may only specify known properties, and 'draggable' does not exist in type 'Partial<OptionsType>'.
+src/hooks/useBooking.ts(17,51): error TS2353: Object literal may only specify known properties, and 'roomTypeId' does not exist in type '{ fullName: string; email: string; whatsapp: string; checkIn: Date; checkOut: Date; guests: number; specialRequests?: string | undefined; }'.
+src/lib/actions/booking.ts(20,30): error TS2339: Property 'roomTypeId' does not exist on type '{ fullName: string; email: string; whatsapp: string; checkIn: Date; checkOut: Date; guests: number; specialRequests?: string | undefined; }'.
+src/lib/actions/booking.ts(25,32): error TS2339: Property 'roomTypeId' does not exist on type '{ fullName: string; email: string; whatsapp: string; checkIn: Date; checkOut: Date; guests: number; specialRequests?: string | undefined; }'.
+src/lib/actions/booking.ts(33,36): error TS2339: Property 'roomTypeId' does not exist on type '{ fullName: string; email: string; whatsapp: string; checkIn: Date; checkOut: Date; guests: number; specialRequests?: string | undefined; }'.
+src/lib/actions/booking.ts(34,37): error TS2339: Property 'customerName' does not exist on type '{ fullName: string; email: string; whatsapp: string; checkIn: Date; checkOut: Date; guests: number; specialRequests?: string | undefined; }'.
+src/lib/actions/booking.ts(35,38): error TS2339: Property 'customerPhone' does not exist on type '{ fullName: string; email: string; whatsapp: string; checkIn: Date; checkOut: Date; guests: number; specialRequests?: string | undefined; }'.
+src/lib/actions/booking.ts(38,41): error TS2339: Property 'guestCountAdult' does not exist on type '{ fullName: string; email: string; whatsapp: string; checkIn: Date; checkOut: Date; guests: number; specialRequests?: string | undefined; }'.
+src/lib/actions/booking.ts(39,41): error TS2339: Property 'guestCountChild' does not exist on type '{ fullName: string; email: string; whatsapp: string; checkIn: Date; checkOut: Date; guests: number; specialRequests?: string | undefined; }'.
+src/lib/actions/booking.ts(53,34): error TS2339: Property 'customerName' does not exist on type '{ fullName: string; email: string; whatsapp: string; checkIn: Date; checkOut: Date; guests: number; specialRequests?: string | undefined; }'.
+src/lib/actions/booking.ts(54,35): error TS2339: Property 'customerPhone' does not exist on type '{ fullName: string; email: string; whatsapp: string; checkIn: Date; checkOut: Date; guests: number; specialRequests?: string | undefined; }'.

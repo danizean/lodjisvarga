@@ -1,53 +1,50 @@
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 
-// We use the public supabase client for uploads over RLS since images should go to public bucket
-// Note: Bypassing RLS requires proper policies in Supabase Storage or an anon service key
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+export interface UploadResult {
+  file: File;
+  publicUrl: string;
+}
 
 export function useUpload() {
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const uploadFiles = async (files: File[], villaId: string, roomTypeId?: string) => {
+  const uploadFiles = async (
+    files: File[],
+    villaId: string,
+    roomTypeId?: string
+  ): Promise<UploadResult[]> => {
     setIsUploading(true);
-    const uploadedUrls: { file: File, publicUrl: string }[] = [];
+    setUploadProgress(0);
+    const supabase = createClient();
+    const results: UploadResult[] = [];
 
     try {
-      for (const file of files) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-        
-        const path = roomTypeId 
-          ? `villas/${villaId}/rooms/${roomTypeId}/${fileName}`
-          : `villas/${villaId}/${fileName}`;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+        const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const path = roomTypeId
+          ? `villas/${villaId}/rooms/${roomTypeId}/${uniqueName}`
+          : `villas/${villaId}/${uniqueName}`;
 
         const { error } = await supabase.storage
           .from("villa-media")
-          .upload(path, file, { upsert: true });
+          .upload(path, file, { upsert: false, cacheControl: "3600" });
 
-        if (error) {
-          console.error("Upload error:", error);
-          throw error;
-        }
+        if (error) throw new Error(`Upload gagal untuk ${file.name}: ${error.message}`);
 
         const { data } = supabase.storage.from("villa-media").getPublicUrl(path);
+        results.push({ file, publicUrl: data.publicUrl });
 
-        uploadedUrls.push({
-          file,
-          publicUrl: data.publicUrl
-        });
+        setUploadProgress(Math.round(((i + 1) / files.length) * 100));
       }
-
-      return uploadedUrls;
-    } catch (e) {
-      throw e;
+      return results;
     } finally {
       setIsUploading(false);
     }
   };
 
-  return { uploadFiles, isUploading };
+  return { uploadFiles, isUploading, uploadProgress };
 }
