@@ -1,37 +1,40 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Database } from "@/types/database";
 
-type Villa = Database["public"]["Tables"]["villas"]["Row"];
-
-export async function getVillas(): Promise<Villa[]> {
+export async function getAdminVillasWithRooms() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("villas")
-    .select("*")
+    .select(`
+      *,
+      room_types (*)
+    `)
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
   return data ?? [];
 }
 
-export async function getFeaturedVillas(): Promise<Villa[]> {
+export async function getAdminVillaById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("villas")
-    .select("*")
-    .eq("status", "active")
-    .limit(6);
+    .select(`
+      *,
+      room_types (*)
+    `)
+    .eq("id", id)
+    .single();
 
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  if (error) return null;
+  return data;
 }
 
-export async function getVillaBySlug(slug: string): Promise<Villa | null> {
+export async function getRoomTypeById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("villas")
+    .from("room_types")
     .select("*")
-    .eq("slug", slug)
+    .eq("id", id)
     .single();
 
   if (error) return null;

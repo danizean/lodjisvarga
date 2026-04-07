@@ -1,8 +1,8 @@
 /**
  * Format a number as Indonesian Rupiah.
- * Example: formatRupiah(1500000) → "Rp 1.500.000"
+ * Example: formatIDR(1500000) → "Rp 1.500.000"
  */
-export function formatRupiah(amount: number): string {
+export function formatIDR(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",

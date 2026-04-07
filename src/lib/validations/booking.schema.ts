@@ -1,16 +1,15 @@
 import { z } from "zod";
 
 export const bookingSchema = z.object({
-  roomTypeId: z.string().uuid("Invalid room type ID"),
-  customerName: z.string().min(2, "Name must be at least 2 characters"),
-  customerPhone: z.string().min(10, "Phone must be at least 10 digits"),
+  fullName: z.string().min(2, "Nama harus minimal 2 karakter"),
+  email: z.string().email("Email tidak valid"),
+  whatsapp: z.string().min(10, "Nomor WhatsApp tidak valid"),
   checkIn: z.coerce.date(),
   checkOut: z.coerce.date(),
-  guestCountAdult: z.number().int().min(1).max(20).default(1),
-  guestCountChild: z.number().int().min(0).max(20).default(0),
+  guests: z.number().int().min(1).max(20).default(1),
   specialRequests: z.string().optional(),
 }).refine((data) => data.checkOut > data.checkIn, {
-  message: "Check-out must be after check-in",
+  message: "Tanggal check-out harus setelah check-in",
   path: ["checkOut"],
 });
 

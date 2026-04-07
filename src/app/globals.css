@@ -46,19 +46,25 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  
+  /* Lodjisvarga Custom Theme Colors */
+  --color-sage: var(--sage);
+  --color-earth: var(--earth);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --background: #F7F6F2;
+  --foreground: #1A1A1A;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A1A;
+  --primary: #3A4A1F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #6E8F3B;
+  --secondary-foreground: #FFFFFF;
+  --sage: #A8BFA3;
+  --earth: #6B5E3C;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
@@ -90,10 +96,12 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
+  --primary: #A8BFA3; /* Sage inverted as primary in dark mode */
+  --primary-foreground: #1A1A1A;
+  --secondary: #6B5E3C; /* Earth inverted */
+  --secondary-foreground: #FFFFFF;
+  --sage: #3A4A1F;
+  --earth: #A8BFA3;
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
