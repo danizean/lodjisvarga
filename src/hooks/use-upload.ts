@@ -26,8 +26,8 @@ export function useUpload() {
         const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
         const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
         const path = roomTypeId
-          ? `villas/${villaId}/rooms/${roomTypeId}/${uniqueName}`
-          : `villas/${villaId}/${uniqueName}`;
+          ? `villas/rooms/${villaId}/${roomTypeId}/${uniqueName}`
+          : `villas/villas/${villaId}/${uniqueName}`;
 
         const { error } = await supabase.storage
           .from("villa-media")

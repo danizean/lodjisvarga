@@ -11,6 +11,8 @@ import { FAQ } from "@/components/sections/FAQ";
 import { InstagramFeed } from "@/components/sections/InstagramFeed";
 import { CTASection } from "@/components/sections/CTASection";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-[#F7F6F2]">

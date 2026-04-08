@@ -16,7 +16,7 @@ export const galleryItemSchema = z.object({
 export const roomTypeFullSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().min(3, "Nama kamar minimal 3 karakter"),
-  base_price: z.coerce.number().min(1000, "Harga minimal Rp 1.000"),
+  base_price: z.coerce.number().min(0, "Harga minimal Rp 0"),
   capacity_adult: z.coerce.number().int().min(1, "Minimal 1 tamu dewasa"),
   capacity_child: z.coerce.number().int().min(0).default(0),
   description: z.string().optional().nullable(),

@@ -5,7 +5,7 @@ import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Users, BedDouble, Sparkles, Clock } from "lucide-react";
-import { generateWhatsAppLink, generateBookingWhatsAppMessage } from "@/lib/services/whatsapp";
+import { WhatsAppMessageForm } from "@/components/features/villas/WhatsAppMessageForm";
 
 export type RoomTypeGalleryImage = {
   image_url: string;
@@ -17,6 +17,16 @@ export type RoomTypeCardData = {
   id: string;
   name: string;
   base_price: number;
+  effective_price?: number;
+  price_source?: "base" | "override";
+  activePromo?: {
+    id: string;
+    title: string;
+    discount_code: string;
+    discount_value: number | null;
+    expired_at: string | null;
+    is_active: boolean | null;
+  } | null;
   capacity_adult: number | null;
   capacity_child: number | null;
   description: string | null;
@@ -57,9 +67,16 @@ function DotIndicator({ count, current }: { count: number; current: number }) {
 // ─── VillaCard ──────────────────────────────────────────────────────────────
 export function VillaCard({ room }: { room: RoomTypeCardData }) {
   const isComingSoon = room.villaStatus === "coming_soon";
+  const effectivePrice = room.effective_price ?? 0;
+  const discountPercentage = room.activePromo?.discount_value ?? 0;
+  const hasPromo = discountPercentage > 0 && effectivePrice > 0;
+  const hasManagedPrice = effectivePrice > 0;
+  const finalPrice = hasPromo
+    ? Math.max(0, Math.round(effectivePrice * (1 - discountPercentage / 100)))
+    : effectivePrice;
 
   // Sort gallery: primary first, then by display_order
-  const images = [...(room.gallery ?? [])]
+  const roomImages = [...(room.gallery ?? [])]
     .sort((a, b) => {
       if (a.is_primary && !b.is_primary) return -1;
       if (!a.is_primary && b.is_primary) return 1;
@@ -67,7 +84,7 @@ export function VillaCard({ room }: { room: RoomTypeCardData }) {
     })
     .map((g) => g.image_url);
 
-  const imageList = images.length > 0 ? images : [PLACEHOLDER];
+  const imageList = roomImages.length > 0 ? roomImages : [PLACEHOLDER];
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [current, setCurrent] = useState(0);
@@ -87,17 +104,6 @@ export function VillaCard({ room }: { room: RoomTypeCardData }) {
     emblaApi.on("select", onSelect);
     return () => { emblaApi.off("select", onSelect); };
   }, [emblaApi]);
-
-  // WhatsApp link
-  const waMsg = generateBookingWhatsAppMessage({
-    villaName: room.villaName,
-    roomTypeName: room.name,
-    guestName: "Saya",
-    checkIn: new Date(),
-    checkOut: new Date(Date.now() + 86400000),
-    guests: 2,
-  });
-  const waLink = generateWhatsAppLink(waMsg, room.villaWhatsapp ?? undefined);
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col transform hover:-translate-y-2 group">
@@ -207,15 +213,17 @@ export function VillaCard({ room }: { room: RoomTypeCardData }) {
               <p className="text-sm text-gray-500 font-medium">Harga akan segera diumumkan</p>
               <p className="text-xs text-gray-400 mt-1">Daftarkan minat Anda via WhatsApp</p>
             </div>
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-[#25D366]/90 text-white text-sm font-bold transition-all hover:bg-[#128C7E]"
+            <WhatsAppMessageForm
+              whatsappNumber={room.villaWhatsapp}
+              villaName={room.villaName}
+              roomTypeName={room.name}
+              buttonLabel="Hubungi Kami"
+              title={`Chat ${room.villaName}`}
+              buttonClassName="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-[#25D366]/90 text-white text-sm font-bold transition-all hover:bg-[#128C7E]"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.094.541 4.061 1.488 5.773L.057 23.998l6.375-1.406A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.817 9.817 0 0 1-5.006-1.368l-.358-.214-3.724.977.993-3.62-.234-.371A9.818 9.818 0 0 1 2.182 12C2.182 6.573 6.573 2.182 12 2.182S21.818 6.573 21.818 12 17.427 21.818 12 21.818z"/></svg>
               Hubungi Kami
-            </a>
+            </WhatsAppMessageForm>
           </div>
         ) : (
           <div className="mt-auto space-y-4">
@@ -224,24 +232,53 @@ export function VillaCard({ room }: { room: RoomTypeCardData }) {
               <div className="flex items-end justify-between">
                 <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">Mulai dari</span>
                 <div className="text-right">
-                  <span className="text-2xl font-bold text-[#3A4A1F]">{formatIDR(room.base_price)}</span>
-                  <span className="text-xs text-gray-400 ml-1">/malam</span>
+                  {hasPromo && (
+                    <span className="block text-[11px] font-semibold text-gray-400 line-through">
+                      {formatIDR(effectivePrice)}
+                    </span>
+                  )}
+                  {hasManagedPrice ? (
+                    <>
+                      <span className="text-2xl font-bold text-[#3A4A1F]">{formatIDR(finalPrice)}</span>
+                      <span className="text-xs text-gray-400 ml-1">/malam</span>
+                    </>
+                  ) : (
+                    <span className="text-lg font-bold text-slate-500">Hubungi Kami</span>
+                  )}
                 </div>
               </div>
-              <p className="text-[10px] text-gray-400 text-right">*Harga dapat berubah tergantung tanggal</p>
+              <div className="flex flex-wrap items-center justify-end gap-1.5">
+                {room.price_source === "override" && (
+                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-700">
+                    Harga hari ini
+                  </span>
+                )}
+                {hasPromo && (
+                  <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-700">
+                    {room.activePromo?.discount_code} -{discountPercentage}%
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-gray-400 text-right">
+                {hasManagedPrice
+                  ? "*Harga berubah otomatis sesuai tanggal dan promo aktif"
+                  : "*Harga belum diatur untuk hari ini"}
+              </p>
             </div>
 
             {/* Action Buttons */}
             <div className="grid grid-cols-2 gap-2.5">
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#25D366] text-white text-xs font-bold transition-all hover:bg-[#128C7E] shadow-sm"
+              <WhatsAppMessageForm
+                whatsappNumber={room.villaWhatsapp}
+                villaName={room.villaName}
+                roomTypeName={room.name}
+                buttonLabel="WhatsApp"
+                title={`Pesan ${room.name}`}
+                buttonClassName="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#25D366] text-white text-xs font-bold transition-all hover:bg-[#128C7E] shadow-sm"
               >
                 <svg className="w-3.5 h-3.5 fill-current flex-shrink-0" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.094.541 4.061 1.488 5.773L.057 23.998l6.375-1.406A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.817 9.817 0 0 1-5.006-1.368l-.358-.214-3.724.977.993-3.62-.234-.371A9.818 9.818 0 0 1 2.182 12C2.182 6.573 6.573 2.182 12 2.182S21.818 6.573 21.818 12 17.427 21.818 12 21.818z"/></svg>
                 WhatsApp
-              </a>
+              </WhatsAppMessageForm>
               <Link
                 href={`/villas/${room.villaSlug}`}
                 className="flex items-center justify-center py-2.5 px-3 rounded-xl bg-[#3A4A1F] text-white text-xs font-bold transition-all hover:bg-[#2A3A1F] shadow-sm"

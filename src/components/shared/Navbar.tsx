@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { generateWhatsAppLink } from "@/lib/services/whatsapp";
-import { buttonVariants } from "@/components/ui/button";
+import { WhatsAppMessageForm } from "@/components/features/villas/WhatsAppMessageForm";
 import { Menu, X } from "lucide-react";
 import { Container } from "@/components/shared/Container";
 
@@ -27,8 +26,6 @@ export function Navbar() {
     { name: "Experience", href: "/experience" },
     { name: "Blog", href: "/blog" },
   ];
-
-  const waLink = generateWhatsAppLink("Halo, saya tertarik untuk merencanakan liburan di Lodjisvarga dan ingin membuat reservasi.");
 
   const navbarClasses = isScrolled
     ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 py-3"
@@ -65,15 +62,14 @@ export function Navbar() {
                 );
               })}
             </nav>
-            <Link 
-              href={waLink} 
-              target="_blank" 
-              className={buttonVariants({ 
-                className: "bg-[#3A4A1F] hover:bg-[#6E8F3B] text-white rounded-full px-7 transition-all duration-300 shadow-md font-semibold" 
-              })}
+            <WhatsAppMessageForm
+              villaName="Lodjisvarga"
+              buttonLabel="Book Now"
+              title="Book Now"
+              buttonClassName="rounded-full bg-[#3A4A1F] px-7 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#6E8F3B]"
             >
               Book Now
-            </Link>
+            </WhatsAppMessageForm>
           </div>
 
           {/* Mobile Toggle */}
@@ -105,13 +101,14 @@ export function Navbar() {
               </Link>
             );
           })}
-          <Link 
-            href={waLink} 
-            target="_blank" 
-            className={buttonVariants({ className: "bg-[#3A4A1F] hover:bg-[#6E8F3B] text-white rounded-full mt-4 w-full h-12 text-base font-bold" })}
+          <WhatsAppMessageForm
+            villaName="Lodjisvarga"
+            buttonLabel="Book Now"
+            title="Book Now"
+            buttonClassName="mt-4 h-12 w-full rounded-full bg-[#3A4A1F] text-base font-bold text-white hover:bg-[#6E8F3B]"
           >
             Book Now
-          </Link>
+          </WhatsAppMessageForm>
         </div>
       )}
     </header>

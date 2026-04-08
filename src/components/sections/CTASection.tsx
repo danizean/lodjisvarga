@@ -1,13 +1,9 @@
 import { Container } from "@/components/shared/Container";
-import { generateWhatsAppLink } from "@/lib/services/whatsapp";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { WhatsAppMessageForm } from "@/components/features/villas/WhatsAppMessageForm";
 import { MessageCircle } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 
 export function CTASection() {
-  const waLink = generateWhatsAppLink("Halo, saya tertarik untuk merencanakan liburan di Lodjisvarga dan ingin berkonsultasi lebih lanjut.");
-  
   return (
     <section className="relative py-32 overflow-hidden mx-auto my-12 rounded-3xl lg:mx-8">
       {/* Background Gradient */}
@@ -35,14 +31,15 @@ export function CTASection() {
             Experience the perfect blend of luxury and nature. Our team is ready to assist you in planning an unforgettable stay.
           </p>
           
-          <Link 
-            href={waLink} 
-            target="_blank"
-            className={buttonVariants({ size: "lg", className: "bg-white text-[#3A4A1F] hover:bg-white/90 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 h-14 px-8 rounded-full text-base font-bold" })}
+          <WhatsAppMessageForm
+            villaName="Lodjisvarga"
+            buttonLabel="Chat on WhatsApp"
+            title="Chat Lodjisvarga"
+            buttonClassName="h-14 rounded-full bg-white px-8 text-base font-bold text-[#3A4A1F] transition-all duration-300 hover:-translate-y-1 hover:bg-white/90 hover:shadow-xl"
           >
             <MessageCircle className="w-5 h-5 mr-2" />
             Chat on WhatsApp
-          </Link>
+          </WhatsAppMessageForm>
         </div>
       </Container>
     </section>

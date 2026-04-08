@@ -20,6 +20,8 @@ export type VillaData = {
     id: string;
     name: string;
     base_price: number;
+    effective_price?: number;
+    price_source?: "base" | "override";
     capacity_adult: number | null;
     capacity_child: number | null;
     description: string | null;
@@ -38,6 +40,15 @@ export type VillaData = {
   }[];
 };
 
+export type ActivePromoData = {
+  id: string;
+  title: string;
+  discount_code: string;
+  discount_value: number | null;
+  expired_at: string | null;
+  is_active: boolean | null;
+} | null;
+
 const LOCATION_FILTERS = [
   { label: "Semua",  value: "all"     },
   { label: "Sleman", value: "sleman"  },
@@ -45,7 +56,7 @@ const LOCATION_FILTERS = [
 ];
 
 // ─── Flatten villa → room type cards ─────────────────────────────────────
-function flattenToRoomCards(villas: VillaData[]): RoomTypeCardData[] {
+function flattenToRoomCards(villas: VillaData[], activePromo: ActivePromoData): RoomTypeCardData[] {
   const cards: RoomTypeCardData[] = [];
 
   for (const villa of villas) {
@@ -55,6 +66,9 @@ function flattenToRoomCards(villas: VillaData[]): RoomTypeCardData[] {
         id: villa.id + "_placeholder",
         name: "Segera Hadir",
         base_price: 0,
+        effective_price: 0,
+        price_source: "base",
+        activePromo,
         capacity_adult: null,
         capacity_child: null,
         description: villa.description,
@@ -72,6 +86,9 @@ function flattenToRoomCards(villas: VillaData[]): RoomTypeCardData[] {
         id: rt.id,
         name: rt.name,
         base_price: rt.base_price,
+        effective_price: rt.effective_price ?? 0,
+        price_source: rt.price_source ?? "base",
+        activePromo,
         capacity_adult: rt.capacity_adult,
         capacity_child: rt.capacity_child,
         description: rt.description,
@@ -90,12 +107,13 @@ function flattenToRoomCards(villas: VillaData[]): RoomTypeCardData[] {
 // ─── Component ────────────────────────────────────────────────────────────
 interface Props {
   villas: VillaData[];
+  activePromo?: ActivePromoData;
 }
 
-export function FeaturedVillasClient({ villas }: Props) {
+export function FeaturedVillasClient({ villas, activePromo = null }: Props) {
   const [activeFilter, setActiveFilter] = useState("all");
 
-  const allCards = useMemo(() => flattenToRoomCards(villas), [villas]);
+  const allCards = useMemo(() => flattenToRoomCards(villas, activePromo), [villas, activePromo]);
 
   const filteredCards = useMemo(() => {
     if (activeFilter === "all") return allCards;

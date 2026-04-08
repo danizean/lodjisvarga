@@ -8,7 +8,7 @@ export async function getAdminVillasWithRooms() {
     .select(`
       *,
       room_types (*),
-      gallery (*)
+      villa_gallery:gallery!gallery_villa_id_fkey (*)
     `)
     .order("created_at", { ascending: false });
 
@@ -24,11 +24,11 @@ export async function getAdminVillaById(id: string) {
     .select(`
       *,
       villa_amenities (amenity_id),
-      gallery (*),
+      villa_gallery:gallery!gallery_villa_id_fkey (*),
       room_types (
         *,
         room_type_amenities (amenity_id),
-        gallery (*)
+        room_gallery:gallery!gallery_room_type_id_fkey (*)
       )
     `)
     .eq("id", id)

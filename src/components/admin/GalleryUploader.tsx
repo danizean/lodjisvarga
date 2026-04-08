@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { useUpload } from "@/hooks/use-upload";
-import { Button } from "@/components/ui/button";
 import { Loader2, StarIcon, Trash2, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,9 +18,16 @@ interface GalleryUploaderProps {
   roomTypeId?: string;
   items: GalleryItem[];
   onChange: (items: GalleryItem[]) => void;
+  onUploadStatusChange?: (isUploading: boolean) => void;
 }
 
-export function GalleryUploader({ villaId, roomTypeId, items, onChange }: GalleryUploaderProps) {
+export function GalleryUploader({
+  villaId,
+  roomTypeId,
+  items,
+  onChange,
+  onUploadStatusChange,
+}: GalleryUploaderProps) {
   const { uploadFiles, isUploading, uploadProgress } = useUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -32,6 +38,7 @@ export function GalleryUploader({ villaId, roomTypeId, items, onChange }: Galler
     if (fileArray.length === 0) { toast.error("Pilih file gambar (JPG/PNG/WEBP)"); return; }
 
     try {
+      onUploadStatusChange?.(true);
       const results = await uploadFiles(fileArray, villaId, roomTypeId);
       const newItems: GalleryItem[] = results.map((r, i) => ({
         image_url: r.publicUrl,
@@ -40,9 +47,11 @@ export function GalleryUploader({ villaId, roomTypeId, items, onChange }: Galler
       }));
       onChange([...items, ...newItems]);
       toast.success(`${results.length} foto berhasil diupload`);
-    } catch (err: any) {
-      toast.error(err.message ?? "Upload gagal");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Upload gagal";
+      toast.error(message);
     } finally {
+      onUploadStatusChange?.(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
