@@ -1,88 +1,112 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Users, Search } from "lucide-react";
+import { Calendar, Compass } from "lucide-react";
 
 export function Hero() {
+  const fadeInUp = {
+    initial: { opacity: 0, y: 30 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.8, ease: "easeOut" }
+  };
+
   return (
-    <section className="relative min-h-[90vh] md:min-h-screen flex text-center flex-col justify-end pb-24 md:pb-32 font-sans overflow-hidden">
-      {/* Background Image */}
+    <section
+      className="relative min-h-[90vh] md:min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#0F1A14]"
+      aria-label="Luxury Villa Lodjisvarga Midtown Yogyakarta"
+    >
+      {/* 1. Background Layer */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop"
-          alt="Luxury Villa in Yogyakarta"
+          src="/images/7.jpg"
+          alt="Luxury private pool villa in Yogyakarta"
           fill
-          className="object-cover"
           priority
+          quality={100}
+          sizes="100vw"
+          className="object-cover scale-105 animate-subtle-zoom"
         />
-        {/* Deep Olive Gradient Overlay for Text Readability - linear gradient from bottom to top */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(to top, rgba(58, 74, 31, 1) 0%, rgba(58, 74, 31, 0.4) 50%, rgba(58, 74, 31, 0.1) 100%)"
-          }} 
-        />
+
+        {/* Overlay Gelap: Ditingkatkan sedikit ke 50% agar tombol lebih pop */}
+        <div className="absolute inset-0 bg-black/50 z-[1]" />
+        
+        {/* Vignette untuk fokus tengah */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.5)_100%)] z-[2]" />
+
+        {/* Seamless Blend ke Section Bawah */}
+        <div className="absolute bottom-0 left-0 w-full h-40 md:h-64 z-[3] bg-gradient-to-t from-[#F7F6F2] via-[#F7F6F2]/60 to-transparent" />
       </div>
 
-      {/* Hero Content */}
-      <div className="relative z-10 w-full container mx-auto px-4 sm:px-6 lg:px-8 mt-auto flex flex-col items-center">
-        <h1 className="text-4xl md:text-7xl font-bold text-white tracking-tighter mb-6 max-w-5xl drop-shadow-lg leading-tight md:leading-tight">
-          Elevate Your Stay in<br className="hidden md:block" /> the Heart of Yogyakarta
-        </h1>
-        <p className="text-lg md:text-2xl text-white/95 mb-14 max-w-3xl font-light drop-shadow-md">
-          Experience unparalleled luxury and serenity in our handpicked private villas.
-        </p>
+      {/* 2. Content Layer */}
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center pt-10">
+        
+        {/* Label */}
+        <motion.span 
+          {...fadeInUp}
+          className="mb-4 md:mb-6 text-[#D4AF37] text-[10px] md:text-xs tracking-[0.5em] uppercase font-semibold drop-shadow-md"
+        >
+          Exclusive Sanctuary in Yogyakarta
+        </motion.span>
 
-        {/* Floating Search Bar */}
-        <div className="w-full max-w-5xl bg-white/20 backdrop-blur-md border border-white/30 rounded-3xl md:rounded-full p-2 md:p-3 shadow-2xl">
-          <div className="bg-white rounded-2xl md:rounded-full p-2 md:pl-8 md:pr-2 py-4 md:py-2 flex flex-col md:flex-row items-center gap-4">
-            
-            {/* Check-In */}
-            <div className="flex-1 w-full flex items-center gap-4 px-4 py-2 border-b md:border-b-0 md:border-r border-gray-200">
-              <CalendarIcon className="w-6 h-6 text-[#3A4A1F] shrink-0" />
-              <div className="flex flex-col text-left w-full">
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1">Check In</label>
-                <input 
-                  type="date" 
-                  className="w-full bg-transparent border-none p-0 focus:outline-none focus:ring-0 text-gray-900 font-semibold cursor-pointer appearance-none"
-                />
-              </div>
-            </div>
+        {/* Title */}
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          className="font-serif text-5xl md:text-9xl leading-[1.1] tracking-tight pb-3 bg-gradient-to-b from-white via-[#F5F1E9] to-[#D4AF37] bg-clip-text text-transparent drop-shadow-2xl"
+        >
+          Lodjisvarga
+        </motion.h1>
 
-            {/* Check-Out */}
-            <div className="flex-1 w-full flex items-center gap-4 px-4 py-2 border-b md:border-b-0 md:border-r border-gray-200">
-              <CalendarIcon className="w-6 h-6 text-[#3A4A1F] shrink-0" />
-              <div className="flex flex-col text-left w-full">
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1">Check Out</label>
-                <input 
-                  type="date" 
-                  className="w-full bg-transparent border-none p-0 focus:outline-none focus:ring-0 text-gray-900 font-semibold cursor-pointer appearance-none"
-                />
-              </div>
-            </div>
+        {/* Subtitle */}
+        <motion.div 
+          {...fadeInUp}
+          transition={{ delay: 0.2, duration: 0.8 }}
+          className="flex items-center justify-center gap-4 mt-2 mb-8"
+        >
+          <div className="h-[1px] w-8 md:w-16 bg-[#D4AF37]/40 hidden sm:block" />
+          <h2 className="text-[#D4AF37] font-light italic text-xl md:text-4xl tracking-[0.2em]">
+            Mid Town Villas
+          </h2>
+          <div className="h-[1px] w-8 md:w-16 bg-[#D4AF37]/40 hidden sm:block" />
+        </motion.div>
 
-            {/* Guests */}
-            <div className="flex-1 w-full flex items-center gap-4 px-4 py-2">
-              <Users className="w-6 h-6 text-[#3A4A1F] shrink-0" />
-              <div className="flex flex-col text-left w-full">
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1">Guests</label>
-                <input 
-                  type="number" 
-                  min="1"
-                  placeholder="2 Guests"
-                  className="w-full bg-transparent border-none p-0 focus:outline-none focus:ring-0 text-gray-900 font-semibold placeholder:text-gray-900 appearance-none"
-                />
-              </div>
-            </div>
+        {/* Description Text */}
+        <motion.p 
+          {...fadeInUp}
+          transition={{ delay: 0.4, duration: 0.8 }}
+          className="max-w-xl text-white/90 text-sm md:text-lg font-light leading-relaxed mb-10 md:mb-14 italic"
+        >
+          Experience a harmonious blend of Javanese heritage and modern luxury in the heart of the cultural capital.
+        </motion.p>
 
-            {/* CTA Search Button */}
-            <Button size="lg" className="w-full md:w-auto rounded-xl md:rounded-full h-16 md:h-14 px-10 bg-[#3A4A1F] hover:bg-[#6E8F3B] text-white transition-all duration-300 shadow-xl group text-base mt-2 md:mt-0 shrink-0">
-              <Search className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
+        {/* CTA Buttons */}
+        <motion.div 
+          {...fadeInUp}
+          transition={{ delay: 0.6, duration: 0.8 }}
+          className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto items-center"
+        >
+          {/* Tombol Utama (Check Availability) */}
+          <Button className="group h-14 md:h-16 px-10 bg-[#2F4F2F] text-white hover:bg-[#3E623E] rounded-full transition-all duration-500 shadow-2xl border border-white/10 active:scale-95 w-full sm:w-auto">
+            <span className="flex items-center gap-3 font-bold text-[10px] md:text-[11px] uppercase tracking-[0.2em]">
+              <Calendar className="w-4 h-4 transition-transform group-hover:scale-110" />
               Check Availability
-            </Button>
-          </div>
-        </div>
+            </span>
+          </Button>
+
+          {/* ✅ FIXED: Tombol Explore Villa (Kontras Tinggi) */}
+          <Button
+            variant="outline"
+            className="group h-14 md:h-16 px-10 border-white/80 text-white hover:border-[#D4AF37] hover:text-[#D4AF37] rounded-full backdrop-blur-md transition-all duration-500 bg-white/10 hover:bg-black/40 active:scale-95 w-full sm:w-auto shadow-lg"
+          >
+            <span className="flex items-center gap-3 font-bold text-[10px] md:text-[11px] uppercase tracking-[0.2em]">
+              <Compass className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              Explore Villa
+            </span>
+          </Button>
+        </motion.div>
       </div>
     </section>
   );

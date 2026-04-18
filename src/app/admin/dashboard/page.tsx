@@ -1,6 +1,9 @@
 import { getDashboardStats, getAdminVillasWithRooms, getAdminPromos } from "@/lib/queries/villas";
-import { Building2, Users, Tag, TrendingUp, ArrowRight } from "lucide-react";
+import { Building2, Users, Tag, TrendingUp, ArrowUpRight, Plus } from "lucide-react";
 import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +14,7 @@ export default async function DashboardOverviewPage() {
     getAdminPromos(),
   ]);
 
-  const recentVillas = villas.slice(0, 4);
+  const recentVillas = villas.slice(0, 5);
   const activePromos = promos.filter((p: any) => p.is_active);
 
   const statCards = [
@@ -19,124 +22,178 @@ export default async function DashboardOverviewPage() {
       label: "Villa Aktif",
       value: stats.activeVillas,
       icon: Building2,
-      color: "emerald",
       href: "/admin/villas",
+      accent: "text-emerald-600",
+      bg: "bg-emerald-50",
     },
     {
       label: "Leads Pending",
       value: stats.pendingLeads,
       icon: Users,
-      color: "blue",
       href: "/admin/bookings",
+      accent: "text-blue-600",
+      bg: "bg-blue-50",
     },
     {
       label: "Promo Aktif",
       value: stats.activePromos,
       icon: Tag,
-      color: "amber",
       href: "/admin/promos",
+      accent: "text-amber-600",
+      bg: "bg-amber-50",
     },
     {
       label: "Total Properti",
       value: villas.length,
       icon: TrendingUp,
-      color: "purple",
       href: "/admin/villas",
+      accent: "text-violet-600",
+      bg: "bg-violet-50",
     },
-  ];
-
-  const colorMap: Record<string, string> = {
-    emerald: "from-emerald-500 to-emerald-600",
-    blue: "from-blue-500 to-blue-600",
-    amber: "from-amber-500 to-amber-600",
-    purple: "from-purple-500 to-purple-600",
-  };
+  ] as const;
 
   return (
-    <div className="p-8 space-y-8 bg-[#F7F6F2] min-h-screen">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-black text-[#1A1A1A] tracking-tight">Dashboard Overview</h1>
-        <p className="text-slate-500 mt-1 text-sm">Selamat datang di panel admin Lodjisvarga.</p>
+    <div className="p-6 space-y-6 max-w-6xl mx-auto">
+
+      {/* ── Page header ── */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Ringkasan aktivitas properti Lodjisvarga.</p>
+        </div>
+        <Link href="/admin/blog/new">
+          <Button size="sm" className="bg-[#3A4A1F] hover:bg-[#2A3A10] text-white gap-1.5">
+            <Plus className="w-3.5 h-3.5" />
+            Tulis Artikel
+          </Button>
+        </Link>
       </div>
 
-      {/* Stat Cards */}
+      {/* ── Stat cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map(card => {
+        {statCards.map((card) => {
           const Icon = card.icon;
           return (
-            <Link href={card.href} key={card.label}>
-              <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group cursor-pointer">
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colorMap[card.color]} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                  <Icon className="w-5 h-5 text-white" />
-                </div>
-                <p className="text-3xl font-black text-slate-900">{card.value}</p>
-                <p className="text-xs font-medium text-slate-500 mt-1">{card.label}</p>
-              </div>
+            <Link href={card.href} key={card.label} className="group">
+              <Card size="sm" className="hover:ring-gray-200 transition-all duration-200 cursor-pointer ring-gray-100">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`w-8 h-8 rounded-lg ${card.bg} flex items-center justify-center flex-shrink-0`}>
+                      <Icon className={`w-4 h-4 ${card.accent}`} />
+                    </div>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900 tabular-nums">{card.value}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{card.label}</p>
+                </CardContent>
+              </Card>
             </Link>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Villas */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between p-5 border-b border-slate-100">
-            <h2 className="font-bold text-slate-800">Properti Terbaru</h2>
-            <Link href="/admin/villas" className="text-xs text-[#3A4A1F] font-bold flex items-center gap-1 hover:underline">
-              Lihat Semua <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="divide-y divide-slate-50">
-            {recentVillas.map((villa: any) => (
-              <div key={villa.id} className="flex items-center justify-between px-5 py-3">
-                <div>
-                  <p className="font-semibold text-sm text-slate-900">{villa.name}</p>
-                  <p className="text-xs text-slate-400">{villa.room_types?.length ?? 0} tipe kamar</p>
-                </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wide ${
-                  villa.status === "active" || villa.status === "Published"
-                    ? "bg-emerald-100 text-emerald-700 border-emerald-200"
-                    : villa.status === "coming_soon"
-                    ? "bg-amber-100 text-amber-700 border-amber-200"
-                    : "bg-slate-100 text-slate-500 border-slate-200"
-                }`}>
-                  {villa.status === "coming_soon" ? "Coming Soon" : villa.status ?? "inactive"}
-                </span>
-              </div>
-            ))}
-            {recentVillas.length === 0 && (
-              <p className="px-5 py-8 text-center text-sm text-slate-400">Belum ada properti. <Link href="/admin/villas/new" className="text-[#3A4A1F] font-bold hover:underline">Tambah sekarang →</Link></p>
-            )}
-          </div>
-        </div>
+      {/* ── Content tables ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-        {/* Active Promos */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between p-5 border-b border-slate-100">
-            <h2 className="font-bold text-slate-800">Promo Aktif</h2>
-            <Link href="/admin/promos" className="text-xs text-[#3A4A1F] font-bold flex items-center gap-1 hover:underline">
-              Kelola Promo <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="divide-y divide-slate-50">
-            {activePromos.slice(0, 4).map((promo: any) => (
-              <div key={promo.id} className="flex items-center justify-between px-5 py-3">
-                <div>
-                  <p className="font-semibold text-sm text-slate-900">{promo.title}</p>
-                  <p className="text-xs text-slate-400 font-mono">{promo.discount_code} — {promo.discount_value}% off</p>
+        {/* Recent villas */}
+        <Card size="sm" className="ring-gray-100">
+          <CardHeader className="border-b border-gray-100">
+            <CardTitle>Properti Terbaru</CardTitle>
+            <div data-slot="card-action">
+              <Link href="/admin/villas" className="text-xs text-[#3A4A1F] font-medium hover:underline flex items-center gap-0.5">
+                Lihat semua <ArrowUpRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-gray-50">
+              {recentVillas.length === 0 && (
+                <p className="px-4 py-10 text-center text-sm text-gray-400">
+                  Belum ada properti.{" "}
+                  <Link href="/admin/villas/new" className="text-[#3A4A1F] font-medium hover:underline">
+                    Tambah →
+                  </Link>
+                </p>
+              )}
+              {recentVillas.map((villa: any) => (
+                <div key={villa.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{villa.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{villa.room_types?.length ?? 0} tipe kamar</p>
+                  </div>
+                  <VillaStatusBadge status={villa.status} />
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase tracking-wide">
-                  Aktif
-                </span>
-              </div>
-            ))}
-            {activePromos.length === 0 && (
-              <p className="px-5 py-8 text-center text-sm text-slate-400">Tidak ada promo aktif. <Link href="/admin/promos" className="text-[#3A4A1F] font-bold hover:underline">Buat promo →</Link></p>
-            )}
-          </div>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Active promos */}
+        <Card size="sm" className="ring-gray-100">
+          <CardHeader className="border-b border-gray-100">
+            <CardTitle>Promo Aktif</CardTitle>
+            <div data-slot="card-action">
+              <Link href="/admin/promos" className="text-xs text-[#3A4A1F] font-medium hover:underline flex items-center gap-0.5">
+                Kelola <ArrowUpRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-gray-50">
+              {activePromos.length === 0 && (
+                <p className="px-4 py-10 text-center text-sm text-gray-400">
+                  Tidak ada promo aktif.{" "}
+                  <Link href="/admin/promos" className="text-[#3A4A1F] font-medium hover:underline">
+                    Buat promo →
+                  </Link>
+                </p>
+              )}
+              {activePromos.slice(0, 5).map((promo: any) => (
+                <div key={promo.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{promo.title}</p>
+                    <p className="text-xs text-gray-400 font-mono mt-0.5">
+                      {promo.discount_code} · {promo.discount_value}% off
+                    </p>
+                  </div>
+                  <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 flex-shrink-0 gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Aktif
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
       </div>
     </div>
+  );
+}
+
+// ─── Status Badge ──────────────────────────────────────────────────────────────
+
+function VillaStatusBadge({ status }: { status: string | null }) {
+  const s = status?.toLowerCase();
+
+  if (s === "active" || s === "published") {
+    return (
+      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 flex-shrink-0">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        Aktif
+      </Badge>
+    );
+  }
+  if (s === "coming_soon") {
+    return (
+      <Badge variant="outline" className="text-amber-700 border-amber-200 bg-amber-50 flex-shrink-0">
+        Coming Soon
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="text-gray-500 flex-shrink-0">
+      {status ?? "Inactive"}
+    </Badge>
   );
 }

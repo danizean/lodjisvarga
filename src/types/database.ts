@@ -38,8 +38,10 @@ export type Database = {
       articles: {
         Row: {
           author_id: string | null
-          content: string | null
+          /** TipTap document JSON */
+          content: Json | null
           created_at: string | null
+          updated_at: string | null
           id: string
           is_published: boolean | null
           meta_description: string | null
@@ -47,11 +49,15 @@ export type Database = {
           slug: string
           thumbnail_url: string | null
           title: string
+          excerpt: string | null
+          read_time_minutes: number | null
+          category: string | null
         }
         Insert: {
           author_id?: string | null
-          content?: string | null
+          content?: Json | null
           created_at?: string | null
+          updated_at?: string | null
           id?: string
           is_published?: boolean | null
           meta_description?: string | null
@@ -59,11 +65,15 @@ export type Database = {
           slug: string
           thumbnail_url?: string | null
           title: string
+          excerpt?: string | null
+          read_time_minutes?: number | null
+          category?: string | null
         }
         Update: {
           author_id?: string | null
-          content?: string | null
+          content?: Json | null
           created_at?: string | null
+          updated_at?: string | null
           id?: string
           is_published?: boolean | null
           meta_description?: string | null
@@ -71,6 +81,9 @@ export type Database = {
           slug?: string
           thumbnail_url?: string | null
           title?: string
+          excerpt?: string | null
+          read_time_minutes?: number | null
+          category?: string | null
         }
         Relationships: [
           {
@@ -736,6 +749,21 @@ export type Database = {
       }
     }
     Views: {
+      articles_listing: {
+        Row: {
+          id: string | null
+          title: string | null
+          slug: string | null
+          excerpt: string | null
+          thumbnail_url: string | null
+          category: string | null
+          read_time_minutes: number | null
+          published_at: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
       available_prices: {
         Row: {
           created_at: string | null

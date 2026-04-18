@@ -5,6 +5,7 @@ import { Container } from "@/components/shared/Container";
 import { VillaCard, type RoomTypeCardData } from "@/components/features/villas/VillaCard";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 export type VillaData = {
@@ -50,17 +51,14 @@ export type ActivePromoData = {
 } | null;
 
 const LOCATION_FILTERS = [
-  { label: "Semua",  value: "all"     },
-  { label: "Sleman", value: "sleman"  },
-  { label: "Seturan",value: "seturan" },
+  { label: "Semua", value: "all" },
+  { label: "Sleman", value: "sleman" },
+  { label: "Seturan", value: "seturan" },
 ];
 
-// ─── Flatten villa → room type cards ─────────────────────────────────────
 function flattenToRoomCards(villas: VillaData[], activePromo: ActivePromoData): RoomTypeCardData[] {
   const cards: RoomTypeCardData[] = [];
-
   for (const villa of villas) {
-    // coming_soon villa with no room types → show a placeholder card
     if (villa.room_types.length === 0 && villa.status === "coming_soon") {
       cards.push({
         id: villa.id + "_placeholder",
@@ -80,7 +78,6 @@ function flattenToRoomCards(villas: VillaData[], activePromo: ActivePromoData): 
       });
       continue;
     }
-
     for (const rt of villa.room_types) {
       cards.push({
         id: rt.id,
@@ -100,11 +97,9 @@ function flattenToRoomCards(villas: VillaData[], activePromo: ActivePromoData): 
       });
     }
   }
-
   return cards;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────
 interface Props {
   villas: VillaData[];
   activePromo?: ActivePromoData;
@@ -116,84 +111,92 @@ export function FeaturedVillasClient({ villas, activePromo = null }: Props) {
   const allCards = useMemo(() => flattenToRoomCards(villas, activePromo), [villas, activePromo]);
 
   const filteredCards = useMemo(() => {
-    if (activeFilter === "all") return allCards;
-    return allCards.filter((card) =>
-      card.villaName.toLowerCase().includes(activeFilter)
-    );
+    if (activeFilter === "all") {
+      return allCards.filter(card => card.villaStatus !== "coming_soon");
+    }
+    return allCards.filter((card) => {
+      const villaName = card.villaName.toLowerCase();
+      if (activeFilter === "sleman") {
+        return villaName.includes("sleman") && !villaName.includes("seturan");
+      }
+      return villaName.includes(activeFilter.toLowerCase());
+    });
   }, [allCards, activeFilter]);
 
   return (
-    <section id="featured-villas" className="py-24 bg-white min-h-screen scroll-mt-20">
-      <Container>
-        {/* Header */}
-        <div className="text-center mb-14">
-          <span className="text-[#3A4A1F] font-bold tracking-[0.25em] uppercase text-xs">
-            Limitless Privacy
+    <section id="featured-villas" className="relative pb-20 bg-[#F7F6F2] scroll-mt-20">
+      
+      {/* Container diturunkan sedikit (-mt-10 sampai -mt-16) agar ada jeda manis */}
+      <Container className="max-w-6xl px-6 md:px-12 relative z-10 -mt-10 md:-mt-16">
+        
+        {/* Header - Jarak mb-10 memberikan napas yang pas */}
+        <div className="text-center mb-10">
+          <span className="text-[#D4AF37] font-bold tracking-[0.4em] uppercase text-[9px]">
+            Recommended Units
           </span>
-          <h2 className="mt-3 font-serif text-3xl md:text-4xl font-bold text-gray-900">
-            Pilih Kamar Impian Anda
+          <h2 className="mt-2 font-serif text-4xl md:text-5xl text-[#3A4A1F] leading-tight">
+            Unit Kamar <span className="italic text-[#D4AF37]">Terbaik</span>
           </h2>
-          <p className="mt-3 text-gray-500 max-w-lg mx-auto text-sm leading-relaxed">
-            Setiap unit dirancang untuk memberikan pengalaman menginap yang tak terlupakan
-            dengan privasi penuh di Yogyakarta.
-          </p>
         </div>
 
-        {/* Location Filter Tabs */}
-        <div className="sticky top-[72px] z-40 bg-white/90 backdrop-blur-md py-4 mb-10 -mx-6 px-6 border-b border-gray-100/80">
-          <div className="flex justify-center">
-            <div className="bg-gray-100 p-1.5 rounded-full inline-flex gap-1">
-              {LOCATION_FILTERS.map((f) => (
-                <button
-                  key={f.value}
-                  id={`filter-${f.value}`}
-                  onClick={() => setActiveFilter(f.value)}
-                  className={`px-7 py-2.5 rounded-full text-sm font-bold transition-all duration-300 whitespace-nowrap ${
-                    activeFilter === f.value
-                      ? "bg-white text-[#3A4A1F] shadow-md scale-105"
-                      : "text-gray-500 hover:text-gray-800"
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
+        {/* Location Filter Tabs - Menggunakan Glassmorphism transparan agar halus */}
+        <div className="sticky top-[72px] z-40 py-4 mb-10 flex justify-center">
+          <div className="bg-[#3A4A1F]/5 backdrop-blur-md p-1.5 rounded-full inline-flex gap-1 shadow-sm border border-[#3A4A1F]/10">
+            {LOCATION_FILTERS.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setActiveFilter(f.value)}
+                className={`relative px-6 py-2 rounded-full text-[10px] md:text-[11px] uppercase tracking-widest font-bold transition-all duration-500 whitespace-nowrap ${
+                  activeFilter === f.value
+                    ? "text-white"
+                    : "text-[#3A4A1F]/50 hover:text-[#3A4A1F]"
+                }`}
+              >
+                <span className="relative z-10">{f.label}</span>
+                {activeFilter === f.value && (
+                  <motion.div 
+                    layoutId="activeTabLuxuryFinal"
+                    className="absolute inset-0 bg-[#3A4A1F] rounded-full z-0 shadow-md"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Cards Grid */}
-        {filteredCards.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredCards.map((card, idx) => (
-              <div
-                key={card.id}
-                className="animate-in fade-in zoom-in-95 duration-500"
-                style={{ animationDelay: `${idx * 60}ms` }}
-              >
-                <VillaCard room={card} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-32 text-center space-y-4 bg-slate-50 rounded-[40px] border border-dashed border-slate-300">
-            <div className="p-4 bg-white rounded-full shadow-sm">
-              <LayoutGrid className="w-8 h-8 text-slate-300" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-slate-800">Tidak ada kamar di lokasi ini</p>
-              <p className="text-slate-500 text-sm mt-1">
-                Coba filter lokasi lain atau lihat semua kamar
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setActiveFilter("all")}
-              className="mt-2 rounded-full border-[#3A4A1F] text-[#3A4A1F]"
+        <AnimatePresence mode="popLayout">
+          {filteredCards.length > 0 ? (
+            <motion.div 
+              layout
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
             >
-              Tampilkan Semua
-            </Button>
-          </div>
-        )}
+              {filteredCards.map((card, idx) => (
+                <motion.div
+                  layout
+                  key={card.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <VillaCard room={card} />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-24 text-center space-y-4 bg-white/20 rounded-[40px] border border-dashed border-[#3A4A1F]/10 mx-auto max-w-4xl">
+              <LayoutGrid className="w-6 h-6 text-gray-300" />
+              <div>
+                <p className="text-lg font-bold text-[#3A4A1F]">Unit segera tersedia</p>
+                <p className="text-gray-500 text-xs mt-1">
+                  Kami sedang menyiapkan unit terbaik untuk lokasi ini.
+                </p>
+              </div>
+            </div>
+          )}
+        </AnimatePresence>
       </Container>
     </section>
   );

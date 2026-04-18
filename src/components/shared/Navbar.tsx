@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image"; // Tambahkan ini
 import { usePathname } from "next/navigation";
 import { WhatsAppMessageForm } from "@/components/features/villas/WhatsAppMessageForm";
 import { Menu, X } from "lucide-react";
@@ -27,23 +28,42 @@ export function Navbar() {
     { name: "Blog", href: "/blog" },
   ];
 
-  const navbarClasses = isScrolled
-    ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 py-3"
-    : "bg-transparent py-6";
-  
-  const textClasses = isScrolled ? "text-[#1A1A1A]" : "text-white";
-  const logoClasses = isScrolled ? "text-[#3A4A1F]" : "text-white";
-
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navbarClasses}`}>
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled
+          ? "bg-white/80 backdrop-blur-xl border-b border-[#3A4A1F]/10 py-3"
+          : "bg-transparent py-6"
+      }`}
+    >
       <Container>
         <div className="flex items-center justify-between">
-          <Link href="/" className={`font-bold text-2xl tracking-tight transition-colors ${logoClasses}`}>
-            Lodjisvarga
+          
+          {/* LOGO SECTION */}
+          <Link
+            href="/"
+            className="flex items-center gap-3 group"
+          >
+            <div className="relative w-10 h-10 md:w-12 md:h-12 transition-transform duration-300 group-hover:scale-110">
+              <Image
+                src="/logo-lodjisvarga.png"
+                alt="Logo Lodjisvarga"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <span
+              className={`text-xl md:text-2xl font-serif tracking-tight transition-colors duration-300 ${
+                isScrolled ? "text-[#3A4A1F]" : "text-white"
+              }`}
+            >
+              Lodjisvarga
+            </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
+          {/* DESKTOP NAV */}
+          <div className="hidden md:flex items-center gap-10">
             <nav className="flex items-center gap-8">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
@@ -51,64 +71,85 @@ export function Navbar() {
                   <Link
                     key={link.name}
                     href={link.href}
-                    className={`text-sm font-medium transition-colors hover:text-[#A8BFA3] ${
-                      isActive 
-                        ? "text-[#A8BFA3] font-semibold" 
-                        : isScrolled ? "text-gray-600" : "text-white/90"
+                    className={`text-sm tracking-wide transition relative group/link ${
+                      isActive
+                        ? "text-[#3A4A1F]"
+                        : isScrolled
+                        ? "text-gray-600 hover:text-[#3A4A1F]"
+                        : "text-white/90 hover:text-white"
                     }`}
                   >
                     {link.name}
+                    {/* subtle underline */}
+                    <span
+                      className={`absolute left-0 -bottom-1 h-[1px] bg-[#3A4A1F] transition-all duration-300 ${
+                        isActive ? "w-full opacity-100" : "w-0 opacity-0 group-hover/link:w-full group-hover/link:opacity-100"
+                      }`}
+                    />
                   </Link>
                 );
               })}
             </nav>
+
+            {/* CTA */}
             <WhatsAppMessageForm
-              villaName="Lodjisvarga"
-              buttonLabel="Book Now"
-              title="Book Now"
-              buttonClassName="rounded-full bg-[#3A4A1F] px-7 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#6E8F3B]"
+              villaName="Lodjisvarga Villa Jogja"
+              buttonLabel="Cek Ketersediaan"
+              title="Booking Lodjisvarga"
+              buttonClassName="h-10 px-6 rounded-full bg-[#3A4A1F] text-white text-sm font-medium transition transform hover:scale-105 hover:bg-[#2F3F1A] active:scale-95 shadow-lg shadow-[#3A4A1F]/20"
             >
-              Book Now
+              Cek Ketersediaan
             </WhatsAppMessageForm>
           </div>
 
-          {/* Mobile Toggle */}
-          <button 
-            className={`md:hidden p-2 -mr-2 ${textClasses}`}
+          {/* MOBILE BUTTON */}
+          <button
+            className={`md:hidden p-2 transition-colors ${
+              isScrolled ? "text-[#3A4A1F]" : "text-white"
+            }`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle Menu"
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
       </Container>
 
-      {/* Mobile Drawer */}
+      {/* MOBILE MENU */}
       {isMobileMenuOpen && (
-        <div className="absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 flex flex-col p-6 gap-6 md:hidden">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`text-lg font-medium transition-colors ${
-                  isActive ? "text-[#3A4A1F]" : "text-gray-600 hover:text-[#3A4A1F]"
-                }`}
-              >
-                {link.name}
-              </Link>
-            );
-          })}
-          <WhatsAppMessageForm
-            villaName="Lodjisvarga"
-            buttonLabel="Book Now"
-            title="Book Now"
-            buttonClassName="mt-4 h-12 w-full rounded-full bg-[#3A4A1F] text-base font-bold text-white hover:bg-[#6E8F3B]"
-          >
-            Book Now
-          </WhatsAppMessageForm>
+        <div className="md:hidden bg-white border-t border-[#3A4A1F]/10 shadow-2xl animate-in slide-in-from-top duration-300">
+          <div className="flex flex-col px-6 py-8 gap-6">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`text-lg transition-all ${
+                    isActive
+                      ? "text-[#3A4A1F] font-bold translate-x-2"
+                      : "text-gray-600 hover:text-[#3A4A1F] hover:translate-x-2"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+
+            {/* CTA Mobile */}
+            <WhatsAppMessageForm
+              villaName="Lodjisvarga Villa Jogja"
+              buttonLabel="Cek Ketersediaan"
+              title="Booking Lodjisvarga"
+              buttonClassName="mt-4 h-12 w-full rounded-full bg-[#3A4A1F] text-white text-sm font-semibold shadow-lg active:scale-95 transition-transform"
+            >
+              Cek Ketersediaan
+            </WhatsAppMessageForm>
+          </div>
         </div>
       )}
     </header>

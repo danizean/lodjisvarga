@@ -1,47 +1,48 @@
+"use client";
+
 import { Container } from "@/components/shared/Container";
 import { WhatsAppMessageForm } from "@/components/features/villas/WhatsAppMessageForm";
 import { MessageCircle } from "lucide-react";
-import Image from "next/image";
 
 export function CTASection() {
   return (
-    <section className="relative py-32 overflow-hidden mx-auto my-12 rounded-3xl lg:mx-8">
-      {/* Background Gradient */}
-      <div 
-        className="absolute inset-0 z-0" 
-        style={{ background: "linear-gradient(135deg, #3A4A1F, #6E8F3B)" }} 
-      />
-      
-      {/* Texture Overlay (Depth) */}
-      <div className="absolute inset-0 z-0 opacity-10 mix-blend-overlay">
-        <Image
-          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop"
-          alt="Villa Background Texture"
-          fill
-          className="object-cover"
-        />
-      </div>
+    <section className="py-20 md:py-28 bg-white">
 
-      <Container className="relative z-10">
-        <div className="text-center max-w-3xl mx-auto flex flex-col items-center">
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight drop-shadow-sm leading-tight">
-            Your Private Sanctuary Awaits
-          </h2>
-          <p className="text-white/90 text-lg md:text-xl font-light mb-10 max-w-2xl leading-relaxed">
-            Experience the perfect blend of luxury and nature. Our team is ready to assist you in planning an unforgettable stay.
-          </p>
-          
+      <Container className="max-w-4xl mx-auto px-6 text-center space-y-8">
+
+        {/* ===== HEADLINE ===== */}
+        <h2 className="text-[#3A4A1F] text-3xl md:text-5xl font-serif tracking-tight leading-tight">
+          Siap Menginap di{" "}
+          <span className="italic text-[#D4AF37]">Lodjisvarga Villa?</span>
+        </h2>
+
+        {/* ===== SUBTEXT ===== */}
+        <p className="text-gray-500 font-light text-sm md:text-lg max-w-xl mx-auto leading-relaxed">
+          Cek ketersediaan unit dan dapatkan rekomendasi terbaik untuk pengalaman menginap Anda di Jogja.
+        </p>
+
+        {/* ===== CTA BUTTON ===== */}
+        <div className="pt-4 flex justify-center">
+
           <WhatsAppMessageForm
-            villaName="Lodjisvarga"
-            buttonLabel="Chat on WhatsApp"
-            title="Chat Lodjisvarga"
-            buttonClassName="h-14 rounded-full bg-white px-8 text-base font-bold text-[#3A4A1F] transition-all duration-300 hover:-translate-y-1 hover:bg-white/90 hover:shadow-xl"
+            villaName="Lodjisvarga Villa Jogja"
+            buttonLabel="Cek via WhatsApp"
+            title="Booking Lodjisvarga"
+            buttonClassName="inline-flex items-center h-12 md:h-14 px-8 rounded-full bg-[#3A4A1F] text-white text-sm md:text-base font-semibold tracking-wide transition-all duration-300 hover:bg-[#2F3F1A] hover:shadow-lg"
           >
             <MessageCircle className="w-5 h-5 mr-2" />
-            Chat on WhatsApp
+            Cek via WhatsApp
           </WhatsAppMessageForm>
+
         </div>
+
+        {/* ===== MICRO COPY ===== */}
+        <p className="text-xs text-gray-400">
+          Respon cepat melalui WhatsApp
+        </p>
+
       </Container>
+
     </section>
   );
 }

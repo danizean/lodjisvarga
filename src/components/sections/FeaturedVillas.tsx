@@ -6,7 +6,7 @@ import type { ActivePromoData, VillaData } from "./FeaturedVillasClient";
 export async function FeaturedVillas() {
   const supabase = await createClient();
 
-  // Ambil SEMUA villa (active + coming_soon) beserta room types dan gallery per kamar
+  // 1. Fetch Data Villa dengan Status Terfilter
   const { data: villas, error } = await supabase
     .from("villas")
     .select(`
@@ -43,44 +43,67 @@ export async function FeaturedVillas() {
     .in("status", ["active", "coming_soon"])
     .order("created_at", { ascending: true });
 
+  // Handle Fetch Error
   if (error) {
     console.error("Supabase Fetch Error (FeaturedVillas):", error.message);
+    return (
+      <div className="py-20 text-center bg-[#F7F6F2]">
+        <p className="text-[#3A4A1F]/50 italic font-serif">Maaf, gagal memuat data villa.</p>
+      </div>
+    );
   }
 
+  // 2. Filter Room Types yang Aktif
   const villasWithActiveRooms = (villas ?? []).map((villa) => ({
     ...villa,
     room_types: (villa.room_types ?? []).filter((room) => room.status !== "inactive"),
   }));
 
-  const roomTypeIds = villasWithActiveRooms.flatMap((villa) => villa.room_types.map((room) => room.id));
+  // 3. Integrasi Harga (Pricing Snapshot)
+  const roomTypeIds = villasWithActiveRooms.flatMap((villa) => 
+    villa.room_types.map((room) => room.id)
+  );
+  
   const pricingSnapshot = await getPublicPricingSnapshot(supabase, roomTypeIds);
 
+  // Log Pricing Errors (tetap lanjut jika promo error)
   if (pricingSnapshot.pricesError) {
-    console.error("Supabase Fetch Error (Today Prices):", pricingSnapshot.pricesError.message);
-  }
-  if (pricingSnapshot.promosError) {
-    console.error("Supabase Fetch Error (Active Promo):", pricingSnapshot.promosError.message);
+    console.error("Pricing Error:", pricingSnapshot.pricesError.message);
   }
 
-  const villasWithEffectivePrices = villasWithActiveRooms.map((villa) => ({
-    ...villa,
-    room_types: attachPublicPricing(villa.room_types ?? [], pricingSnapshot.priceMap).map((room) => ({
-      ...room,
-      gallery: room.room_gallery ?? [],
-    })),
-  }));
+  // 4. Transformasi Data Akhir (Mapping Room Gallery ke Gallery)
+  const villasFinal = villasWithActiveRooms.map((villa) => {
+    // Attach pricing ke room types
+    const pricedRooms = attachPublicPricing(villa.room_types ?? [], pricingSnapshot.priceMap);
 
-  if (!villas || villas.length === 0) {
+    return {
+      ...villa,
+      room_types: pricedRooms.map((room) => ({
+        ...room,
+        // Mapping key gallery agar sesuai dengan kebutuhan Client Component
+        gallery: room.room_gallery ?? [],
+      })),
+    };
+  });
+
+  // 5. Render States
+  if (!villasFinal || villasFinal.length === 0) {
     return (
-      <div className="py-20 text-center bg-[#F7F6F2]">
-        <p className="text-slate-400 italic">No villas are currently available.</p>
+      <div className="py-24 text-center bg-[#F7F6F2]">
+        <div className="max-w-md mx-auto space-y-4 px-6">
+          <h3 className="font-serif text-2xl text-[#3A4A1F]">Belum Ada Unit Tersedia</h3>
+          <p className="text-gray-500 text-sm font-light">
+            Kami sedang menyiapkan unit terbaik untuk masa menginap Anda di Yogyakarta. 
+            Silakan kembali beberapa saat lagi.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <FeaturedVillasClient
-      villas={villasWithEffectivePrices as VillaData[]}
+      villas={villasFinal as VillaData[]}
       activePromo={pricingSnapshot.activePromo as ActivePromoData}
     />
   );
