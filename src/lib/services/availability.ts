@@ -4,8 +4,8 @@ import { getBlockedDates } from "@/lib/queries/availability";
  * Merges blocked_dates from the DB with confirmed booking date ranges
  * to produce a unified list of unavailable dates for the calendar UI.
  */
-export async function getUnavailableDates(villaId: string): Promise<Date[]> {
-  const blocked = await getBlockedDates(villaId);
+export async function getUnavailableDates(roomTypeId: string): Promise<Date[]> {
+  const blocked = await getBlockedDates(roomTypeId);
   // TODO: Also fetch confirmed booking date ranges and expand to individual dates
   return blocked;
 }

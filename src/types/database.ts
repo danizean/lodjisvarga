@@ -801,6 +801,53 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_block_room_dates: {
+        Args: {
+          p_apply_to?: string
+          p_end_date: string
+          p_reason?: string
+          p_room_type_id: string
+          p_start_date: string
+        }
+        Returns: number
+      }
+      admin_get_room_calendar: {
+        Args: {
+          p_end_date: string
+          p_room_type_id: string
+          p_start_date: string
+        }
+        Returns: {
+          base_price: number
+          block_reason: string | null
+          customer_name: string | null
+          date: string
+          effective_price: number
+          is_blocked: boolean
+          price_source: string
+          reservation_id: string | null
+          reservation_status: string | null
+        }[]
+      }
+      admin_set_room_price_range: {
+        Args: {
+          p_apply_to?: string
+          p_end_date: string
+          p_price: number
+          p_room_type_id: string
+          p_start_date: string
+        }
+        Returns: number
+      }
+      admin_unblock_room_dates: {
+        Args: {
+          p_apply_to?: string
+          p_end_date: string
+          p_room_type_id: string
+          p_start_date: string
+        }
+        Returns: number
+      }
       copy_price_range: {
         Args: {
           p_days: number
@@ -809,6 +856,18 @@ export type Database = {
           p_target_start: string
         }
         Returns: undefined
+      }
+      create_reservation_with_pricing: {
+        Args: {
+          p_check_in: string
+          p_check_out: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_guest_count_adult: number
+          p_guest_count_child?: number
+          p_room_type_id: string
+        }
+        Returns: Json
       }
       get_villas_count: {
         Args: { search_term: string; status_filter: string }

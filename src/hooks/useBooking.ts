@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createBooking } from "@/lib/actions/booking";
+import { createBooking } from "@/features/admin/bookings/actions";
 import type { BookingFormData } from "@/lib/validations/booking.schema";
 
 export function useBooking(roomTypeId: string) {
@@ -17,7 +17,7 @@ export function useBooking(roomTypeId: string) {
     const result = await createBooking({ ...data, roomTypeId });
 
     if (!result.success) {
-      setError("Booking failed. Please try again.");
+      setError(typeof result.error === "string" ? result.error : "Booking failed. Please try again.");
     } else {
       router.push("/booking/success");
     }

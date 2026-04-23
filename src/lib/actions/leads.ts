@@ -22,7 +22,7 @@ export async function saveLead(data: LeadData) {
     check_in: data.checkIn.toISOString().split("T")[0],
     check_out: data.checkOut.toISOString().split("T")[0],
     total_price: data.totalPrice,
-    status: "new",
+    status: "New",
   });
 
   if (error) console.error("Failed to save lead:", error.message);

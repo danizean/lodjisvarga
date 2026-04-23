@@ -1,10 +1,10 @@
-import Link from "next/link";
 import Image from "next/image";
-import { getAdminVillasWithRooms } from "@/lib/queries/villas";
-import { Button } from "@/components/ui/button";
-import { Edit2, Plus, Building2, BedDouble, CalendarDays, ImageIcon } from "lucide-react";
-import { Container } from "@/components/shared/Container";
+import { BedDouble, Building2, CalendarDays, Edit2, ImageIcon, Plus } from "lucide-react";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { AdminEmptyState, AdminPageShell, AdminSection } from "@/components/admin/ui/AdminPageShell";
+import { AdminLinkButton } from "@/components/admin/ui/AdminLinkButton";
+import { Badge } from "@/components/ui/badge";
+import { getAdminVillasWithRooms } from "@/lib/queries/villas";
 
 export const dynamic = "force-dynamic";
 
@@ -32,130 +32,129 @@ interface AdminVilla {
 export default async function AdminVillasPage() {
   const villas = (await getAdminVillasWithRooms()) as AdminVilla[];
 
+  const activeVillas = villas.filter((villa) => {
+    const status = villa.status?.toLowerCase();
+    return status === "active" || status === "published";
+  }).length;
+
+  const totalRooms = villas.reduce((accumulator, villa) => {
+    const roomCount = (villa.room_types ?? []).filter((room) => room.status !== "inactive").length;
+    return accumulator + roomCount;
+  }, 0);
+
+  const totalPhotos = villas.reduce((accumulator, villa) => {
+    return accumulator + (villa.villa_gallery?.filter((item) => !item.room_type_id).length ?? 0);
+  }, 0);
+
   return (
-    <Container className="py-8 space-y-6 bg-[#F7F6F2] min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <div className="flex items-center gap-4">
-          <div className="bg-[#3A4A1F]/10 p-3 rounded-xl">
-            <Building2 className="w-6 h-6 text-[#3A4A1F]" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-[#1A1A1A] tracking-tight">Property Management</h1>
-            <p className="text-sm text-gray-500 mt-0.5">{villas.length} properti terdaftar</p>
-          </div>
+    <AdminPageShell
+      title="Villa Management"
+      description="Kelola properti, unit kamar, dan kesiapan inventori untuk tim reservasi."
+      actions={
+        <>
+          <AdminLinkButton href="/admin/calendar" variant="outline" size="sm">
+            <CalendarDays className="h-4 w-4" />
+            Calendar & Pricing
+          </AdminLinkButton>
+          <AdminLinkButton href="/admin/villas/new" variant="default" size="sm">
+            <Plus className="h-4 w-4" />
+            Tambah Properti
+          </AdminLinkButton>
+        </>
+      }
+    >
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="admin-surface p-4">
+          <p className="text-xs font-medium text-slate-500">Total Properti</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{villas.length}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/admin/calendar">
-            <Button variant="outline" className="rounded-xl border-[#3A4A1F]/30 font-bold text-[#3A4A1F]">
-              <CalendarDays className="w-4 h-4 mr-2" /> Kalender Harga
-            </Button>
-          </Link>
-          <Link href="/admin/villas/new">
-            <Button className="bg-[#3A4A1F] hover:bg-[#2A3A1F] text-white rounded-xl shadow-md font-bold transition-all">
-              <Plus className="w-4 h-4 mr-2" /> Tambah Properti
-            </Button>
-          </Link>
+        <div className="admin-surface p-4">
+          <p className="text-xs font-medium text-slate-500">Properti Aktif</p>
+          <p className="mt-1 text-2xl font-semibold text-emerald-700">{activeVillas}</p>
+        </div>
+        <div className="admin-surface p-4">
+          <p className="text-xs font-medium text-slate-500">Total Unit Aktif</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{totalRooms}</p>
         </div>
       </div>
 
-      {/* Grid Villas */}
-      {villas.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {villas.map((villa) => {
-            const primaryImage = villa.villa_gallery?.find((g) => g.is_primary && !g.room_type_id);
-            const activeRooms = villa.room_types?.filter((rt) => rt.status !== "inactive") ?? [];
-            const totalVillaPhotos = villa.villa_gallery?.filter((g) => !g.room_type_id).length ?? 0;
+      <AdminSection
+        title="Daftar Properti"
+        description="Format hybrid untuk scanning cepat dan action langsung"
+        action={<Badge variant="outline">{totalPhotos} foto</Badge>}
+      >
+        {villas.length === 0 ? (
+          <div className="px-5 py-4">
+            <AdminEmptyState
+              icon={<Building2 className="h-10 w-10" />}
+              title="Belum ada properti"
+              description="Mulai dengan menambahkan villa pertama agar tim bisa setup harga dan booking."
+              action={
+                <AdminLinkButton href="/admin/villas/new" variant="default" size="sm">
+                  Tambah Properti
+                </AdminLinkButton>
+              }
+            />
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {villas.map((villa) => {
+              const activeRooms = (villa.room_types ?? []).filter((room) => room.status !== "inactive");
+              const primaryImage = villa.villa_gallery?.find((item) => item.is_primary && !item.room_type_id);
+              const villaPhotoCount = villa.villa_gallery?.filter((item) => !item.room_type_id).length ?? 0;
 
-            return (
-              <div key={villa.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-1 transition-all group">
-                {/* Image */}
-                <div className="relative h-40 bg-slate-100 overflow-hidden">
-                  {primaryImage ? (
-                    <Image
-                      src={primaryImage.image_url}
-                      alt={villa.name}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Building2 className="w-12 h-12 text-slate-300" />
-                    </div>
-                  )}
-                  <div className="absolute top-3 left-3">
-                    <StatusBadge status={villa.status} variant="villa" />
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="p-5">
-                  <h3 className="font-bold text-slate-900 text-base leading-tight">{villa.name}</h3>
-                  <p className="text-xs text-slate-400 mt-1 line-clamp-1">📍 {villa.address || "Alamat belum diisi"}</p>
-
-                  <div className="mt-4 grid grid-cols-2 gap-2">
-                    <div className="rounded-2xl bg-slate-50 px-3 py-3">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Tipe Kamar</p>
-                      <p className="mt-1 text-lg font-black text-slate-900">{activeRooms.length}</p>
-                    </div>
-                    <div className="rounded-2xl bg-slate-50 px-3 py-3">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Foto Villa</p>
-                      <p className="mt-1 text-lg font-black text-slate-900">{totalVillaPhotos}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 space-y-2">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Inventori Aktif</p>
-                    {activeRooms.slice(0, 2).map((rt) => (
-                      <div key={rt.id} className="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2.5 text-xs">
-                        <span className="flex items-center gap-1 text-slate-600">
-                          <BedDouble className="w-3 h-3" /> {rt.name}
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 font-bold text-slate-500 ring-1 ring-slate-200">
-                          <ImageIcon className="h-3 w-3" />
-                          Kelola
-                        </span>
+              return (
+                <article key={villa.id} className="grid gap-4 px-5 py-4 lg:grid-cols-[180px_1fr_auto] lg:items-center">
+                  <div className="relative h-28 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                    {primaryImage ? (
+                      <Image
+                        src={primaryImage.image_url}
+                        alt={villa.name}
+                        fill
+                        sizes="180px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-slate-300">
+                        <ImageIcon className="h-8 w-8" />
                       </div>
-                    ))}
-                    {activeRooms.length > 2 && (
-                      <p className="text-[10px] text-slate-400">+{activeRooms.length - 2} tipe kamar lainnya</p>
-                    )}
-                    {activeRooms.length === 0 && (
-                      <p className="text-xs text-slate-400 italic">Belum ada kamar</p>
                     )}
                   </div>
 
-                  {/* Actions */}
-                  <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-2">
-                    <Link href={`/admin/villas/${villa.id}/edit`} className="flex-1">
-                      <Button variant="outline" className="w-full h-9 text-xs font-bold text-[#3A4A1F] border-[#3A4A1F]/30 hover:bg-[#3A4A1F] hover:text-white rounded-xl transition-all">
-                        <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Edit Properti
-                      </Button>
-                    </Link>
-                    <Link href="/admin/calendar" className="flex-1">
-                      <Button variant="outline" className="w-full h-9 text-xs font-bold text-emerald-700 border-emerald-200 hover:bg-emerald-50 rounded-xl transition-all">
-                        <CalendarDays className="w-3.5 h-3.5 mr-1.5" /> Kalender
-                      </Button>
-                    </Link>
+                  <div className="min-w-0 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="truncate text-base font-semibold text-slate-900">{villa.name}</h3>
+                      <StatusBadge status={villa.status} variant="villa" />
+                    </div>
+                    <p className="text-sm text-slate-500">{villa.address || "Alamat belum diisi"}</p>
+                    <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">
+                        <BedDouble className="h-3.5 w-3.5" />
+                        {activeRooms.length} tipe kamar aktif
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">
+                        <ImageIcon className="h-3.5 w-3.5" />
+                        {villaPhotoCount} foto villa
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-16 text-center">
-          <Building2 className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-slate-700">Belum ada properti</h3>
-          <p className="text-slate-400 mt-2 text-sm">Mulai dengan menambahkan villa pertama Anda.</p>
-          <Link href="/admin/villas/new">
-            <Button className="mt-6 bg-[#3A4A1F] hover:bg-[#2A3A1F] text-white rounded-xl font-bold">
-              <Plus className="w-4 h-4 mr-2" /> Tambah Properti Pertama
-            </Button>
-          </Link>
-        </div>
-      )}
-    </Container>
+
+                  <div className="flex gap-2 lg:flex-col lg:items-end">
+                    <AdminLinkButton href={`/admin/villas/${villa.id}/edit`} variant="outline" size="sm">
+                      <Edit2 className="h-3.5 w-3.5" />
+                      Edit
+                    </AdminLinkButton>
+                    <AdminLinkButton href="/admin/calendar" variant="outline" size="sm">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      Calendar
+                    </AdminLinkButton>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </AdminSection>
+    </AdminPageShell>
   );
 }

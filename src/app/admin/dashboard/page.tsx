@@ -1,199 +1,222 @@
-import { getDashboardStats, getAdminVillasWithRooms, getAdminPromos } from "@/lib/queries/villas";
-import { Building2, Users, Tag, TrendingUp, ArrowUpRight, Plus } from "lucide-react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  Building2,
+  CalendarDays,
+  Tag,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import {
+  AdminEmptyState,
+  AdminPageShell,
+  AdminSection,
+} from "@/components/admin/ui/AdminPageShell";
+import { AdminKpiCard } from "@/components/admin/ui/AdminKpiCard";
+import { AdminLinkButton } from "@/components/admin/ui/AdminLinkButton";
+import { getAdminDashboardOverview } from "@/features/admin/dashboard/queries";
 
 export const dynamic = "force-dynamic";
 
+function VillaStatusBadge({ status }: { status: string | null }) {
+  const value = status?.toLowerCase();
+
+  if (value === "active" || value === "published") {
+    return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Aktif</Badge>;
+  }
+
+  if (value === "maintenance") {
+    return <Badge className="bg-amber-50 text-amber-700 border-amber-200">Maintenance</Badge>;
+  }
+
+  return <Badge variant="outline">{status ?? "Inactive"}</Badge>;
+}
+
 export default async function DashboardOverviewPage() {
-  const [stats, villas, promos] = await Promise.all([
-    getDashboardStats(),
-    getAdminVillasWithRooms(),
-    getAdminPromos(),
-  ]);
+  const { stats, recentVillas, activePromos } = await getAdminDashboardOverview();
 
-  const recentVillas = villas.slice(0, 5);
-  const activePromos = promos.filter((p: any) => p.is_active);
-
-  const statCards = [
-    {
-      label: "Villa Aktif",
-      value: stats.activeVillas,
-      icon: Building2,
-      href: "/admin/villas",
-      accent: "text-emerald-600",
-      bg: "bg-emerald-50",
-    },
-    {
-      label: "Leads Pending",
-      value: stats.pendingLeads,
-      icon: Users,
-      href: "/admin/bookings",
-      accent: "text-blue-600",
-      bg: "bg-blue-50",
-    },
-    {
-      label: "Promo Aktif",
-      value: stats.activePromos,
-      icon: Tag,
-      href: "/admin/promos",
-      accent: "text-amber-600",
-      bg: "bg-amber-50",
-    },
-    {
-      label: "Total Properti",
-      value: villas.length,
-      icon: TrendingUp,
-      href: "/admin/villas",
-      accent: "text-violet-600",
-      bg: "bg-violet-50",
-    },
-  ] as const;
+  const alerts = [] as string[];
+  if (stats.pendingLeads > 0) {
+    alerts.push(`${stats.pendingLeads} lead belum ditindaklanjuti.`);
+  }
+  if (recentVillas.length === 0) {
+    alerts.push("Belum ada properti aktif untuk dijual.");
+  }
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
-
-      {/* ── Page header ── */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Ringkasan aktivitas properti Lodjisvarga.</p>
-        </div>
-        <Link href="/admin/blog/new">
-          <Button size="sm" className="bg-[#3A4A1F] hover:bg-[#2A3A10] text-white gap-1.5">
-            <Plus className="w-3.5 h-3.5" />
-            Tulis Artikel
-          </Button>
-        </Link>
+    <AdminPageShell
+      title="Dashboard"
+      description="Ringkasan operasional harian untuk tim reservasi dan pricing."
+      actions={
+        <>
+          <AdminLinkButton href="/admin/calendar" variant="outline" size="sm">
+            <CalendarDays className="h-4 w-4" />
+            Calendar & Pricing
+          </AdminLinkButton>
+          <AdminLinkButton href="/admin/villas/new" variant="default" size="sm">
+            Tambah Properti
+          </AdminLinkButton>
+        </>
+      }
+    >
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <AdminKpiCard
+          label="Villa Aktif"
+          value={stats.activeVillas}
+          icon={Building2}
+          href="/admin/villas"
+          tone="success"
+        />
+        <AdminKpiCard
+          label="Leads Pending"
+          value={stats.pendingLeads}
+          icon={Users}
+          href="/admin/bookings"
+          tone="warning"
+        />
+        <AdminKpiCard
+          label="Promo Aktif"
+          value={stats.activePromos}
+          icon={Tag}
+          href="/admin/promos"
+          tone="info"
+        />
+        <AdminKpiCard
+          label="Total Properti"
+          value={stats.totalVillas}
+          icon={TrendingUp}
+          href="/admin/villas"
+          tone="primary"
+        />
       </div>
 
-      {/* ── Stat cards ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <Link href={card.href} key={card.label} className="group">
-              <Card size="sm" className="hover:ring-gray-200 transition-all duration-200 cursor-pointer ring-gray-100">
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className={`w-8 h-8 rounded-lg ${card.bg} flex items-center justify-center flex-shrink-0`}>
-                      <Icon className={`w-4 h-4 ${card.accent}`} />
-                    </div>
-                    <ArrowUpRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 transition-colors" />
-                  </div>
-                  <p className="text-2xl font-bold text-gray-900 tabular-nums">{card.value}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{card.label}</p>
-                </CardContent>
-              </Card>
+      <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
+        <AdminSection
+          title="Alert Operasional"
+          description="Prioritas yang perlu ditindaklanjuti hari ini"
+          action={
+            <AdminLinkButton href="/admin/bookings" variant="ghost" size="sm">
+              Lihat Bookings
+            </AdminLinkButton>
+          }
+        >
+          <div className="space-y-2 px-5 py-4">
+            {alerts.length === 0 ? (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                Semua indikator utama aman. Tidak ada alert kritikal.
+              </div>
+            ) : (
+              alerts.map((alert) => (
+                <div
+                  key={alert}
+                  className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+                >
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{alert}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </AdminSection>
+
+        <AdminSection
+          title="Quick Insight"
+          description="Akses cepat ke area yang sering dibuka"
+        >
+          <div className="grid gap-2 px-5 py-4">
+            <Link href="/admin/calendar" className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-sm hover:bg-slate-50">
+              <span className="font-medium text-slate-700">Update harga akhir pekan</span>
+              <ArrowUpRight className="h-4 w-4 text-slate-400" />
             </Link>
-          );
-        })}
+            <Link href="/admin/bookings" className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-sm hover:bg-slate-50">
+              <span className="font-medium text-slate-700">Follow up lead baru</span>
+              <ArrowUpRight className="h-4 w-4 text-slate-400" />
+            </Link>
+            <Link href="/admin/villas" className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-sm hover:bg-slate-50">
+              <span className="font-medium text-slate-700">Review status properti</span>
+              <ArrowUpRight className="h-4 w-4 text-slate-400" />
+            </Link>
+          </div>
+        </AdminSection>
       </div>
 
-      {/* ── Content tables ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-        {/* Recent villas */}
-        <Card size="sm" className="ring-gray-100">
-          <CardHeader className="border-b border-gray-100">
-            <CardTitle>Properti Terbaru</CardTitle>
-            <div data-slot="card-action">
-              <Link href="/admin/villas" className="text-xs text-[#3A4A1F] font-medium hover:underline flex items-center gap-0.5">
-                Lihat semua <ArrowUpRight className="w-3 h-3" />
-              </Link>
+      <div className="grid gap-4 xl:grid-cols-2">
+        <AdminSection
+          title="Properti Terbaru"
+          description="5 properti terbaru yang masuk sistem"
+          action={
+            <AdminLinkButton href="/admin/villas" variant="ghost" size="sm">
+              Lihat semua
+            </AdminLinkButton>
+          }
+        >
+          {recentVillas.length === 0 ? (
+            <div className="px-5 py-4">
+              <AdminEmptyState
+                title="Belum ada properti"
+                description="Tambahkan properti baru agar bisa dijual di website."
+                action={
+                  <AdminLinkButton href="/admin/villas/new" variant="default" size="sm">
+                    Tambah Properti
+                  </AdminLinkButton>
+                }
+              />
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-gray-50">
-              {recentVillas.length === 0 && (
-                <p className="px-4 py-10 text-center text-sm text-gray-400">
-                  Belum ada properti.{" "}
-                  <Link href="/admin/villas/new" className="text-[#3A4A1F] font-medium hover:underline">
-                    Tambah →
-                  </Link>
-                </p>
-              )}
-              {recentVillas.map((villa: any) => (
-                <div key={villa.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{villa.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{villa.room_types?.length ?? 0} tipe kamar</p>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {recentVillas.map((villa) => (
+                <div key={villa.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="truncate text-sm font-medium text-slate-900">{villa.name}</p>
+                    <p className="text-xs text-slate-500">{villa.room_types?.length ?? 0} tipe kamar</p>
                   </div>
                   <VillaStatusBadge status={villa.status} />
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </AdminSection>
 
-        {/* Active promos */}
-        <Card size="sm" className="ring-gray-100">
-          <CardHeader className="border-b border-gray-100">
-            <CardTitle>Promo Aktif</CardTitle>
-            <div data-slot="card-action">
-              <Link href="/admin/promos" className="text-xs text-[#3A4A1F] font-medium hover:underline flex items-center gap-0.5">
-                Kelola <ArrowUpRight className="w-3 h-3" />
-              </Link>
+        <AdminSection
+          title="Promo Aktif"
+          description="Promo yang sedang berjalan saat ini"
+          action={
+            <AdminLinkButton href="/admin/promos" variant="ghost" size="sm">
+              Kelola promo
+            </AdminLinkButton>
+          }
+        >
+          {activePromos.length === 0 ? (
+            <div className="px-5 py-4">
+              <AdminEmptyState
+                title="Tidak ada promo aktif"
+                description="Buat promo baru untuk mendorong konversi booking."
+                action={
+                  <AdminLinkButton href="/admin/promos" variant="default" size="sm">
+                    Buat Promo
+                  </AdminLinkButton>
+                }
+              />
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-gray-50">
-              {activePromos.length === 0 && (
-                <p className="px-4 py-10 text-center text-sm text-gray-400">
-                  Tidak ada promo aktif.{" "}
-                  <Link href="/admin/promos" className="text-[#3A4A1F] font-medium hover:underline">
-                    Buat promo →
-                  </Link>
-                </p>
-              )}
-              {activePromos.slice(0, 5).map((promo: any) => (
-                <div key={promo.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{promo.title}</p>
-                    <p className="text-xs text-gray-400 font-mono mt-0.5">
-                      {promo.discount_code} · {promo.discount_value}% off
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {activePromos.map((promo) => (
+                <div key={promo.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="truncate text-sm font-medium text-slate-900">{promo.title}</p>
+                    <p className="text-xs text-slate-500">
+                      {promo.discount_code} - {promo.discount_value}%
                     </p>
                   </div>
-                  <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 flex-shrink-0 gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Aktif
-                  </Badge>
+                  <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Aktif</Badge>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-
+          )}
+        </AdminSection>
       </div>
-    </div>
-  );
-}
-
-// ─── Status Badge ──────────────────────────────────────────────────────────────
-
-function VillaStatusBadge({ status }: { status: string | null }) {
-  const s = status?.toLowerCase();
-
-  if (s === "active" || s === "published") {
-    return (
-      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 flex-shrink-0">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-        Aktif
-      </Badge>
-    );
-  }
-  if (s === "coming_soon") {
-    return (
-      <Badge variant="outline" className="text-amber-700 border-amber-200 bg-amber-50 flex-shrink-0">
-        Coming Soon
-      </Badge>
-    );
-  }
-  return (
-    <Badge variant="outline" className="text-gray-500 flex-shrink-0">
-      {status ?? "Inactive"}
-    </Badge>
+    </AdminPageShell>
   );
 }
