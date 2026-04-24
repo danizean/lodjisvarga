@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createAnonClient } from "@supabase/supabase-js";
+import { createStaticClient } from "@/lib/supabase/static";
 import {
   attachPublicPricing,
   getJakartaDateKey as getPublicJakartaDateKey,
   getPublicPricingSnapshot,
 } from "@/lib/queries/public-pricing";
-import { ChevronLeft, Clock3, MapPin, Plane, TrainFront, Users, Wifi, CarFront } from "lucide-react";
+import { ChevronLeft, Clock3, MapPin, Plane, TrainFront, Users, Wifi, CarFront, Ban, MessageCircle } from "lucide-react";
 import { VillaDetailHero } from "@/components/villa/VillaDetailHero";
 import { VillaBookingCard, VillaMobileBookingBar } from "@/components/villa/VillaBookingCard";
 import { VillaKeyInfoGrid } from "@/components/villa/VillaKeyInfoGrid";
@@ -39,11 +40,12 @@ type NearbySpot = {
   icon: typeof MapPin;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400;
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createStaticClient();
   const { data: villa } = await supabase
     .from("villas")
     .select("name, description, address")
@@ -59,10 +61,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export async function generateStaticParams() {
-  const supabase = createAnonClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = createStaticClient();
   const { data } = await supabase.from("villas").select("slug").eq("status", "active");
   return (data ?? []).map((villa) => ({ slug: villa.slug }));
 }
@@ -73,98 +72,118 @@ const formatIDR = (price: number) =>
 const getJakartaDateKey = getPublicJakartaDateKey;
 
 const DEFAULT_POPULAR_FACILITIES = [
-  "Kolam renang outdoor",
+  "AC",
   "WiFi gratis",
-  "Parkir gratis",
-  "Kamar bebas rokok",
+  "Kolam renang outdoor",
+  "Parkir privat gratis",
+  "Kamar mandi dalam",
+  "Water heater",
   "Layanan kamar",
   "Dapur kecil",
-  "Kamar mandi pribadi",
-  "AC",
 ];
 
 const TRAVELER_FAQS: TravelerFaq[] = [
   {
-    question: "Apakah properti menyediakan sarapan?",
+    question: "Apakah tersedia sarapan?",
     answer:
-      "Pilihan sarapan dapat disesuaikan dengan operasional properti. Hubungi tim reservasi untuk detail menu dan ketersediaannya pada tanggal menginap Anda.",
+      "Tersedia pilihan paket sarapan. Konfirmasi menu dan waktu saji bisa dilakukan langsung via WhatsApp setelah reservasi.",
   },
   {
-    question: "Apakah tersedia parkir di area villa?",
+    question: "Bagaimana akses parkir?",
     answer:
-      "Ya, tersedia area parkir privat di properti. Informasi kapasitas parkir dan akses kendaraan dapat dikonfirmasi saat reservasi.",
+      "Tersedia area parkir privat di dalam properti — aman, tertutup, dan bebas biaya untuk tamu menginap.",
   },
   {
-    question: "Bagaimana kebijakan WiFi di properti?",
+    question: "Apakah WiFi kencang?",
     answer:
-      "Akses WiFi tersedia untuk mendukung kebutuhan staycation maupun work-from-anywhere selama menginap.",
+      "Ya. WiFi berkecepatan tinggi tersedia di seluruh area properti — cocok untuk kerja remote maupun streaming.",
   },
   {
-    question: "Kapan waktu check-in dan check-out?",
+    question: "Check-in dan check-out jam berapa?",
     answer:
-      "Check-in dimulai pukul 14.00 WIB. Detail check-out akan dikonfirmasi saat booking agar alur kedatangan dan kepulangan tetap nyaman.",
+      "Check-in mulai pukul 14.00 WIB. Check-out pukul 12.00 WIB. Keduanya fleksibel — hubungi kami jika butuh penyesuaian.",
+  },
+  {
+    question: "Bisakah minta early check-in atau late check-out?",
+    answer:
+      "Bisa, dengan konfirmasi terlebih dahulu. Early check-in dan late check-out tersedia sesuai ketersediaan kamar.",
   },
 ];
 
 const STAY_RULES: StayRule[] = [
   {
-    title: "Check-in fleksibel",
-    detail: "Standar check-in mulai pukul 14.00 WIB. Kedatangan di luar jam normal bisa dikonfirmasi terlebih dahulu.",
+    title: "Check-in mulai 14.00 WIB",
+    detail: "Kedatangan lebih awal atau lebih malam? Konfirmasi terlebih dahulu dan kami akan usahakan yang terbaik.",
     icon: Clock3,
   },
   {
-    title: "Tanpa pesta",
-    detail: "Properti dirancang untuk suasana menginap yang tenang. Pesta atau acara besar perlu persetujuan khusus.",
-    icon: Clock3,
+    title: "Properti bebas pesta",
+    detail: "Dirancang untuk suasana menginap yang nyaman dan privat. Acara besar di luar skala keluarga perlu persetujuan khusus.",
+    icon: Ban,
   },
   {
-    title: "Reservasi by unit",
-    detail: "Pilih tipe kamar yang paling sesuai lalu kirim permintaan reservasi untuk cek ketersediaan.",
+    title: "Reservasi per unit",
+    detail: "Pilih tipe kamar sesuai kebutuhan, lalu kirim permintaan reservasi untuk cek ketersediaan tanggal Anda.",
     icon: Users,
   },
   {
-    title: "Konfirmasi cepat",
-    detail: "Tim reservasi akan membantu kebutuhan tanggal inap, kapasitas, dan catatan tambahan melalui WhatsApp.",
-    icon: Clock3,
+    title: "Respons cepat via WhatsApp",
+    detail: "Tim kami aktif dan siap membantu — dari konfirmasi tanggal, permintaan khusus, hingga info tambahan.",
+    icon: MessageCircle,
   },
 ];
 
 const NEARBY_SPOTS: NearbySpot[] = [
-  { label: "Restoran lokal sekitar properti", distance: "150 - 300 m", icon: MapPin },
-  { label: "Stasiun Tugu Yogyakarta", distance: "9 - 10 km", icon: TrainFront },
-  { label: "Malioboro dan pusat kota", distance: "11 km", icon: MapPin },
-  { label: "Bandara Adisutjipto", distance: "16 km", icon: Plane },
+  { label: "Restoran & kafe lokal", distance: "150 – 300 m", icon: MapPin },
+  { label: "Stasiun Tugu Yogyakarta", distance: "9 – 10 km", icon: TrainFront },
+  { label: "Malioboro & pusat kota", distance: "± 11 km", icon: MapPin },
+  { label: "Bandara YIA / Adisutjipto", distance: "16 – 40 km", icon: Plane },
 ];
 
 function buildOverview(villaName: string, address: string | null, description: string | null) {
   if (description?.trim()) return description.trim();
 
-  return `${villaName} menghadirkan pengalaman menginap yang tenang di ${address ?? "Yogyakarta"} dengan suasana privat, area bersama yang nyaman, dan akses yang tetap praktis ke pusat kota maupun destinasi sekitar.`;
+  return `${villaName} adalah pilihan menginap privat di ${address ?? "Yogyakarta"} — tenang, nyaman, dan dekat dengan pusat kota. Cocok untuk staycation keluarga, pasangan, maupun perjalanan kerja. Nikmati fasilitas lengkap dalam suasana yang jauh dari keramaian.`;
 }
+
+const getCachedVillaDetail = unstable_cache(
+  async (slug: string) => {
+    // ✅ Uses createStaticClient — no cookies(), safe for unstable_cache
+    const supabase = createStaticClient();
+    const { data: villa, error } = await supabase
+      .from("villas")
+      .select(`
+        id, name, slug, description, address, gmaps_url, whatsapp_number, status,
+        villa_gallery:gallery!gallery_villa_id_fkey (image_url, is_primary, display_order, room_type_id),
+        room_types (
+          id, name, status, base_price, description, bed_type, highlight_amenity_ids,
+          room_gallery:gallery!gallery_room_type_id_fkey (image_url, is_primary, display_order),
+          room_type_amenities (amenities(id, name, icon_name))
+        ),
+        villa_amenities (
+          amenities (id, name, icon_name)
+        )
+      `)
+      .eq("slug", slug)
+      .single();
+      
+    if (error || !villa) return null;
+    return villa;
+  },
+  ['villa-detail'],
+  {
+    tags: ['villas'],
+    revalidate: 86400 
+  }
+);
 
 export default async function VillaDetailPage({ params }: PageProps) {
   const { slug } = await params;
+  const villa = await getCachedVillaDetail(slug);
+
+  if (!villa) notFound();
+
   const supabase = await createClient();
-
-  // 1. UPDATE QUERY: Mengambil bed_type, highlight_amenity_ids, dan relasi amenities
-  const { data: villa, error } = await supabase
-    .from("villas")
-    .select(`
-      id, name, slug, description, address, gmaps_url, whatsapp_number, status,
-      villa_gallery:gallery!gallery_villa_id_fkey (image_url, is_primary, display_order, room_type_id),
-      room_types (
-        id, name, status, base_price, description, bed_type, highlight_amenity_ids,
-        room_gallery:gallery!gallery_room_type_id_fkey (image_url, is_primary, display_order),
-        room_type_amenities (amenities(id, name, icon_name))
-      ),
-      villa_amenities (
-        amenities (id, name, icon_name)
-      )
-    `)
-    .eq("slug", slug)
-    .single();
-
-  if (error || !villa) notFound();
 
   const isComingSoon = villa.status === "coming_soon";
   const activeRoomTypes = villa.room_types.filter((roomType) => roomType.status !== "inactive");
@@ -183,7 +202,8 @@ export default async function VillaDetailPage({ params }: PageProps) {
   const roomTypesWithPricing = attachPublicPricing(activeRoomTypes, pricingSnapshot.priceMap);
   const roomTypeOptions = roomTypesWithPricing.map((roomType) => roomType.name);
 
-  const villaPhotos = [...(villa.villa_gallery ?? [])]
+  // ── Gallery ──────────────────────────────────────────────────────────────────
+  const villaPhotos = (villa.villa_gallery ?? [])
     .filter((photo) => !photo.room_type_id)
     .sort((left, right) => {
       if (left.is_primary && !right.is_primary) return -1;
@@ -221,12 +241,10 @@ export default async function VillaDetailPage({ params }: PageProps) {
     .filter((name): name is string => Boolean(name));
   const allFacilities = Array.from(new Set([...amenityNames, ...DEFAULT_POPULAR_FACILITIES]));
   
-  // Mengubah ringkasan kapasitas menjadi jumlah kamar
   const guestSummary = `${roomTypesWithPricing.length} tipe kamar`;
 
-  // 2. MAPPING UNIT CARDS: Aman dari Tipe, Mendukung Highlight Amenities, dan Mengirim Objek Penuh
+  // ── Unit Cards ───────────────────────────────────────────────────────────────
   const unitCards = roomTypesWithPricing.map((roomType) => {
-    // Ekstrak daftar fasilitas yang ada di unit kamar ini
     const allAmenities = (roomType.room_type_amenities || [])
       .map((rta) => rta.amenities)
       .filter((a): a is NonNullable<typeof a> => a !== null && a !== undefined)
@@ -236,14 +254,12 @@ export default async function VillaDetailPage({ params }: PageProps) {
         icon_name: a.icon_name,
       }));
 
-    // Filter maksimal 3 fasilitas sorotan sesuai pilihan admin di CMS
     const highlightIds: string[] = (roomType as any).highlight_amenity_ids || [];
     const highlightAmenities = highlightIds
       .map((id) => allAmenities.find((a) => a.id === id))
       .filter((a): a is NonNullable<typeof a> => a !== undefined)
       .slice(0, 3);
 
-    // Kembalikan struktur RoomTypeCardData penuh yang dinantikan oleh komponen kartu
     return {
       id: roomType.id,
       name: roomType.name,
@@ -256,7 +272,6 @@ export default async function VillaDetailPage({ params }: PageProps) {
       gallery: roomType.room_gallery || [],
       amenities: allAmenities,
       highlight_amenities: highlightAmenities,
-      // Konteks villa parent yang krusial untuk tombol WhatsApp
       villaName: villa.name,
       villaSlug: villa.slug,
       villaStatus: villa.status,
@@ -264,7 +279,7 @@ export default async function VillaDetailPage({ params }: PageProps) {
     };
   });
 
-  // 3. PERHITUNGAN HARGA: Lebih Cepat Tanpa `getRoomOffer`
+  // ── Pricing ──────────────────────────────────────────────────────────────────
   const validPricedRooms = roomTypesWithPricing.filter(
     (rt) => (rt.effective_price ?? 0) > 0
   );
@@ -290,75 +305,191 @@ export default async function VillaDetailPage({ params }: PageProps) {
     { label: "Kamar", value: `${roomTypesWithPricing.length} tipe kamar aktif`, icon: Users },
   ];
 
+  // ── JSON-LD ──────────────────────────────────────────────────────────────────
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LodgingBusiness",
+    "name": villa.name,
+    "description": overviewText,
+    "url": `https://lodjisvarga.com/villas/${villa.slug}`,
+    "telephone": villa.whatsapp_number,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": villa.address,
+      "addressLocality": "Yogyakarta",
+      "addressCountry": "ID"
+    },
+    "image": allGalleryItems.map(item => item.url),
+    "priceRange": startingPriceText,
+    "amenityFeature": allFacilities.map(facility => ({
+      "@type": "LocationFeatureSpecification",
+      "name": facility,
+      "value": true
+    }))
+  };
+
   return (
-    <div className="bg-[#FAF8F4] pb-24 lg:pb-16">
-      <div className="mx-auto max-w-7xl px-4 pb-5 pt-24 sm:px-6 sm:pt-28 lg:px-8">
-        <Link
-          href="/#featured-villas"
-          className="relative z-30 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Kembali
-        </Link>
 
-        <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-          <div className="space-y-6">
-            <VillaDetailHero
-              name={villa.name}
-              address={villa.address}
-              summary={heroSummary}
-              heroPhoto={heroPhoto}
-              galleryPreview={allGalleryItems}
-              isComingSoon={isComingSoon}
-              startingPriceText={startingPriceText}
-              guestSummary={guestSummary}
-              totalPhotos={allGalleryItems.length}
-            />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-            <VillaKeyInfoGrid items={keyInfoItems} />
+      {/* ── 1. EMOTIONAL ENTRY: Full-width immersive hero ── */}
+      <div className="relative">
+        <VillaDetailHero
+          name={villa.name}
+          address={villa.address}
+          summary={heroSummary}
+          heroPhoto={heroPhoto}
+          galleryPreview={allGalleryItems}
+          isComingSoon={isComingSoon}
+          startingPriceText={startingPriceText}
+          guestSummary={guestSummary}
+          totalPhotos={allGalleryItems.length}
+        />
 
-            <VillaGallery items={allGalleryItems} />
+        {/* Back link — floated over the hero */}
+        <div className="absolute left-4 top-20 z-30 sm:left-6 lg:left-8">
+          <Link
+            href="/#featured-villas"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/30 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-black/50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Kembali
+          </Link>
+        </div>
+      </div>
 
-            <VillaFacilitiesGrid facilities={allFacilities} />
+      {/* ── Anchor navigation strip — mobile quick-jump ── */}
+      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md lg:hidden">
+        <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2.5 sm:px-6">
+          {[
+            { href: "#units", label: "Pilih Kamar" },
+            { href: "#gallery", label: "Galeri" },
+            { href: "#facilities", label: "Fasilitas" },
+            { href: "#info", label: "Info" },
+          ].map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="flex-shrink-0 rounded-full border border-slate-200 px-4 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-[#3A4A1F] hover:text-[#3A4A1F]"
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
 
-            {unitCards.length > 0 && (
-              <section id="units" className="space-y-4">
-                <div className="px-1">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#3A4A1F]/70">Unit Selection</p>
-                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">Pilih unit yang paling sesuai</h2>
-                  <p className="mt-2 max-w-2xl text-sm text-slate-500">
-                    Unit ditampilkan ringkas dengan fokus pada foto, tipe kasur, fasilitas utama, dan harga mulai.
-                  </p>
-                </div>
+      {/* ── Main content area ── */}
+      <div className="bg-[#FAF8F4] pb-28 lg:pb-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-                <div className="space-y-4">
-                  {/* 4. RENDER UI: Mengirim 1 objek `room` utuh, bukan memecah-mecah props */}
-                  {unitCards.map((unit) => (
-                    <VillaUnitCard key={unit.id} room={unit} />
-                  ))}
-                </div>
+          {/* ── 2-column layout: content | sticky sidebar ── */}
+          <div className="pt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:gap-10 xl:grid-cols-[minmax(0,1fr)_400px]">
+
+            {/* ── LEFT: Main content column ── */}
+            <div className="space-y-6">
+
+              {/* ─────────────────────────────────────────────────────────────
+                  BLOCK 1 — UNIT SELECTION (primary conversion block)
+                  Moved to top: guests arrive to answer "what can I book?"
+                  ───────────────────────────────────────────────────────────── */}
+              {unitCards.length > 0 && (
+                <section
+                  id="units"
+                  aria-labelledby="units-heading"
+                  className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+                >
+                  <div className="mb-6">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#3A4A1F]/70">
+                      Pilih Kamar Anda
+                    </p>
+                    <h2
+                      id="units-heading"
+                      className="mt-2 text-2xl font-black tracking-tight text-slate-950"
+                    >
+                      {unitCards.length === 1
+                        ? "1 unit eksklusif tersedia"
+                        : `${unitCards.length} pilihan unit — cari yang paling cocok`}
+                    </h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                      Bandingkan tipe kamar, fasilitas, dan harga. Booking langsung via WhatsApp.
+                    </p>
+                  </div>
+
+                  <div className="space-y-5">
+                    {unitCards.map((unit) => (
+                      <VillaUnitCard key={unit.id} room={unit} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────────
+                  BLOCK 2 — KEY INFO (quick facts that validate the choice)
+                  After rooms: user now wants to confirm their mental model.
+                  ───────────────────────────────────────────────────────────── */}
+              <VillaKeyInfoGrid items={keyInfoItems} />
+
+              {/* ─────────────────────────────────────────────────────────────
+                  BLOCK 3 — GALLERY (visual evidence)
+                  After units: user wants to see the spaces they are choosing.
+                  ───────────────────────────────────────────────────────────── */}
+              {allGalleryItems.length > 0 && (
+                <section id="gallery">
+                  <VillaGallery items={allGalleryItems} />
+                </section>
+              )}
+
+              {/* ─────────────────────────────────────────────────────────────
+                  BLOCK 4 — DESCRIPTION (supporting context, kept secondary)
+                  Short paragraph-split copy — adds character, not friction.
+                  ───────────────────────────────────────────────────────────── */}
+              <VillaDescriptionBlock text={overviewText} />
+
+              {/* ─────────────────────────────────────────────────────────────
+                  BLOCK 5 — FACILITIES (trust layer)
+                  User is already interested — facilities confirm the decision.
+                  ───────────────────────────────────────────────────────────── */}
+              <section id="facilities">
+                <VillaFacilitiesGrid facilities={allFacilities} />
               </section>
-            )}
 
-            <VillaDescriptionBlock text={overviewText} />
+              {/* ─────────────────────────────────────────────────────────────
+                  BLOCK 6 — SUPPORTING INFO (rules, FAQ, nearby)
+                  Last — only the most engaged guests will read this far.
+                  ───────────────────────────────────────────────────────────── */}
+              <section id="info">
+                <VillaSupportingAccordion
+                  faqs={TRAVELER_FAQS}
+                  rules={STAY_RULES}
+                  nearby={NEARBY_SPOTS}
+                />
+              </section>
+            </div>
 
-            <VillaSupportingAccordion faqs={TRAVELER_FAQS} rules={STAY_RULES} nearby={NEARBY_SPOTS} />
-          </div>
-
-          <div className="lg:sticky lg:top-24">
-            <VillaBookingCard
-              villaName={villa.name}
-              whatsappNumber={villa.whatsapp_number}
-              roomTypeOptions={roomTypeOptions}
-              startingPriceText={startingPriceText}
-              guestSummary={guestSummary}
-              roomCount={roomTypesWithPricing.length}
-              isComingSoon={isComingSoon}
-            />
+            {/* ── RIGHT: Sticky booking sidebar (desktop only) ── */}
+            <aside
+              className="hidden lg:block lg:sticky lg:top-8"
+              aria-label="Booking sidebar"
+            >
+              <VillaBookingCard
+                villaName={villa.name}
+                whatsappNumber={villa.whatsapp_number}
+                roomTypeOptions={roomTypeOptions}
+                startingPriceText={startingPriceText}
+                guestSummary={guestSummary}
+                roomCount={roomTypesWithPricing.length}
+                isComingSoon={isComingSoon}
+              />
+            </aside>
           </div>
         </div>
       </div>
 
+      {/* ── Mobile sticky bottom bar (hidden on desktop) ── */}
       <VillaMobileBookingBar
         villaName={villa.name}
         whatsappNumber={villa.whatsapp_number}
@@ -366,6 +497,6 @@ export default async function VillaDetailPage({ params }: PageProps) {
         startingPriceText={startingPriceText}
         isComingSoon={isComingSoon}
       />
-    </div>
+    </>
   );
 }

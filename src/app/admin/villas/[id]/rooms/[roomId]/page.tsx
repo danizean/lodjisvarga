@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
-import { updateRoomType, saveRoomAmenities, saveRoomGallery } from "@/lib/actions/villas";
+import { updateRoomType, saveRoomAmenities, saveRoomGallery } from "@/lib/actions/rooms";
 import { roomTypeSchema, type RoomTypeFormData } from "@/lib/validations/villa-tabs";
 import { AmenitiesSelect } from "@/components/admin/AmenitiesSelect";
 import { GalleryUploader, type GalleryItem } from "@/components/admin/GalleryUploader";

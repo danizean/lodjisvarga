@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { BedDouble, Plus, Loader2, Users, AlertTriangle, Waves } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { addRoomTypeToVilla, deleteRoomType } from "@/lib/actions/villas";
+import { addRoomTypeToVilla, deleteRoomType } from "@/lib/actions/rooms";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

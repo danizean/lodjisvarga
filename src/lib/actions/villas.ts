@@ -5,109 +5,15 @@ import { createClient } from "@/lib/supabase/server";
 import { villaFullSchema } from "@/lib/validations/villa-full";
 import type { Json, Tables, TablesInsert, TablesUpdate } from "@/types/database";
 
-type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 type VillaRow = Tables<"villas">;
-type RoomTypeInsert = TablesInsert<"room_types">;
-type RoomTypeUpdate = TablesUpdate<"room_types">;
 type GalleryInsert = TablesInsert<"gallery">;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-async function getAuthenticatedAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-  if (error || !user) return { supabase, user: null, isAdmin: false };
-
-  const { data: isAdminResult, error: isAdminError } = await supabase.rpc("is_admin");
-  if (!isAdminError && isAdminResult === true) {
-    return { supabase, user, isAdmin: true };
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  const role = profile?.role?.toLowerCase();
-  return { supabase, user, isAdmin: role === "admin" || role === "superadmin" };
-}
-
-async function logAudit(
-  supabase: SupabaseServerClient,
-  action: string,
-  tableName: string,
-  recordId: string,
-  oldValues: Json | null,
-  newValues: Json | null,
-  userId: string
-) {
-  const payload: TablesInsert<"audit_logs"> = {
-    action,
-    table_name: tableName,
-    record_id: recordId,
-    old_values: oldValues,
-    new_values: newValues,
-    user_id: userId,
-  };
-
-  await supabase.from("audit_logs").insert(payload);
-}
-
-function revalidateVillaPaths(params: {
-  currentSlug?: string | null;
-  previousSlug?: string | null;
-  includeAdminEditId?: string | null;
-}) {
-  revalidatePath("/");
-  revalidatePath("/admin/villas");
-  revalidatePath("/admin/dashboard");
-  revalidatePath("/admin/calendar");
-
-  if (params.includeAdminEditId) {
-    revalidatePath(`/admin/villas/${params.includeAdminEditId}/edit`);
-  }
-
-  if (params.currentSlug) {
-    revalidatePath(`/villas/${params.currentSlug}`);
-  }
-
-  if (params.previousSlug && params.previousSlug !== params.currentSlug) {
-    revalidatePath(`/villas/${params.previousSlug}`);
-  }
-}
-
-function normalizeGalleryItems(
-  items: Array<{
-    image_url: string;
-    is_primary?: boolean | null;
-    display_order?: number | null;
-  }>
-) {
-  const seen = new Set<string>();
-  const deduped = items
-    .filter((item) => {
-      const imageUrl = item.image_url?.trim();
-      if (!imageUrl || seen.has(imageUrl)) return false;
-      seen.add(imageUrl);
-      return true;
-    })
-    .sort((left, right) => (left.display_order ?? 0) - (right.display_order ?? 0))
-    .map((item, index) => ({
-      image_url: item.image_url.trim(),
-      is_primary: Boolean(item.is_primary),
-      display_order: index,
-    }));
-
-  if (deduped.length > 0 && !deduped.some((item) => item.is_primary)) {
-    deduped[0].is_primary = true;
-  }
-
-  return deduped;
-}
+import { 
+  getAuthenticatedAdmin, 
+  logAudit, 
+  revalidateVillaPaths, 
+  normalizeGalleryItems 
+} from "@/lib/utils/admin";
 
 // ─── 1. SAVE / UPDATE FULL VILLA (Upsert) ────────────────────────────────────
 /**
@@ -335,69 +241,7 @@ export async function checkSlugAvailability(slug: string, currentVillaId?: strin
   return { available: !data };
 }
 
-// ─── 4. INDIVIDUAL ROOM TYPE ACTIONS ─────────────────────────────────────────
-export async function addRoomTypeToVilla(data: {
-  villa_id: string;
-  name: string;
-  base_price: number;
-  capacity_adult: number;
-  capacity_child: number;
-  description?: string;
-}) {
-  const { supabase, user, isAdmin } = await getAuthenticatedAdmin();
-  if (!user) return { error: "Unauthorized: Please log in." };
-  if (!isAdmin) return { error: "Forbidden: Admin access required." };
 
-  const payload: RoomTypeInsert = {
-    ...data,
-    description: data.description ?? null,
-  };
-
-  const { data: newRoom, error } = await supabase
-    .from("room_types")
-    .insert(payload)
-    .select()
-    .single();
-
-  if (error) return { error: error.message };
-  await logAudit(supabase, "CREATE", "room_types", newRoom.id, null, newRoom, user.id);
-  revalidatePath("/admin/villas");
-  return { success: true, data: newRoom };
-}
-
-export async function updateRoomType(id: string, data: Partial<{ name: string; base_price: number; capacity_adult: number; capacity_child: number; description: string }>) {
-  const { supabase, user, isAdmin } = await getAuthenticatedAdmin();
-  if (!user) return { error: "Unauthorized: Please log in." };
-  if (!isAdmin) return { error: "Forbidden: Admin access required." };
-
-  const payload: RoomTypeUpdate = {
-    ...data,
-    description: data.description ?? undefined,
-  };
-
-  const { data: old } = await supabase.from("room_types").select("*").eq("id", id).single();
-  const { error } = await supabase.from("room_types").update(payload).eq("id", id);
-  if (error) return { error: error.message };
-
-  await logAudit(supabase, "UPDATE", "room_types", id, old, payload, user.id);
-  revalidatePath("/admin/villas");
-  return { success: true };
-}
-
-export async function deleteRoomType(id: string) {
-  const { supabase, user, isAdmin } = await getAuthenticatedAdmin();
-  if (!user) return { error: "Unauthorized: Please log in." };
-  if (!isAdmin) return { error: "Forbidden: Admin access required." };
-
-  // Soft delete — preserve reservation history
-  const { data: old } = await supabase.from("room_types").select("*").eq("id", id).single();
-  const { error } = await supabase.from("room_types").update({ status: "inactive" }).eq("id", id);
-  if (error) return { error: error.message };
-
-  await logAudit(supabase, "SOFT_DELETE", "room_types", id, old, { status: "inactive" }, user.id);
-  revalidatePath("/admin/villas");
-  return { success: true };
-}
 
 // ─── 5. UPDATE VILLA STATUS (quick toggle) ───────────────────────────────────
 export async function updateVillaStatus(id: string, status: "active" | "coming_soon" | "inactive") {
@@ -466,4 +310,164 @@ export async function saveVillaDetails(data: any) {
     console.error("Save villa details error:", error);
     return { success: false, error: error.message };
   }
+}
+
+// ─── 6. SAVE VILLA AMENITIES (standalone sync) ────────────────────────────────
+/**
+ * Syncs villa-level amenities for a given villa via delete-then-insert.
+ *
+ * Why delete-then-insert (not upsert):
+ *   The junction table villa_amenities has no natural unique key to upsert on
+ *   beyond (villa_id, amenity_id). A full replace is safer and simpler.
+ *
+ * Called from: admin/villas/[id]/amenities/page.tsx
+ *
+ * @param villaId   - UUID of the villa to update
+ * @param amenityIds - Full list of amenity UUIDs that should be active
+ */
+export async function saveVillaAmenities(
+  villaId: string,
+  amenityIds: string[]
+): Promise<{ success: true } | { error: string }> {
+  const { supabase, user, isAdmin } = await getAuthenticatedAdmin();
+  if (!user) return { error: "Unauthorized: Please log in." };
+  if (!isAdmin) return { error: "Forbidden: Admin access required." };
+
+  if (!villaId) return { error: "Villa ID is required." };
+
+  // ── 1. Delete all current amenities for this villa ──
+  const { error: deleteError } = await supabase
+    .from("villa_amenities")
+    .delete()
+    .eq("villa_id", villaId);
+
+  if (deleteError) {
+    console.error("saveVillaAmenities — delete error:", deleteError.message);
+    return { error: `Gagal menghapus fasilitas lama: ${deleteError.message}` };
+  }
+
+  // ── 2. Insert the new selection (skip if empty — deletion above already cleared) ──
+  if (amenityIds.length > 0) {
+    const payload: TablesInsert<"villa_amenities">[] = amenityIds.map((amenityId) => ({
+      villa_id: villaId,
+      amenity_id: amenityId,
+    }));
+
+    const { error: insertError } = await supabase
+      .from("villa_amenities")
+      .insert(payload);
+
+    if (insertError) {
+      console.error("saveVillaAmenities — insert error:", insertError.message);
+      return { error: `Gagal menyimpan fasilitas baru: ${insertError.message}` };
+    }
+  }
+
+  // ── 3. Revalidate public pages so the facilities grid reflects the change ──
+  const { data: villa } = await supabase
+    .from("villas")
+    .select("slug")
+    .eq("id", villaId)
+    .single();
+
+  revalidateVillaPaths({
+    currentSlug: villa?.slug,
+    includeAdminEditId: villaId,
+  });
+
+  return { success: true };
+}
+
+// ─── 7. SAVE VILLA GALLERY (standalone sync) ─────────────────────────────────
+/**
+ * Syncs the villa-level photo gallery via scoped delete-then-insert.
+ *
+ * Key constraint — the gallery table stores BOTH villa photos and room photos
+ * in the same table, distinguished by room_type_id:
+ *
+ *   villa photo  → villa_id = X, room_type_id = NULL
+ *   room photo   → villa_id = X, room_type_id = Y
+ *
+ * The delete MUST filter `.is("room_type_id", null)` to guarantee that
+ * room-level gallery rows are NEVER touched by this action.
+ *
+ * Called from: admin/villas/[id]/media/page.tsx (auto-saves on every change)
+ *
+ * @param villaId - UUID of the villa to update
+ * @param items   - Full ordered list of gallery items to persist
+ */
+
+// Inline type — mirrors GalleryUploader's GalleryItem without importing from
+// a "use client" module (cross-boundary imports break the server action boundary).
+type VillaGalleryItem = {
+  id?: string;
+  image_url: string;
+  is_primary: boolean;
+  display_order: number;
+};
+
+export async function saveVillaGallery(
+  villaId: string,
+  items: VillaGalleryItem[]
+): Promise<{ success: true } | { error: string }> {
+  const { supabase, user, isAdmin } = await getAuthenticatedAdmin();
+  if (!user) return { error: "Unauthorized: Please log in." };
+  if (!isAdmin) return { error: "Forbidden: Admin access required." };
+
+  if (!villaId) return { error: "Villa ID is required." };
+
+  // ── Validate: ensure at most one primary is set ──────────────────────────────
+  // The GalleryUploader enforces this on the client, but we guard server-side too.
+  const primaryItems = items.filter((item) => item.is_primary);
+  if (primaryItems.length > 1) {
+    return { error: "Hanya boleh ada satu foto utama." };
+  }
+
+  // ── 1. Delete only villa-level rows (room_type_id IS NULL) ──────────────────
+  const { error: deleteError } = await supabase
+    .from("gallery")
+    .delete()
+    .eq("villa_id", villaId)
+    .is("room_type_id", null); // ← critical scope guard
+
+  if (deleteError) {
+    console.error("saveVillaGallery — delete error:", deleteError.message);
+    return { error: `Gagal menghapus galeri lama: ${deleteError.message}` };
+  }
+
+  // ── 2. Insert the new gallery items (skip if empty — clearing is valid) ──────
+  if (items.length > 0) {
+    // Normalise: ensure display_order is sequential from 0 regardless of
+    // what the client sent (guards against gaps or duplicates).
+    const payload: GalleryInsert[] = items.map((item, index) => ({
+      villa_id: villaId,
+      room_type_id: null, // always null for villa-level gallery
+      image_url: item.image_url,
+      is_primary: item.is_primary,
+      display_order: index, // re-index from 0 for clean ordering
+    }));
+
+    const { error: insertError } = await supabase
+      .from("gallery")
+      .insert(payload);
+
+    if (insertError) {
+      console.error("saveVillaGallery — insert error:", insertError.message);
+      return { error: `Gagal menyimpan galeri baru: ${insertError.message}` };
+    }
+  }
+
+  // ── 3. Revalidate public pages so the hero + gallery section stays fresh ─────
+  const { data: villa } = await supabase
+    .from("villas")
+    .select("slug")
+    .eq("id", villaId)
+    .single();
+
+  revalidateVillaPaths({
+    currentSlug: villa?.slug,
+    includeAdminEditId: villaId,
+  });
+
+  return { success: true };
 }
