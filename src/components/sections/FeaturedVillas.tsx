@@ -23,13 +23,20 @@ export async function FeaturedVillas() {
         name,
         status,
         base_price,
-        capacity_adult,
-        capacity_child,
+        bed_type,
+        highlight_amenity_ids,
         description,
         room_gallery:gallery!gallery_room_type_id_fkey (
           image_url,
           is_primary,
           display_order
+        ),
+        room_type_amenities (
+          amenities (
+            id,
+            name,
+            icon_name
+          )
         )
       ),
       villa_amenities (
@@ -80,6 +87,10 @@ export async function FeaturedVillas() {
       ...villa,
       room_types: pricedRooms.map((room) => ({
         ...room,
+        // Preserve USP fields through the pricing spread
+        bed_type: room.bed_type ?? null,
+        highlight_amenity_ids: (room as typeof room & { highlight_amenity_ids?: string[] }).highlight_amenity_ids ?? [],
+        room_type_amenities: (room as typeof room & { room_type_amenities?: any[] }).room_type_amenities ?? [],
         // Mapping key gallery agar sesuai dengan kebutuhan Client Component
         gallery: room.room_gallery ?? [],
       })),

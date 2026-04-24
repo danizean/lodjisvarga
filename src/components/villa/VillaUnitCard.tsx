@@ -1,52 +1,66 @@
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { BedDouble, MessageCircle, Users } from "lucide-react";
+import { BedDouble, MessageCircle, ArrowUpRight } from "lucide-react";
 import { WhatsAppMessageForm } from "@/components/features/villas/WhatsAppMessageForm";
+import { LucideDynamicIcon } from "@/components/shared/LucideDynamicIcon";
+import type { RoomTypeCardData } from "@/components/features/villas/VillaCard";
 
 interface VillaUnitCardProps {
-  villaName: string;
-  whatsappNumber?: string | null;
-  roomTypeOptions: string[];
-  name: string;
-  description: string;
-  imageUrl: string | null;
-  guestText: string;
-  photoCount: number;
-  priceText: string;
-  originalPriceText?: string | null;
-  promoText?: string | null;
-  badgeText?: string | null;
-  isComingSoon: boolean;
+  room: RoomTypeCardData;
 }
 
-export function VillaUnitCard({
-  villaName,
-  whatsappNumber,
-  roomTypeOptions,
-  name,
-  description,
-  imageUrl,
-  guestText,
-  photoCount,
-  priceText,
-  originalPriceText,
-  promoText,
-  badgeText,
-  isComingSoon,
-}: VillaUnitCardProps) {
-  const hasManagedPrice = priceText !== "Cek harga";
+const formatIDR = (value: number) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(value);
+
+export function VillaUnitCard({ room }: VillaUnitCardProps) {
+  const isComingSoon = room.villaStatus === "coming_soon";
+  const effectivePrice = room.effective_price ?? 0;
+  const discountPercentage = room.activePromo?.discount_value ?? 0;
+  const hasPromo = discountPercentage > 0 && effectivePrice > 0;
+  const hasManagedPrice = effectivePrice > 0;
+  const finalPrice = hasPromo
+    ? Math.max(0, Math.round(effectivePrice * (1 - discountPercentage / 100)))
+    : effectivePrice;
+
+  // Primary image
+  const primaryImage = [...(room.gallery ?? [])]
+    .sort((a, b) => {
+      if (a.is_primary && !b.is_primary) return -1;
+      if (!a.is_primary && b.is_primary) return 1;
+      return (a.display_order ?? 0) - (b.display_order ?? 0);
+    })[0]?.image_url ?? null;
+
+  // Resolved highlights from the server (max 3)
+  const highlightAmenities = (room.highlight_amenities ?? []).slice(0, 3);
+
+  // Legacy fallback: show Private Pool badge if no highlights are configured yet
+  const legacyPoolBadge =
+    highlightAmenities.length === 0 &&
+    (room.amenities ?? []).some((a) =>
+      a.name?.toLowerCase().includes("pool")
+    );
+
+  const priceText = hasManagedPrice ? formatIDR(finalPrice) : "Cek harga";
+  const originalPriceText = hasPromo ? formatIDR(effectivePrice) : null;
+  const promoText = hasPromo ? `${room.activePromo?.discount_code} -${discountPercentage}%` : null;
+  const badgeText = room.price_source === "override" ? "Harga hari ini" : null;
 
   return (
-    <article className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+    <article className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md">
       <div className="flex flex-col gap-5 p-4 sm:p-5 lg:flex-row">
-        <div className="relative h-56 overflow-hidden rounded-2xl bg-slate-100 lg:w-56 lg:flex-shrink-0">
-          {imageUrl ? (
+        {/* Image */}
+        <div className="relative h-56 overflow-hidden rounded-2xl bg-slate-100 lg:w-64 lg:flex-shrink-0">
+          {primaryImage ? (
             <Image
-              src={imageUrl}
-              alt={name}
+              src={primaryImage}
+              alt={room.name}
               fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 224px"
+              className="object-cover transition-transform duration-700 hover:scale-105"
+              sizes="(max-width: 1024px) 100vw, 256px"
             />
           ) : (
             <div className="flex h-full items-center justify-center">
@@ -55,64 +69,92 @@ export function VillaUnitCard({
           )}
         </div>
 
+        {/* Content */}
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <h3 className="text-xl font-black text-slate-950">{name}</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{description}</p>
+            <div className="min-w-0 flex-1 mr-4">
+              <h3 className="text-xl font-black text-slate-950">{room.name}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600 line-clamp-2">
+                {room.description ?? "Unit premium yang dirancang untuk kenyamanan maksimal."}
+              </p>
             </div>
 
-                              <div className="rounded-2xl bg-slate-50 px-4 py-3 sm:min-w-[170px] sm:text-right">
-                                {originalPriceText && (
-                                  <p className="text-xs font-semibold text-slate-400 line-through">{originalPriceText}</p>
-                                )}
-                                <p className="text-2xl font-black text-[#3A4A1F]">{priceText}</p>
-                                <p className="mt-1 text-xs text-slate-400">
-                                  {hasManagedPrice ? "per malam" : "konfirmasi via WhatsApp"}
-                                </p>
-                              </div>
+            {/* Price Box */}
+            <div className="rounded-2xl bg-slate-50 px-4 py-3 sm:min-w-[170px] sm:text-right border border-slate-100 shrink-0">
+              {originalPriceText && (
+                <p className="text-xs font-semibold text-slate-400 line-through">{originalPriceText}</p>
+              )}
+              <p className="text-2xl font-black text-[#3A4A1F]">{priceText}</p>
+              <p className="mt-1 text-xs text-slate-400">
+                {hasManagedPrice ? "per malam" : "konfirmasi via WhatsApp"}
+              </p>
+            </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Badge variant="outline" className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700">
-              <Users className="h-3 w-3" />
-              {guestText}
+          {/* ── USP Row ── */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {/* Bed Type */}
+            <Badge variant="outline" className="rounded-full px-3 py-1.5 text-[11px] font-semibold text-slate-700 border-slate-200">
+              <BedDouble className="h-3.5 w-3.5 mr-1.5 text-[#3A4A1F]" />
+              {room.bed_type?.trim() || "Bed setup by request"}
             </Badge>
-            <Badge variant="outline" className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700">
-              <BedDouble className="h-3 w-3" />
-              {photoCount} foto unit
-            </Badge>
+
+            {/* Highlighted Amenities */}
+            {highlightAmenities.map((amenity) => (
+              <Badge
+                key={amenity.id}
+                variant="outline"
+                className="rounded-full px-3 py-1.5 text-[11px] font-semibold text-slate-700 border-slate-200"
+              >
+                <LucideDynamicIcon
+                  iconName={amenity.icon_name}
+                  className="h-3.5 w-3.5 mr-1.5 text-[#3A4A1F]"
+                />
+                {amenity.name}
+              </Badge>
+            ))}
+
+            {/* Legacy Pool Badge */}
+            {legacyPoolBadge && (
+              <Badge variant="outline" className="rounded-full px-3 py-1.5 text-[11px] font-semibold text-emerald-900 border-emerald-200 bg-emerald-50">
+                <LucideDynamicIcon iconName="waves" className="h-3.5 w-3.5 mr-1.5" />
+                Private Pool
+              </Badge>
+            )}
+
             {badgeText && (
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-[11px] font-semibold text-emerald-700">
+              <Badge variant="outline" className="rounded-full px-3 py-1.5 text-[11px] font-semibold text-emerald-700 border-emerald-200 bg-emerald-50/50">
                 {badgeText}
               </Badge>
             )}
             {promoText && (
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-[11px] font-semibold text-amber-700">
+              <Badge variant="outline" className="rounded-full px-3 py-1.5 text-[11px] font-semibold text-amber-700 border-amber-200 bg-amber-50">
                 {promoText}
               </Badge>
             )}
           </div>
 
-          <div className="mt-5">
-            {!isComingSoon && whatsappNumber ? (
+          {/* WhatsApp Action */}
+          <div className="mt-5 sm:mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+            <span className="text-xs text-slate-400">
+              {!hasManagedPrice ? "*Harga belum diatur untuk tanggal yang dipilih" : "*Harga dapat berubah sewaktu-waktu"}
+            </span>
+
+            {!isComingSoon && room.villaWhatsapp ? (
               <WhatsAppMessageForm
-                whatsappNumber={whatsappNumber}
-                villaName={villaName}
-                roomTypeName={name}
-                roomTypeOptions={roomTypeOptions}
-                buttonLabel="Select Unit"
-                title={`Reservasi ${name}`}
-                buttonClassName="h-11 rounded-2xl bg-[#25D366] px-5 text-sm font-bold text-white hover:bg-[#128C7E]"
+                whatsappNumber={room.villaWhatsapp}
+                villaName={room.villaName}
+                roomTypeName={room.name}
+                buttonLabel="Pesan Sekarang"
+                title={`Pesan ${room.name}`}
+                buttonClassName="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#128C7E]"
               >
-                <span className="inline-flex items-center gap-2">
-                  <MessageCircle className="h-4 w-4" />
-                  Select Unit
-                </span>
+                <MessageCircle className="h-4 w-4" />
+                Pesan Sekarang
               </WhatsAppMessageForm>
             ) : (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                Unit akan bisa dibooking setelah properti aktif.
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-500 font-medium">
+                Reservasi belum dibuka
               </div>
             )}
           </div>

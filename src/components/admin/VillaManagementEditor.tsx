@@ -10,6 +10,7 @@ import {
   BedDouble,
   Building2,
   CalendarDays,
+  Check,
   CheckCircle2,
   ExternalLink,
   Globe,
@@ -58,10 +59,11 @@ interface RoomTypeForm {
   id?: string;
   name: string;
   base_price: number;
-  capacity_adult: number;
-  capacity_child: number;
+  bed_type?: string;
   description: string;
   amenity_ids: string[];
+  /** IDs of up to 3 amenities pinned as featured icons on VillaCard */
+  highlight_amenity_ids: string[];
   gallery: GalleryItem[];
 }
 
@@ -109,10 +111,10 @@ function generateSlug(name: string): string {
 const DEFAULT_ROOM: Omit<RoomTypeForm, "id"> = {
   name: "",
   base_price: 0,
-  capacity_adult: 2,
-  capacity_child: 0,
+  bed_type: "",
   description: "",
   amenity_ids: [],
+  highlight_amenity_ids: [],
   gallery: [],
 };
 
@@ -144,6 +146,18 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
   const [slugStatus, setSlugStatus] = useState<"idle" | "ok" | "taken">("idle");
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [uploadingScopes, setUploadingScopes] = useState<Record<string, boolean>>({});
+  // Full amenities list — fetched once for the Fasilitas Sorotan selector.
+  // The selector filters this down to only the IDs already picked per room.
+  const [allAmenities, setAllAmenities] = useState<{ id: string; name: string; icon_name: string | null }[]>([]);
+
+  useEffect(() => {
+    async function loadAmenities() {
+      const supabase = createClient();
+      const { data } = await supabase.from("amenities").select("id, name, icon_name").order("name");
+      setAllAmenities((data ?? []).map((a) => ({ id: a.id, name: a.name, icon_name: a.icon_name ?? null })));
+    }
+    loadAmenities();
+  }, []);
 
   useEffect(() => {
     if (isCreate) return;
@@ -202,10 +216,11 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
             id: roomType.id,
             name: roomType.name,
             base_price: roomType.base_price ?? 0,
-            capacity_adult: roomType.capacity_adult ?? 2,
-            capacity_child: roomType.capacity_child ?? 0,
+            bed_type: (roomType as unknown as { bed_type?: string | null }).bed_type ?? "",
             description: roomType.description ?? "",
             amenity_ids: (roomType.room_type_amenities ?? []).map((amenity) => amenity.amenity_id),
+            highlight_amenity_ids:
+              (roomType as unknown as { highlight_amenity_ids?: string[] }).highlight_amenity_ids ?? [],
             gallery: [...(roomType.room_gallery ?? [])].sort(
               (left, right) => (left.display_order ?? 0) - (right.display_order ?? 0)
             ),
@@ -339,7 +354,6 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
 
   const completedChecklist = checklist.filter((item) => item.done).length;
   const totalRoomPhotos = rooms.reduce((total, room) => total + room.gallery.length, 0);
-  const totalGuests = rooms.reduce((total, room) => total + Math.max(room.capacity_adult, 0), 0);
   const hasUploadingMedia = Object.keys(uploadingScopes).length > 0;
   const effectiveSlugStatus = !villa.slug || villa.slug.length < 3
     ? "idle"
@@ -650,12 +664,11 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
                         </div>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                        <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-slate-600 ring-1 ring-slate-200">
-                          {room.capacity_adult} dewasa
-                        </span>
-                        <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-slate-600 ring-1 ring-slate-200">
-                          {room.capacity_child} anak
-                        </span>
+                        {room.bed_type && (
+                          <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-slate-600 ring-1 ring-slate-200">
+                            {room.bed_type}
+                          </span>
+                        )}
                         <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-slate-600 ring-1 ring-slate-200">
                           {room.gallery.length} foto kamar
                         </span>
@@ -684,27 +697,14 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
 
                     <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-2">
                       <div className="space-y-5">
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                          <div className="space-y-2">
-                            <label className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Kapasitas Dewasa</label>
-                            <Input
-                              type="number"
-                              min={1}
-                              value={room.capacity_adult}
-                              onChange={(event) => setRoomField(idx, "capacity_adult", Number(event.target.value))}
-                              className="h-12 rounded-2xl border-slate-200 bg-slate-50 text-center font-semibold"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Kapasitas Anak</label>
-                            <Input
-                              type="number"
-                              min={0}
-                              value={room.capacity_child}
-                              onChange={(event) => setRoomField(idx, "capacity_child", Number(event.target.value))}
-                              className="h-12 rounded-2xl border-slate-200 bg-slate-50 text-center font-semibold"
-                            />
-                          </div>
+                        <div className="space-y-2">
+                          <label className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Tipe Tempat Tidur</label>
+                          <Input
+                            value={room.bed_type ?? ""}
+                            onChange={(event) => setRoomField(idx, "bed_type", event.target.value)}
+                            placeholder="Contoh: 1 King Bed"
+                            className="h-12 rounded-2xl border-slate-200 bg-slate-50 font-semibold"
+                          />
                         </div>
 
                         <div className="space-y-2">
@@ -720,9 +720,72 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
 
                         <AmenitiesSelect
                           selectedIds={room.amenity_ids}
-                          onChange={(ids) => setRoomField(idx, "amenity_ids", ids)}
+                          onChange={(ids) => {
+                            setRoomField(idx, "amenity_ids", ids);
+                            // Auto-remove any highlights that are no longer in amenity_ids
+                            const nextHighlights = room.highlight_amenity_ids.filter((hid) =>
+                              ids.includes(hid)
+                            );
+                            setRoomField(idx, "highlight_amenity_ids", nextHighlights);
+                          }}
                           label="Fasilitas Kamar"
                         />
+
+                        {/* ── Fasilitas Sorotan (Max 3) ── */}
+                        {room.amenity_ids.length > 0 && (
+                          <div className="space-y-3 rounded-2xl border border-[#3A4A1F]/15 bg-[#F6F8F0] p-4">
+                            <div>
+                              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#3A4A1F]/70">
+                                Fasilitas Sorotan
+                              </p>
+                              <p className="mt-0.5 text-xs text-slate-500">
+                                Pilih maks. 3 yang tampil sebagai ikon di kartu villa publik.
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {allAmenities
+                                .filter((am) => room.amenity_ids.includes(am.id))
+                                .map((am) => {
+                                  const isHighlighted = room.highlight_amenity_ids.includes(am.id);
+                                  return (
+                                    <button
+                                      key={am.id}
+                                      type="button"
+                                      onClick={() => {
+                                        if (isHighlighted) {
+                                          setRoomField(
+                                            idx,
+                                            "highlight_amenity_ids",
+                                            room.highlight_amenity_ids.filter((id) => id !== am.id)
+                                          );
+                                        } else {
+                                          if (room.highlight_amenity_ids.length >= 3) {
+                                            toast.error("Maksimal 3 fasilitas sorotan");
+                                            return;
+                                          }
+                                          setRoomField(idx, "highlight_amenity_ids", [
+                                            ...room.highlight_amenity_ids,
+                                            am.id,
+                                          ]);
+                                        }
+                                      }}
+                                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                                        isHighlighted
+                                          ? "border-[#3A4A1F] bg-[#3A4A1F] text-white shadow-sm"
+                                          : "border-slate-200 bg-white text-slate-600 hover:border-[#3A4A1F]/30"
+                                      }`}
+                                    >
+                                      {isHighlighted && <Check className="h-3 w-3" />}
+                                      {am.name}
+                                    </button>
+                                  );
+                                })}
+                            </div>
+                            <p className="text-[10px] text-slate-400">
+                              {room.highlight_amenity_ids.length}/3 dipilih
+                            </p>
+                          </div>
+                        )}
 
                         <div className="rounded-2xl border border-[#3A4A1F]/15 bg-[#F6F8F0] p-4">
                           <div className="flex items-start gap-3">
@@ -800,8 +863,8 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
                   <StatusBadge status={villa.status} variant="villa" />
                 </div>
                 <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-                  <span>Total kapasitas dewasa</span>
-                  <span className="font-semibold text-slate-900">{totalGuests}</span>
+                  <span>Total tipe kamar</span>
+                  <span className="font-semibold text-slate-900">{rooms.length}</span>
                 </div>
                 <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
                   <span>Foto kamar</span>

@@ -14,7 +14,6 @@ const LOCATION_FILTERS = [
   { label: "Seturan", value: "seturan" },
 ];
 
-// ─── Flatten villas to flat room-card list ───────────────────────────────────
 function flattenToRoomCards(
   villas: VillaData[],
   activePromo: ActivePromoData
@@ -29,8 +28,9 @@ function flattenToRoomCards(
         effective_price: 0,
         price_source: "base",
         activePromo,
-        capacity_adult: null,
-        capacity_child: null,
+        // USP fields – no room data available for placeholder cards
+        bed_type: null,
+        amenities: [],
         description: villa.description,
         gallery: [],
         villaName: villa.name,
@@ -41,6 +41,17 @@ function flattenToRoomCards(
       continue;
     }
     for (const rt of villa.room_types) {
+      // Extract all amenity objects from the Supabase join
+      const amenities = (rt.room_type_amenities ?? [])
+        .flatMap((link) => (link.amenities ? [link.amenities] : []));
+
+      // Resolve the up-to-3 highlighted amenity objects from the raw ID array
+      const highlightIds = rt.highlight_amenity_ids ?? [];
+      const highlight_amenities = highlightIds
+        .map((hid) => amenities.find((a) => a.id === hid))
+        .filter((a): a is { id: string; name: string; icon_name: string | null } => Boolean(a))
+        .slice(0, 3);
+
       cards.push({
         id: rt.id,
         name: rt.name,
@@ -48,8 +59,10 @@ function flattenToRoomCards(
         effective_price: rt.effective_price ?? 0,
         price_source: rt.price_source ?? "base",
         activePromo,
-        capacity_adult: rt.capacity_adult,
-        capacity_child: rt.capacity_child,
+        // USP fields
+        bed_type: rt.bed_type ?? null,
+        amenities,
+        highlight_amenities,
         description: rt.description,
         gallery: rt.gallery,
         villaName: villa.name,
@@ -88,14 +101,15 @@ export function VillasPageClient({ villas, activePromo = null }: Props) {
       );
     }
 
-    // Search filter
+    // Search filter – includes bed_type so users can search "King Bed", "Twin", etc.
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       cards = cards.filter(
         (card) =>
           card.name.toLowerCase().includes(q) ||
           card.villaName.toLowerCase().includes(q) ||
-          (card.description ?? "").toLowerCase().includes(q)
+          (card.description ?? "").toLowerCase().includes(q) ||
+          (card.bed_type ?? "").toLowerCase().includes(q)
       );
     }
 

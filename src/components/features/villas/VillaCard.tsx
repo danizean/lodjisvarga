@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Users, BedDouble, Sparkles, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, BedDouble, Sparkles, Clock } from "lucide-react";
 import { WhatsAppMessageForm } from "@/components/features/villas/WhatsAppMessageForm";
+import { LucideDynamicIcon } from "@/components/shared/LucideDynamicIcon";
 
 export type RoomTypeGalleryImage = {
   image_url: string;
@@ -27,8 +28,11 @@ export type RoomTypeCardData = {
     expired_at: string | null;
     is_active: boolean | null;
   } | null;
-  capacity_adult: number | null;
-  capacity_child: number | null;
+  bed_type?: string | null;
+  amenities?: { name: string }[];
+  highlight_amenities?: { id: string; name: string; icon_name: string | null }[];
+  capacity_adult?: number | null;
+  capacity_child?: number | null;
   description: string | null;
   gallery: RoomTypeGalleryImage[];
   // Villa info passed down
@@ -74,6 +78,16 @@ export function VillaCard({ room }: { room: RoomTypeCardData }) {
   const finalPrice = hasPromo
     ? Math.max(0, Math.round(effectivePrice * (1 - discountPercentage / 100)))
     : effectivePrice;
+
+  // Resolved highlights from the server (max 3)
+  const highlightAmenities = (room.highlight_amenities ?? []).slice(0, 3);
+
+  // Legacy fallback: show Private Pool badge if no highlights are configured yet
+  const legacyPoolBadge =
+    highlightAmenities.length === 0 &&
+    (room.amenities ?? []).some((a) =>
+      a?.name?.toLowerCase().includes("pool")
+    );
 
   // Sort gallery: primary first, then by display_order
   const roomImages = [...(room.gallery ?? [])]
@@ -193,17 +207,41 @@ export function VillaCard({ room }: { room: RoomTypeCardData }) {
           {room.description ?? `Nikmati kenyamanan eksklusif di ${room.villaName}.`}
         </p>
 
-        {/* Capacity */}
-        <div className="flex items-center gap-4 text-xs text-gray-600 mb-5 pb-5 border-b border-gray-100">
-          <span className="flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-[#3A4A1F]" />
-            {room.capacity_adult ?? 2} Dewasa
-            {(room.capacity_child ?? 0) > 0 && ` · ${room.capacity_child} Anak`}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <BedDouble className="w-3.5 h-3.5 text-[#3A4A1F]" />
-            Private Room
-          </span>
+        {/* ── USP Row ── */}
+        <div className="flex flex-col gap-2.5 mb-5 pb-5 border-b border-gray-100">
+          {/* Bed type */}
+          <p className="inline-flex items-center gap-2 text-sm font-medium text-slate-600">
+            <BedDouble className="h-4 w-4 text-[#3A4A1F]" />
+            {room.bed_type?.trim() || "Bed setup by request"}
+          </p>
+
+          {/* Dynamic highlighted amenities */}
+          {highlightAmenities.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              {highlightAmenities.map((amenity) => (
+                <span
+                  key={amenity.id}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1.5 text-[10px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200"
+                >
+                  <LucideDynamicIcon
+                    iconName={amenity.icon_name}
+                    className="h-3.5 w-3.5 text-[#3A4A1F]"
+                  />
+                  {amenity.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Legacy fallback: Private Pool badge */}
+          {legacyPoolBadge && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-semibold text-emerald-900 ring-1 ring-inset ring-emerald-100">
+                <LucideDynamicIcon iconName="waves" className="h-3.5 w-3.5" />
+                Private Pool
+              </span>
+            </div>
+          )}
         </div>
 
         {/* ── Pricing ── */}

@@ -23,8 +23,17 @@ export type VillaData = {
     base_price: number;
     effective_price?: number;
     price_source?: "base" | "override";
-    capacity_adult: number | null;
-    capacity_child: number | null;
+    // Legacy – kept for backwards-compat; NOT rendered in UI
+    capacity_adult?: number | null;
+    capacity_child?: number | null;
+    // USP fields – the Supabase query MUST select bed_type, highlight_amenity_ids
+    // and join room_type_amenities(amenities(id, name, icon_name)).
+    bed_type?: string | null;
+    /** Raw UUID array from DB; the flattener resolves this into highlight_amenities objects */
+    highlight_amenity_ids?: string[];
+    room_type_amenities?: {
+      amenities: { id: string; name: string; icon_name: string | null } | null;
+    }[];
     description: string | null;
     gallery: {
       image_url: string;
@@ -67,8 +76,9 @@ function flattenToRoomCards(villas: VillaData[], activePromo: ActivePromoData): 
         effective_price: 0,
         price_source: "base",
         activePromo,
-        capacity_adult: null,
-        capacity_child: null,
+        // USP fields – no room data available for placeholder cards
+        bed_type: null,
+        amenities: [],
         description: villa.description,
         gallery: [],
         villaName: villa.name,
@@ -79,6 +89,17 @@ function flattenToRoomCards(villas: VillaData[], activePromo: ActivePromoData): 
       continue;
     }
     for (const rt of villa.room_types) {
+      // Extract all amenity objects from the Supabase join shape
+      const amenities = (rt.room_type_amenities ?? [])
+        .flatMap((link) => (link.amenities ? [link.amenities] : []));
+
+      // Resolve the up-to-3 highlighted amenity objects from the raw ID array
+      const highlightIds = rt.highlight_amenity_ids ?? [];
+      const highlight_amenities = highlightIds
+        .map((hid) => amenities.find((a) => a.id === hid))
+        .filter((a): a is { id: string; name: string; icon_name: string | null } => Boolean(a))
+        .slice(0, 3);
+
       cards.push({
         id: rt.id,
         name: rt.name,
@@ -86,8 +107,10 @@ function flattenToRoomCards(villas: VillaData[], activePromo: ActivePromoData): 
         effective_price: rt.effective_price ?? 0,
         price_source: rt.price_source ?? "base",
         activePromo,
-        capacity_adult: rt.capacity_adult,
-        capacity_child: rt.capacity_child,
+        // USP fields
+        bed_type: rt.bed_type ?? null,
+        amenities,
+        highlight_amenities,
         description: rt.description,
         gallery: rt.gallery,
         villaName: villa.name,

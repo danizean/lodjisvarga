@@ -222,13 +222,13 @@ export async function saveFullVillaData(data: unknown) {
     if (room_types.length > 0) {
       for (const rt of room_types) {
         const normalizedRoomGallery = normalizeGalleryItems(rt.gallery);
-        const roomPayload: RoomTypeInsert = {
+        const roomPayload: any = {
           id: rt.id || undefined,
           villa_id: savedVilla.id,
           name: rt.name,
           base_price: rt.base_price,
-          capacity_adult: rt.capacity_adult,
-          capacity_child: rt.capacity_child,
+          bed_type: (rt as any).bed_type ?? null,
+          highlight_amenity_ids: (rt as any).highlight_amenity_ids ?? [],
           description: rt.description,
           status: "active",
         };
@@ -415,4 +415,55 @@ export async function updateVillaStatus(id: string, status: "active" | "coming_s
     includeAdminEditId: id,
   });
   return { success: true };
+}
+
+
+export async function saveVillaDetails(data: any) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const payload = {
+      name: data.name,
+      slug: data.slug,
+      description: data.description,
+      address: data.address,
+      gmaps_url: data.gmaps_url,
+      whatsapp_number: data.whatsapp_number,
+      default_whatsapp_message: data.default_whatsapp_message,
+      status: data.status,
+    };
+
+    let villaId = data.id;
+
+    if (villaId) {
+      const { error } = await supabase
+        .from("villas")
+        .update(payload)
+        .eq("id", villaId);
+      
+      if (error) throw error;
+      await logAudit(supabase, "UPDATE", "villas", villaId, null, payload, user.id);
+    } else {
+      const { data: newVilla, error } = await supabase
+        .from("villas")
+        .insert(payload)
+        .select("id")
+        .single();
+      
+      if (error) throw error;
+      villaId = newVilla.id;
+      await logAudit(supabase, "CREATE", "villas", villaId, null, payload, user.id);
+    }
+
+    revalidateVillaPaths({ currentSlug: data.slug });
+
+    return { success: true, villa_id: villaId };
+  } catch (error: any) {
+    console.error("Save villa details error:", error);
+    return { success: false, error: error.message };
+  }
 }

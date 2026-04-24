@@ -12,22 +12,50 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       amenities: {
         Row: {
+          category: string
           created_at: string | null
           icon_name: string | null
           id: string
           name: string
         }
         Insert: {
+          category?: string
           created_at?: string | null
           icon_name?: string | null
           id?: string
           name: string
         }
         Update: {
+          category?: string
           created_at?: string | null
           icon_name?: string | null
           id?: string
@@ -38,52 +66,51 @@ export type Database = {
       articles: {
         Row: {
           author_id: string | null
-          /** TipTap document JSON */
+          category: string | null
           content: Json | null
           created_at: string | null
-          updated_at: string | null
+          excerpt: string | null
           id: string
           is_published: boolean | null
           meta_description: string | null
           published_at: string | null
+          read_time_minutes: number | null
           slug: string
           thumbnail_url: string | null
           title: string
-          excerpt: string | null
-          read_time_minutes: number | null
-          category: string | null
+          updated_at: string | null
         }
         Insert: {
           author_id?: string | null
+          category?: string | null
           content?: Json | null
           created_at?: string | null
-          updated_at?: string | null
+          excerpt?: string | null
           id?: string
           is_published?: boolean | null
           meta_description?: string | null
           published_at?: string | null
+          read_time_minutes?: number | null
           slug: string
           thumbnail_url?: string | null
           title: string
-          excerpt?: string | null
-          read_time_minutes?: number | null
-          category?: string | null
+          updated_at?: string | null
         }
         Update: {
           author_id?: string | null
+          category?: string | null
           content?: Json | null
           created_at?: string | null
-          updated_at?: string | null
+          excerpt?: string | null
           id?: string
           is_published?: boolean | null
           meta_description?: string | null
           published_at?: string | null
+          read_time_minutes?: number | null
           slug?: string
           thumbnail_url?: string | null
           title?: string
-          excerpt?: string | null
-          read_time_minutes?: number | null
-          category?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -475,6 +502,7 @@ export type Database = {
           payment_id: string | null
           payment_method: string | null
           payment_status: string | null
+          pricing_breakdown: Json | null
           promo_id: string | null
           reservation_status: string | null
           room_type_id: string
@@ -500,6 +528,7 @@ export type Database = {
           payment_id?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          pricing_breakdown?: Json | null
           promo_id?: string | null
           reservation_status?: string | null
           room_type_id: string
@@ -525,6 +554,7 @@ export type Database = {
           payment_id?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          pricing_breakdown?: Json | null
           promo_id?: string | null
           reservation_status?: string | null
           room_type_id?: string
@@ -623,6 +653,7 @@ export type Database = {
       room_types: {
         Row: {
           base_price: number
+          bed_type: string | null
           capacity_adult: number | null
           capacity_child: number | null
           created_at: string | null
@@ -630,10 +661,12 @@ export type Database = {
           id: string
           name: string
           status: string | null
+          total_units: number
           villa_id: string | null
         }
         Insert: {
           base_price: number
+          bed_type?: string | null
           capacity_adult?: number | null
           capacity_child?: number | null
           created_at?: string | null
@@ -641,10 +674,12 @@ export type Database = {
           id?: string
           name: string
           status?: string | null
+          total_units?: number
           villa_id?: string | null
         }
         Update: {
           base_price?: number
+          bed_type?: string | null
           capacity_adult?: number | null
           capacity_child?: number | null
           created_at?: string | null
@@ -652,6 +687,7 @@ export type Database = {
           id?: string
           name?: string
           status?: string | null
+          total_units?: number
           villa_id?: string | null
         }
         Relationships: [
@@ -751,16 +787,40 @@ export type Database = {
     Views: {
       articles_listing: {
         Row: {
-          id: string | null
-          title: string | null
-          slug: string | null
-          excerpt: string | null
-          thumbnail_url: string | null
           category: string | null
-          read_time_minutes: number | null
-          published_at: string | null
           created_at: string | null
+          excerpt: string | null
+          id: string | null
+          published_at: string | null
+          read_time_minutes: number | null
+          slug: string | null
+          thumbnail_url: string | null
+          title: string | null
           updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string | null
+          published_at?: string | null
+          read_time_minutes?: number | null
+          slug?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string | null
+          published_at?: string | null
+          read_time_minutes?: number | null
+          slug?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -801,53 +861,6 @@ export type Database = {
         }
         Returns: undefined
       }
-      admin_block_room_dates: {
-        Args: {
-          p_apply_to?: string
-          p_end_date: string
-          p_reason?: string
-          p_room_type_id: string
-          p_start_date: string
-        }
-        Returns: number
-      }
-      admin_get_room_calendar: {
-        Args: {
-          p_end_date: string
-          p_room_type_id: string
-          p_start_date: string
-        }
-        Returns: {
-          base_price: number
-          block_reason: string | null
-          customer_name: string | null
-          date: string
-          effective_price: number
-          is_blocked: boolean
-          price_source: string
-          reservation_id: string | null
-          reservation_status: string | null
-        }[]
-      }
-      admin_set_room_price_range: {
-        Args: {
-          p_apply_to?: string
-          p_end_date: string
-          p_price: number
-          p_room_type_id: string
-          p_start_date: string
-        }
-        Returns: number
-      }
-      admin_unblock_room_dates: {
-        Args: {
-          p_apply_to?: string
-          p_end_date: string
-          p_room_type_id: string
-          p_start_date: string
-        }
-        Returns: number
-      }
       copy_price_range: {
         Args: {
           p_days: number
@@ -856,18 +869,6 @@ export type Database = {
           p_target_start: string
         }
         Returns: undefined
-      }
-      create_reservation_with_pricing: {
-        Args: {
-          p_check_in: string
-          p_check_out: string
-          p_customer_name: string
-          p_customer_phone: string
-          p_guest_count_adult: number
-          p_guest_count_child?: number
-          p_room_type_id: string
-        }
-        Returns: Json
       }
       get_villas_count: {
         Args: { search_term: string; status_filter: string }
@@ -1059,6 +1060,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       lead_status_enum: [
@@ -1071,12 +1075,9 @@ export const Constants = {
       ],
       payment_status_enum: ["pending", "paid", "failed", "refunded"],
       tipe_villa_enum: [
-        "Standard",
         "Superior",
         "Deluxe",
-        "Executive",
-        "Suite",
-        "Presidential",
+        "Executive Deluxe",
       ],
       villa_status_enum: ["Published", "Maintenance", "Hidden", "Archived"],
     },

@@ -142,36 +142,20 @@ function buildOverview(villaName: string, address: string | null, description: s
   return `${villaName} menghadirkan pengalaman menginap yang tenang di ${address ?? "Yogyakarta"} dengan suasana privat, area bersama yang nyaman, dan akses yang tetap praktis ke pusat kota maupun destinasi sekitar.`;
 }
 
-function getRoomOffer(effectivePrice: number, activePromo: { discount_value: number | null; discount_code: string } | null) {
-  const safePrice = Math.max(0, effectivePrice);
-  const discountPercentage = safePrice > 0 ? (activePromo?.discount_value ?? 0) : 0;
-  const hasPromo = discountPercentage > 0 && safePrice > 0;
-  const finalPrice = hasPromo
-    ? Math.max(0, Math.round(safePrice * (1 - discountPercentage / 100)))
-    : safePrice;
-
-  return {
-    safePrice,
-    hasPromo,
-    finalPrice,
-    hasManagedPrice: safePrice > 0,
-    promoText: hasPromo ? `${activePromo?.discount_code} -${discountPercentage}%` : null,
-    badgeText: safePrice > 0 ? "Harga hari ini" : null,
-  };
-}
-
 export default async function VillaDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const supabase = await createClient();
 
+  // 1. UPDATE QUERY: Mengambil bed_type, highlight_amenity_ids, dan relasi amenities
   const { data: villa, error } = await supabase
     .from("villas")
     .select(`
       id, name, slug, description, address, gmaps_url, whatsapp_number, status,
       villa_gallery:gallery!gallery_villa_id_fkey (image_url, is_primary, display_order, room_type_id),
       room_types (
-        id, name, status, base_price, capacity_adult, capacity_child, description,
-        room_gallery:gallery!gallery_room_type_id_fkey (image_url, is_primary, display_order)
+        id, name, status, base_price, description, bed_type, highlight_amenity_ids,
+        room_gallery:gallery!gallery_room_type_id_fkey (image_url, is_primary, display_order),
+        room_type_amenities (amenities(id, name, icon_name))
       ),
       villa_amenities (
         amenities (id, name, icon_name)
@@ -231,48 +215,73 @@ export default async function VillaDetailPage({ params }: PageProps) {
   const overviewText = buildOverview(villa.name, villa.address, villa.description);
   const heroSummary =
     overviewText.length > 170 ? `${overviewText.slice(0, 170).trimEnd()}...` : overviewText;
+  
   const amenityNames = (villa.villa_amenities ?? [])
     .map((item) => item.amenities?.name?.trim())
     .filter((name): name is string => Boolean(name));
   const allFacilities = Array.from(new Set([...amenityNames, ...DEFAULT_POPULAR_FACILITIES]));
-  const maxAdults = roomTypesWithPricing.reduce((highest, roomType) => Math.max(highest, roomType.capacity_adult ?? 0), 0);
-  const guestSummary = `Hingga ${Math.max(maxAdults, 2)} tamu`;
+  
+  // Mengubah ringkasan kapasitas menjadi jumlah kamar
+  const guestSummary = `${roomTypesWithPricing.length} tipe kamar`;
 
+  // 2. MAPPING UNIT CARDS: Aman dari Tipe, Mendukung Highlight Amenities, dan Mengirim Objek Penuh
   const unitCards = roomTypesWithPricing.map((roomType) => {
-    const offer = getRoomOffer(roomType.effective_price, activePromo);
-    const primaryImage =
-      roomType.room_gallery.find((photo) => photo.is_primary)?.image_url
-      ?? roomType.room_gallery[0]?.image_url
-      ?? null;
+    // Ekstrak daftar fasilitas yang ada di unit kamar ini
+    const allAmenities = (roomType.room_type_amenities || [])
+      .map((rta) => rta.amenities)
+      .filter((a): a is NonNullable<typeof a> => a !== null && a !== undefined)
+      .map((a) => ({
+        id: a.id,
+        name: a.name,
+        icon_name: a.icon_name,
+      }));
 
+    // Filter maksimal 3 fasilitas sorotan sesuai pilihan admin di CMS
+    const highlightIds: string[] = (roomType as any).highlight_amenity_ids || [];
+    const highlightAmenities = highlightIds
+      .map((id) => allAmenities.find((a) => a.id === id))
+      .filter((a): a is NonNullable<typeof a> => a !== undefined)
+      .slice(0, 3);
+
+    // Kembalikan struktur RoomTypeCardData penuh yang dinantikan oleh komponen kartu
     return {
       id: roomType.id,
       name: roomType.name,
-      description:
-        roomType.description?.trim() ||
-        "Unit kamar yang nyaman, mudah dipilih, dan cocok untuk tamu yang mencari stay privat dengan alur booking yang praktis.",
-      imageUrl: primaryImage,
-      guestText:
-        (roomType.capacity_child ?? 0) > 0
-          ? `${roomType.capacity_adult ?? 2} dewasa + ${roomType.capacity_child} anak`
-          : `${roomType.capacity_adult ?? 2} dewasa`,
-      photoCount: roomType.room_gallery.length,
-      priceText: offer.hasManagedPrice ? formatIDR(offer.finalPrice) : "Cek harga",
-      originalPriceText: offer.hasPromo ? formatIDR(offer.safePrice) : null,
-      promoText: offer.promoText,
-      badgeText: roomType.price_source === "override" ? offer.badgeText : null,
-      hasManagedPrice: offer.hasManagedPrice,
+      base_price: roomType.base_price ?? 0,
+      effective_price: roomType.effective_price ?? 0,
+      price_source: roomType.price_source ?? "base",
+      activePromo: activePromo,
+      bed_type: roomType.bed_type ?? "Standard Bed",
+      description: roomType.description ?? "",
+      gallery: roomType.room_gallery || [],
+      amenities: allAmenities,
+      highlight_amenities: highlightAmenities,
+      // Konteks villa parent yang krusial untuk tombol WhatsApp
+      villaName: villa.name,
+      villaSlug: villa.slug,
+      villaStatus: villa.status,
+      villaWhatsapp: villa.whatsapp_number,
     };
   });
 
-  const numericLowestManagedPrice = roomTypesWithPricing
-    .map((roomType) => getRoomOffer(roomType.effective_price, activePromo))
-    .filter((offer) => offer.hasManagedPrice)
-    .sort((left, right) => left.finalPrice - right.finalPrice)[0];
+  // 3. PERHITUNGAN HARGA: Lebih Cepat Tanpa `getRoomOffer`
+  const validPricedRooms = roomTypesWithPricing.filter(
+    (rt) => (rt.effective_price ?? 0) > 0
+  );
 
-  const startingPriceText = numericLowestManagedPrice
-    ? formatIDR(numericLowestManagedPrice.finalPrice)
-    : "Cek harga";
+  const lowestPriceRoom = validPricedRooms.sort(
+    (a, b) => (a.effective_price ?? 0) - (b.effective_price ?? 0)
+  )[0];
+
+  let startingPriceText = "Cek harga";
+  if (lowestPriceRoom) {
+    const baseEff = lowestPriceRoom.effective_price ?? 0;
+    const discount = activePromo?.discount_value ?? 0;
+    const finalPrice = discount > 0
+      ? Math.max(0, Math.round(baseEff * (1 - discount / 100)))
+      : baseEff;
+    startingPriceText = formatIDR(finalPrice);
+  }
 
   const keyInfoItems = [
     { label: "Check-in", value: "Mulai 14.00 WIB", icon: Clock3 },
@@ -318,28 +327,14 @@ export default async function VillaDetailPage({ params }: PageProps) {
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#3A4A1F]/70">Unit Selection</p>
                   <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">Pilih unit yang paling sesuai</h2>
                   <p className="mt-2 max-w-2xl text-sm text-slate-500">
-                    Unit ditampilkan singkat, dengan fokus pada foto, kapasitas, harga, dan tombol booking.
+                    Unit ditampilkan ringkas dengan fokus pada foto, tipe kasur, fasilitas utama, dan harga mulai.
                   </p>
                 </div>
 
                 <div className="space-y-4">
+                  {/* 4. RENDER UI: Mengirim 1 objek `room` utuh, bukan memecah-mecah props */}
                   {unitCards.map((unit) => (
-                    <VillaUnitCard
-                      key={unit.id}
-                      villaName={villa.name}
-                      whatsappNumber={villa.whatsapp_number}
-                      roomTypeOptions={roomTypeOptions}
-                      name={unit.name}
-                      description={unit.description}
-                      imageUrl={unit.imageUrl}
-                      guestText={unit.guestText}
-                      photoCount={unit.photoCount}
-                      priceText={unit.priceText}
-                      originalPriceText={unit.originalPriceText}
-                      promoText={unit.promoText}
-                      badgeText={unit.badgeText}
-                      isComingSoon={isComingSoon}
-                    />
+                    <VillaUnitCard key={unit.id} room={unit} />
                   ))}
                 </div>
               </section>

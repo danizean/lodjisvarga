@@ -16,9 +16,11 @@ export const galleryItemSchema = z.object({
 export const roomTypeFullSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().min(3, "Nama kamar minimal 3 karakter"),
+  bed_type: z.string().min(1, "Tipe kasur wajib diisi").or(z.literal("")).optional().nullable(),
+  highlight_amenity_ids: z.array(z.string()).max(3, "Maksimal 3 fasilitas sorotan").default([]),
   base_price: z.coerce.number().min(0, "Harga minimal Rp 0"),
-  capacity_adult: z.coerce.number().int().min(1, "Minimal 1 tamu dewasa"),
-  capacity_child: z.coerce.number().int().min(0).default(0),
+  capacity_adult: z.coerce.number().int().optional().nullable(),
+  capacity_child: z.coerce.number().int().optional().nullable(),
   description: z.string().optional().nullable(),
   amenity_ids: z.array(z.string().uuid()).default([]),
   gallery: z.array(galleryItemSchema).default([]),
