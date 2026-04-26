@@ -145,8 +145,13 @@
   }
 
   html {
-    scroll-behavior: smooth;
     font-family: var(--font-sans);
+  }
+
+  /* Smooth scroll — only when data attribute is present (set in layout.tsx).
+     Next.js resets this during programmatic navigation to avoid janky route jumps. */
+  html[data-scroll-behavior="smooth"] {
+    scroll-behavior: smooth;
   }
 
   body {

@@ -1,19 +1,40 @@
-import { CheckCircle2, Waves, Wifi, CarFront, Wind, Coffee, Utensils, Bath, Tv } from "lucide-react";
+"use client";
+
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  CheckCircle2,
+  Waves,
+  Wifi,
+  CarFront,
+  Wind,
+  Coffee,
+  Utensils,
+  Bath,
+  Tv,
+} from "lucide-react";
+import { useState } from "react";
+import { LucideDynamicIcon } from "@/components/shared/LucideDynamicIcon";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+/** Rich amenity object coming directly from the DB join. */
+export type AmenityItem = {
+  id: string;
+  name: string;
+  icon_name: string | null;
+};
 
 interface VillaFacilitiesGridProps {
-  facilities: string[];
+  /**
+   * Prefer `amenities` (rich objects with icon_name) over the legacy `facilities` string array.
+   * Both are supported for backward-compatibility.
+   */
+  amenities?: AmenityItem[];
+  /** @deprecated Pass `amenities` instead. Kept for backward-compat. */
+  facilities?: string[];
 }
 
-/**
- * Map of keyword → icon for common facilities.
- * Case-insensitive substring match — works with Indonesian & English facility names.
- */
+// ─── Legacy icon fallback (keyword → Lucide icon) ─────────────────────────────
+
 const FACILITY_ICON_MAP: { keywords: string[]; Icon: React.ElementType }[] = [
   { keywords: ["pool", "kolam"], Icon: Waves },
   { keywords: ["wifi", "internet"], Icon: Wifi },
@@ -33,20 +54,71 @@ function getFacilityIcon(name: string): React.ElementType {
   return match?.Icon ?? CheckCircle2;
 }
 
-/** First 6 are "popular" and always visible. Rest are collapsed. */
-const POPULAR_COUNT = 6;
+// ─── Amenity Chip ─────────────────────────────────────────────────────────────
 
-export function VillaFacilitiesGrid({ facilities }: VillaFacilitiesGridProps) {
-  const safe = (facilities ?? []).filter(Boolean);
-  if (safe.length === 0) return null;
+function AmenityChip({
+  name,
+  iconName,
+}: {
+  name: string;
+  iconName?: string | null;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors hover:border-[#3A4A1F]/20 hover:bg-[#3A4A1F]/5">
+      <LucideDynamicIcon
+        iconName={iconName ?? null}
+        amenityName={name}
+        className="h-4 w-4 flex-shrink-0 text-[#3A4A1F]"
+      />
+      <p className="text-sm font-medium text-slate-700">{name}</p>
+    </div>
+  );
+}
 
-  const popular = safe.slice(0, POPULAR_COUNT);
-  const rest = safe.slice(POPULAR_COUNT);
+function LegacyChip({ name }: { name: string }) {
+  const Icon = getFacilityIcon(name);
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 transition-colors hover:border-[#3A4A1F]/20 hover:bg-[#3A4A1F]/5">
+      <Icon className="h-4 w-4 flex-shrink-0 text-[#3A4A1F]" aria-hidden="true" />
+      <p className="text-sm font-medium text-slate-700">{name}</p>
+    </div>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+const INITIAL_VISIBLE = 9;
+
+export function VillaFacilitiesGrid({ amenities, facilities }: VillaFacilitiesGridProps) {
+  const [expanded, setExpanded] = useState(false);
+
+  // Prefer rich amenity objects; fall back to legacy string array
+  const usingRich = Array.isArray(amenities) && amenities.length > 0;
+  const totalCount = usingRich
+    ? amenities!.length
+    : (facilities ?? []).filter(Boolean).length;
+
+  if (totalCount === 0) return null;
+
+  const richVisible = usingRich
+    ? expanded
+      ? amenities!
+      : amenities!.slice(0, INITIAL_VISIBLE)
+    : [];
+
+  const legacyItems = !usingRich ? (facilities ?? []).filter(Boolean) : [];
+  const legacyVisible = !usingRich
+    ? expanded
+      ? legacyItems
+      : legacyItems.slice(0, INITIAL_VISIBLE)
+    : [];
+
+  const hasMore = totalCount > INITIAL_VISIBLE;
 
   return (
     <section
       className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
-      aria-label="Fasilitas villa"
+      aria-label="Fasilitas properti"
     >
       {/* Header */}
       <div className="mb-5">
@@ -54,55 +126,36 @@ export function VillaFacilitiesGrid({ facilities }: VillaFacilitiesGridProps) {
           Facilities
         </p>
         <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
-          Fasilitas utama properti
+          Fasilitas properti
         </h2>
         <p className="mt-1.5 text-sm text-slate-500">
-          {safe.length} fasilitas tersedia
+          {totalCount} fasilitas tersedia di seluruh properti
         </p>
       </div>
 
-      {/* Popular grid — always visible */}
+      {/* Grid */}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {popular.map((facility) => {
-          const Icon = getFacilityIcon(facility);
-          return (
-            <div
-              key={facility}
-              className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
-            >
-              <Icon className="h-4 w-4 flex-shrink-0 text-[#3A4A1F]" aria-hidden="true" />
-              <p className="text-sm font-medium text-slate-700">{facility}</p>
-            </div>
-          );
-        })}
+        {usingRich
+          ? richVisible.map((a) => (
+              <AmenityChip key={a.id} name={a.name} iconName={a.icon_name} />
+            ))
+          : legacyVisible.map((name) => (
+              <LegacyChip key={name} name={name} />
+            ))}
       </div>
 
-      {/* Remaining — collapsed in accordion */}
-      {rest.length > 0 && (
-        <div className="mt-4">
-          <Accordion className="w-full">
-            <AccordionItem value="more-facilities" className="border-0">
-              <AccordionTrigger className="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-[#3A4A1F] no-underline hover:bg-slate-100 hover:no-underline">
-                Lihat {rest.length} fasilitas lainnya
-              </AccordionTrigger>
-              <AccordionContent className="pt-3">
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  {rest.map((facility) => {
-                    const Icon = getFacilityIcon(facility);
-                    return (
-                      <div
-                        key={facility}
-                        className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3"
-                      >
-                        <Icon className="h-4 w-4 flex-shrink-0 text-[#3A4A1F]" aria-hidden="true" />
-                        <p className="text-sm font-medium text-slate-700">{facility}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+      {/* Show more / less */}
+      {hasMore && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="inline-flex items-center gap-2 rounded-full border border-[#3A4A1F]/20 bg-slate-50 px-6 py-2.5 text-sm font-semibold text-[#3A4A1F] transition-all hover:border-[#3A4A1F]/40 hover:bg-[#3A4A1F]/5"
+          >
+            {expanded
+              ? "Sembunyikan fasilitas"
+              : `Lihat ${totalCount - INITIAL_VISIBLE} fasilitas lainnya`}
+          </button>
         </div>
       )}
     </section>

@@ -658,6 +658,7 @@ export type Database = {
           capacity_child: number | null
           created_at: string | null
           description: string | null
+          highlight_amenity_ids: string[]
           id: string
           name: string
           status: string | null
@@ -671,6 +672,7 @@ export type Database = {
           capacity_child?: number | null
           created_at?: string | null
           description?: string | null
+          highlight_amenity_ids?: string[]
           id?: string
           name: string
           status?: string | null
@@ -684,6 +686,7 @@ export type Database = {
           capacity_child?: number | null
           created_at?: string | null
           description?: string | null
+          highlight_amenity_ids?: string[]
           id?: string
           name?: string
           status?: string | null

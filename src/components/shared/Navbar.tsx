@@ -49,6 +49,7 @@ export function Navbar() {
                 src="/logo-lodjisvarga.png"
                 alt="Logo Lodjisvarga"
                 fill
+                sizes="48px"
                 className="object-contain"
                 priority
               />

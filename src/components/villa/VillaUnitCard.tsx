@@ -2,15 +2,22 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
-import { BedDouble, MessageCircle, CheckCircle2, ChevronLeft, ChevronRight, Camera } from "lucide-react";
+import {
+  BedDouble,
+  ChevronLeft,
+  ChevronRight,
+  Camera,
+  Percent,
+  MessageCircle,
+  Info,
+} from "lucide-react";
 import { WhatsAppMessageForm } from "@/components/features/villas/WhatsAppMessageForm";
 import { LucideDynamicIcon } from "@/components/shared/LucideDynamicIcon";
+import { RoomDetailModal } from "@/components/villa/RoomDetailModal";
 import type { RoomTypeCardData } from "@/components/features/villas/VillaCard";
 
-interface VillaUnitCardProps {
-  room: RoomTypeCardData;
-}
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+const FALLBACK_IMG = "/assets/placeholder-villa.webp";
 
 const formatIDR = (value: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -19,103 +26,126 @@ const formatIDR = (value: number) =>
     minimumFractionDigits: 0,
   }).format(value);
 
-const FALLBACK_DESCRIPTION =
-  "Unit premium yang dirancang untuk kenyamanan maksimal selama menginap.";
-
-/** Inline mini-gallery for the unit card image panel. */
-function UnitImageGallery({
+// ─── Image Gallery (card thumbnail) ──────────────────────────────────────────
+function ThumbGallery({
   images,
   roomName,
+  discountBadge,
 }: {
   images: string[];
   roomName: string;
+  discountBadge?: string | null;
 }) {
   const [current, setCurrent] = useState(0);
-
-  if (images.length === 0) {
-    return (
-      <div className="flex h-full items-center justify-center bg-slate-50">
-        <BedDouble className="h-10 w-10 text-slate-300" />
-      </div>
-    );
-  }
+  const list = images.length > 0 ? images : [FALLBACK_IMG];
 
   const goPrev = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrent((i) => (i === 0 ? images.length - 1 : i - 1));
+    setCurrent((i) => (i === 0 ? list.length - 1 : i - 1));
   };
-
   const goNext = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrent((i) => (i === images.length - 1 ? 0 : i + 1));
+    setCurrent((i) => (i === list.length - 1 ? 0 : i + 1));
   };
 
   return (
-    <div className="group/img relative h-full w-full overflow-hidden">
+    <div className="group/img relative h-full w-full overflow-hidden bg-slate-100">
       <Image
-        src={images[current]}
-        alt={`${roomName} – photo ${current + 1}`}
+        src={list[current]}
+        alt={`${roomName} – foto ${current + 1}`}
         fill
-        className="object-cover transition-transform duration-500 group-hover/img:scale-105"
-        sizes="(max-width: 1024px) 100vw, 288px"
+        className="object-cover transition-transform duration-700 group-hover/img:scale-[1.06]"
+        sizes="(max-width: 1024px) 100vw, 296px"
       />
+      {/* bottom scrim */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
+      {/* top scrim for badge */}
+      {discountBadge && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-black/30 to-transparent" />
+      )}
 
-      {images.length > 1 && (
+      {/* Discount badge */}
+      {discountBadge && (
+        <div className="absolute left-3 top-3 z-20 flex items-center gap-1 rounded-full bg-rose-500 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white shadow-lg">
+          <Percent className="h-2.5 w-2.5" />
+          {discountBadge}
+        </div>
+      )}
+
+      {/* Nav arrows */}
+      {list.length > 1 && (
         <>
-          {/* Prev/Next arrows — appear on hover */}
-          <button
-            type="button"
-            onClick={goPrev}
-            aria-label="Previous photo"
-            className="absolute left-2 top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur-sm transition-opacity group-hover/img:opacity-100"
-          >
-            <ChevronLeft className="h-4 w-4" />
+          <button type="button" onClick={goPrev} aria-label="Foto sebelumnya"
+            className="absolute left-2 top-1/2 z-10 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-white opacity-0 backdrop-blur-md transition-all group-hover/img:opacity-100 hover:bg-white/40">
+            <ChevronLeft className="h-3.5 w-3.5" />
           </button>
-          <button
-            type="button"
-            onClick={goNext}
-            aria-label="Next photo"
-            className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur-sm transition-opacity group-hover/img:opacity-100"
-          >
-            <ChevronRight className="h-4 w-4" />
+          <button type="button" onClick={goNext} aria-label="Foto berikutnya"
+            className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-white opacity-0 backdrop-blur-md transition-all group-hover/img:opacity-100 hover:bg-white/40">
+            <ChevronRight className="h-3.5 w-3.5" />
           </button>
-
-          {/* Dot indicators */}
-          <div className="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1 pointer-events-none">
-            {images.map((_, i) => (
-              <span
-                key={i}
-                className={`block rounded-full transition-all duration-300 ${
-                  i === current
-                    ? "w-3.5 h-1.5 bg-white"
-                    : "w-1.5 h-1.5 bg-white/50"
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Photo count badge */}
-          <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">
-            <Camera className="h-3 w-3" />
-            {current + 1}/{images.length}
-          </div>
         </>
       )}
+
+      {/* Dot indicators */}
+      {list.length > 1 && (
+        <div className="absolute bottom-2.5 left-1/2 z-10 flex -translate-x-1/2 gap-1 pointer-events-none">
+          {list.map((_, i) => (
+            <span key={i} className={`block rounded-full transition-all duration-300 ${
+              i === current ? "w-3.5 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/50"
+            }`} />
+          ))}
+        </div>
+      )}
+
+      {/* Photo counter */}
+      <div className="absolute bottom-2.5 right-2.5 z-10 flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
+        <Camera className="h-2.5 w-2.5" />
+        {current + 1}/{list.length}
+      </div>
     </div>
   );
 }
 
-export function VillaUnitCard({ room }: VillaUnitCardProps) {
+// ─── Highlight Chip ───────────────────────────────────────────────────────────
+function HighlightChip({
+  name,
+  iconName,
+}: {
+  name: string;
+  iconName?: string | null;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#3A4A1F]/6 px-3 py-1.5 text-[11px] font-semibold text-[#3A4A1F]">
+      <LucideDynamicIcon
+        iconName={iconName}
+        amenityName={name}
+        className="h-3 w-3 flex-shrink-0 text-[#3A4A1F]"
+      />
+      {name}
+    </span>
+  );
+}
+
+// ─── WhatsApp SVG ─────────────────────────────────────────────────────────────
+const WaIcon = () => (
+  <svg className="h-3.5 w-3.5 fill-current flex-shrink-0" viewBox="0 0 24 24">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.094.541 4.061 1.488 5.773L.057 23.998l6.375-1.406A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.817 9.817 0 0 1-5.006-1.368l-.358-.214-3.724.977.993-3.62-.234-.371A9.818 9.818 0 0 1 2.182 12C2.182 6.573 6.573 2.182 12 2.182S21.818 6.573 21.818 12 17.427 21.818 12 21.818z" />
+  </svg>
+);
+
+// ─── Main Card ────────────────────────────────────────────────────────────────
+export function VillaUnitCard({ room }: { room: RoomTypeCardData }) {
   const isComingSoon = room.villaStatus === "coming_soon";
   const effectivePrice = room.effective_price ?? 0;
-  const discountPercentage = room.activePromo?.discount_value ?? 0;
-  const hasPromo = discountPercentage > 0 && effectivePrice > 0;
+  const discountPct = room.activePromo?.discount_value ?? 0;
+  const hasPromo = discountPct > 0 && effectivePrice > 0;
   const hasManagedPrice = effectivePrice > 0;
   const finalPrice = hasPromo
-    ? Math.max(0, Math.round(effectivePrice * (1 - discountPercentage / 100)))
+    ? Math.max(0, Math.round(effectivePrice * (1 - discountPct / 100)))
     : effectivePrice;
 
-  // ── Gallery: all room photos sorted by primary → display_order ──────────────
+  // Gallery
   const sortedImages = [...(room.gallery ?? [])]
     .sort((a, b) => {
       if (a.is_primary && !b.is_primary) return -1;
@@ -125,142 +155,145 @@ export function VillaUnitCard({ room }: VillaUnitCardProps) {
     .map((img) => img.image_url)
     .filter(Boolean);
 
-  // ── Amenities: two-tier fallback ───────────────────────────────────────────
-  const highlightAmenities = (room.highlight_amenities ?? [])
-    .filter((a) => a?.id && a?.name)
-    .slice(0, 4);
+  // Highlights — from admin selection (max 4)
+  // highlight_amenities is already resolved in page.tsx with fallback
+  const highlights = (room.highlight_amenities ?? []) as {
+    id?: string;
+    name: string;
+    icon_name?: string | null;
+  }[];
 
-  const fallbackAmenities =
-    highlightAmenities.length === 0
-      ? (room.amenities ?? [])
-          .filter((a): a is { name: string; icon_name?: string | null; id?: string } =>
-            Boolean(a?.name)
-          )
-          .slice(0, 4)
-      : [];
-
-  const hasAnyAmenities =
-    highlightAmenities.length > 0 || fallbackAmenities.length > 0;
-  const totalAmenities = (room.amenities ?? []).length;
-  const shownCount =
-    highlightAmenities.length > 0
-      ? highlightAmenities.length
-      : fallbackAmenities.length;
-  const remainingCount = Math.max(0, totalAmenities - shownCount);
-
-  // ── Pricing ────────────────────────────────────────────────────────────────
-  const priceText = hasManagedPrice ? formatIDR(finalPrice) : "Cek harga";
-  const originalPriceText = hasPromo ? formatIDR(effectivePrice) : null;
-  const promoText = hasPromo
-    ? `${room.activePromo?.discount_code ?? "PROMO"} −${discountPercentage}%`
+  const discountBadge = hasPromo
+    ? `${room.activePromo?.discount_code ?? "PROMO"} −${discountPct}%`
     : null;
 
-  // ── Description ────────────────────────────────────────────────────────────
-  const description = room.description?.trim() || FALLBACK_DESCRIPTION;
+  // "Lihat Detail" trigger button
+  const detailTrigger = (
+    <button
+      type="button"
+      className="inline-flex items-center gap-1.5 rounded-xl border border-[#3A4A1F]/15 bg-white px-3 py-1.5 text-[11px] font-bold text-[#3A4A1F] transition-colors hover:bg-[#3A4A1F]/5 hover:border-[#3A4A1F]/30"
+    >
+      <Info className="h-3.5 w-3.5" />
+      Lihat Detail Lengkap
+    </button>
+  );
 
   return (
     <article
-      className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
+      className="group overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:border-slate-200 hover:scale-[1.002]"
       aria-label={room.name}
     >
-      <div className="flex flex-col lg:flex-row">
-        {/* ── Image panel ── */}
-        <div className="relative h-64 flex-shrink-0 bg-slate-100 lg:h-auto lg:w-72">
-          {/* Promo badge */}
-          {promoText && (
-            <div className="absolute left-3 top-3 z-20 rounded-full bg-amber-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow">
-              {promoText}
-            </div>
-          )}
-          <UnitImageGallery images={sortedImages} roomName={room.name} />
+      <div className="flex flex-col lg:flex-row lg:min-h-[200px]">
+
+        {/* ── Image ── */}
+        <div className="relative aspect-[4/3] flex-shrink-0 overflow-hidden lg:aspect-auto lg:w-[280px] xl:w-[300px]">
+          <ThumbGallery
+            images={sortedImages}
+            roomName={room.name}
+            discountBadge={discountBadge}
+          />
         </div>
 
-        {/* ── Content panel ── */}
-        <div className="flex flex-1 flex-col p-5 sm:p-6">
-          {/* Header: name + price */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex-1">
-              <h3 className="text-xl font-black tracking-tight text-slate-950">
-                {room.name}
-              </h3>
-              {/* Bed type */}
-              <p className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-slate-500">
-                <BedDouble className="h-4 w-4 flex-shrink-0 text-[#3A4A1F]" />
-                {room.bed_type?.trim() || "Bed setup by request"}
-              </p>
-            </div>
+        {/* ── Middle: Info ── */}
+        <div className="flex flex-1 flex-col justify-between gap-4 p-5 sm:p-6 lg:border-r lg:border-slate-100/80">
 
-            {/* Price block */}
-            <div className="shrink-0 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 sm:min-w-[160px] sm:text-right">
-              {originalPriceText && (
-                <p className="text-xs font-semibold text-slate-400 line-through">
-                  {originalPriceText}
-                </p>
-              )}
-              <p className="text-2xl font-black text-[#3A4A1F]">{priceText}</p>
-              <p className="mt-0.5 text-[11px] text-slate-400">
-                {hasManagedPrice ? "per malam" : "konfirmasi via WhatsApp"}
-              </p>
-            </div>
+          {/* Title + bed */}
+          <div>
+            <h3 className="text-[18px] font-bold tracking-tight text-slate-900 sm:text-xl">
+              {room.name}
+            </h3>
+            <p className="mt-1 flex items-center gap-1.5 text-[12px] text-slate-500">
+              <BedDouble className="h-3.5 w-3.5 flex-shrink-0 text-[#3A4A1F]" />
+              {room.bed_type?.trim() || "Bed setup by request"}
+            </p>
           </div>
 
-          {/* Description — clamped for card context */}
-          <p className="mt-4 line-clamp-3 text-sm leading-7 text-slate-500">
-            {description}
-          </p>
-
-          {/* ── Amenities strip ── */}
-          {hasAnyAmenities && (
-            <div className="mt-4 border-t border-slate-100 pt-4">
-              <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                Fasilitas utama
+          {/* Highlight chips — admin-selected, max 4 */}
+          {highlights.length > 0 ? (
+            <div>
+              <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                Unggulan
               </p>
-              <div className="flex flex-wrap gap-2">
-                {highlightAmenities.length > 0
-                  ? highlightAmenities.map((amenity) => (
-                      <Badge
-                        key={amenity.id}
-                        variant="outline"
-                        className="rounded-full border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-slate-700"
-                      >
-                        <LucideDynamicIcon
-                          iconName={amenity.icon_name}
-                          className="mr-1.5 h-3.5 w-3.5 text-[#3A4A1F]"
-                        />
-                        {amenity.name}
-                      </Badge>
-                    ))
-                  : fallbackAmenities.map((amenity, i) => (
-                      <Badge
-                        key={(amenity as any).id ?? i}
-                        variant="outline"
-                        className="rounded-full border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-slate-700"
-                      >
-                        <CheckCircle2 className="mr-1.5 h-3.5 w-3.5 text-[#3A4A1F]" />
-                        {amenity.name}
-                      </Badge>
-                    ))}
-
-                {remainingCount > 0 && (
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-slate-500"
-                  >
-                    +{remainingCount} lainnya
-                  </Badge>
-                )}
+              <div className="flex flex-wrap gap-1.5">
+                {highlights.map((a, i) => (
+                  <HighlightChip
+                    key={(a as any).id ?? i}
+                    name={a.name}
+                    iconName={a.icon_name}
+                  />
+                ))}
               </div>
             </div>
+          ) : (
+            <p className="text-[12px] italic text-slate-400">
+              Lihat detail untuk fasilitas lengkap
+            </p>
           )}
 
-          {/* ── Footer: disclaimer + CTA ── */}
-          <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-            <p className="text-[11px] text-slate-400">
-              {hasManagedPrice
-                ? "* Harga dapat berubah sewaktu-waktu"
-                : "* Harga belum tersedia untuk hari ini"}
-            </p>
+          {/* Lihat Detail trigger → opens modal */}
+          <div>
+            <RoomDetailModal room={room} trigger={detailTrigger} />
+          </div>
+        </div>
 
+        {/* ── Right: Price + CTA ── */}
+        <div className="flex flex-col justify-between gap-4 bg-gradient-to-b from-slate-50/80 to-white p-5 sm:p-6 lg:w-[200px] lg:flex-shrink-0 xl:w-[220px]">
+
+          {/* Pricing */}
+          <div>
+            {isComingSoon ? (
+              <>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                  Harga
+                </p>
+                <p className="mt-1 text-sm font-bold text-slate-600">
+                  Segera hadir
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                  Mulai dari
+                </p>
+                {hasPromo && (
+                  <p className="mt-0.5 text-xs font-semibold text-slate-400 line-through">
+                    {formatIDR(effectivePrice)}
+                  </p>
+                )}
+                {hasManagedPrice ? (
+                  <p className={`mt-0.5 text-[26px] font-black leading-tight tracking-tight ${
+                    hasPromo ? "text-emerald-600" : "text-[#3A4A1F]"
+                  }`}>
+                    {formatIDR(finalPrice)}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-base font-bold text-slate-500">
+                    Cek harga
+                  </p>
+                )}
+                <p className="mt-0.5 text-[11px] font-medium text-slate-400">
+                  {hasManagedPrice ? "/ malam" : "konfirmasi WhatsApp"}
+                </p>
+
+                {/* Tags */}
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {room.price_source === "override" && (
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-700">
+                      Harga hari ini
+                    </span>
+                  )}
+                  {hasPromo && (
+                    <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-bold uppercase text-rose-600">
+                      Hemat {discountPct}%
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* CTA */}
+          <div className="space-y-1.5">
             {!isComingSoon && room.villaWhatsapp ? (
               <WhatsAppMessageForm
                 whatsappNumber={room.villaWhatsapp}
@@ -268,16 +301,24 @@ export function VillaUnitCard({ room }: VillaUnitCardProps) {
                 roomTypeName={room.name}
                 buttonLabel="Pesan Sekarang"
                 title={`Pesan ${room.name}`}
-                buttonClassName="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#1ebe5d]"
+                buttonClassName="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-2.5 text-[12px] font-bold text-white shadow-sm transition-colors hover:bg-[#1ebe5d] active:scale-95"
               >
-                <MessageCircle className="h-4 w-4" />
+                <WaIcon />
                 Pesan Sekarang
               </WhatsAppMessageForm>
             ) : (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-medium text-slate-500">
-                Reservasi belum dibuka
+              <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 py-2.5 text-xs font-medium text-slate-400">
+                <MessageCircle className="h-3.5 w-3.5" />
+                Segera Tersedia
               </div>
             )}
+            <p className="text-center text-[10px] text-slate-400">
+              {isComingSoon
+                ? "Reservasi segera dibuka"
+                : hasManagedPrice
+                ? "* Harga dapat berubah"
+                : "* Tanyakan via WhatsApp"}
+            </p>
           </div>
         </div>
       </div>

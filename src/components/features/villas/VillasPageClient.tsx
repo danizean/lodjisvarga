@@ -203,7 +203,7 @@ export function VillasPageClient({ villas, activePromo = null }: Props) {
           {filteredCards.length > 0 ? (
             <motion.div
               layout
-              className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:gap-10"
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:gap-8"
             >
               {filteredCards.map((card, idx) => (
                 <motion.div

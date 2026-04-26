@@ -10,7 +10,6 @@ import {
   BedDouble,
   Building2,
   CalendarDays,
-  Check,
   CheckCircle2,
   ExternalLink,
   Globe,
@@ -25,7 +24,6 @@ import {
   Settings2,
   ShieldCheck,
   Sparkles,
-  Trash2,
 } from "lucide-react";
 import { saveFullVillaData, archiveVilla, checkSlugAvailability } from "@/lib/actions/villas";
 import { createClient } from "@/lib/supabase/client";
@@ -33,6 +31,7 @@ import { AmenitiesSelect } from "@/components/admin/AmenitiesSelect";
 import { GalleryUploader, type GalleryItem } from "@/components/admin/GalleryUploader";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Container } from "@/components/shared/Container";
+import { RoomEditorPanel, type RoomTypeForm } from "@/components/admin/villas/RoomEditorPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,18 +53,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Tables } from "@/types/database";
-
-interface RoomTypeForm {
-  id?: string;
-  name: string;
-  base_price: number;
-  bed_type?: string;
-  description: string;
-  amenity_ids: string[];
-  /** IDs of up to 3 amenities pinned as featured icons on VillaCard */
-  highlight_amenity_ids: string[];
-  gallery: GalleryItem[];
-}
 
 interface VillaForm {
   id?: string;
@@ -221,9 +208,14 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
             amenity_ids: (roomType.room_type_amenities ?? []).map((amenity) => amenity.amenity_id),
             highlight_amenity_ids:
               (roomType as unknown as { highlight_amenity_ids?: string[] }).highlight_amenity_ids ?? [],
-            gallery: [...(roomType.room_gallery ?? [])].sort(
-              (left, right) => (left.display_order ?? 0) - (right.display_order ?? 0)
-            ),
+            gallery: [...(roomType.room_gallery ?? [])]
+              .sort((left, right) => (left.display_order ?? 0) - (right.display_order ?? 0))
+              .map((img) => ({
+                id: img.id,
+                image_url: img.image_url,
+                is_primary: img.is_primary ?? false,
+                display_order: img.display_order ?? 0,
+              })),
           }))
       );
 
@@ -645,199 +637,35 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
                 </Button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {rooms.map((room, idx) => (
-                  <div key={room.id ?? idx} className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                    <div className="flex flex-col gap-4 border-b border-slate-200 bg-slate-50/70 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[#3A4A1F]/10 text-xs font-black text-[#3A4A1F]">
-                          {String(idx + 1).padStart(2, "0")}
-                        </span>
-                        <div className="space-y-1">
-                          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Room Type</p>
-                          <Input
-                            value={room.name}
-                            onChange={(event) => setRoomField(idx, "name", event.target.value)}
-                            placeholder="Contoh: Joglo Suite"
-                            className="h-10 min-w-[260px] rounded-xl border-slate-200 bg-white font-bold"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                        {room.bed_type && (
-                          <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-slate-600 ring-1 ring-slate-200">
-                            {room.bed_type}
-                          </span>
-                        )}
-                        <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-slate-600 ring-1 ring-slate-200">
-                          {room.gallery.length} foto kamar
-                        </span>
-                        <AlertDialog>
-                          <AlertDialogTrigger className="inline-flex h-9 items-center justify-center rounded-xl border border-red-200 px-3 text-xs font-bold text-red-600 transition-colors hover:bg-red-50">
-                            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                            Hapus
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Hapus tipe kamar ini?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Tipe kamar &quot;{room.name || "Tanpa nama"}&quot; akan dihapus dari form. Jika sudah pernah disimpan, sistem akan mengarsipkannya agar histori tetap aman.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Batal</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => removeRoom(idx)} className="bg-red-600 hover:bg-red-700">
-                                Hapus
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-2">
-                      <div className="space-y-5">
-                        <div className="space-y-2">
-                          <label className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Tipe Tempat Tidur</label>
-                          <Input
-                            value={room.bed_type ?? ""}
-                            onChange={(event) => setRoomField(idx, "bed_type", event.target.value)}
-                            placeholder="Contoh: 1 King Bed"
-                            className="h-12 rounded-2xl border-slate-200 bg-slate-50 font-semibold"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Deskripsi Kamar</label>
-                          <textarea
-                            rows={4}
-                            value={room.description}
-                            onChange={(event) => setRoomField(idx, "description", event.target.value)}
-                            placeholder="Deskripsikan suasana kamar, ukuran, view, dan fasilitas unggulannya."
-                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#3A4A1F]/30"
-                          />
-                        </div>
-
-                        <AmenitiesSelect
-                          selectedIds={room.amenity_ids}
-                          onChange={(ids) => {
-                            setRoomField(idx, "amenity_ids", ids);
-                            // Auto-remove any highlights that are no longer in amenity_ids
-                            const nextHighlights = room.highlight_amenity_ids.filter((hid) =>
-                              ids.includes(hid)
-                            );
-                            setRoomField(idx, "highlight_amenity_ids", nextHighlights);
-                          }}
-                          label="Fasilitas Kamar"
-                        />
-
-                        {/* ── Fasilitas Sorotan (Max 3) ── */}
-                        {room.amenity_ids.length > 0 && (
-                          <div className="space-y-3 rounded-2xl border border-[#3A4A1F]/15 bg-[#F6F8F0] p-4">
-                            <div>
-                              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#3A4A1F]/70">
-                                Fasilitas Sorotan
-                              </p>
-                              <p className="mt-0.5 text-xs text-slate-500">
-                                Pilih maks. 3 yang tampil sebagai ikon di kartu villa publik.
-                              </p>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {allAmenities
-                                .filter((am) => room.amenity_ids.includes(am.id))
-                                .map((am) => {
-                                  const isHighlighted = room.highlight_amenity_ids.includes(am.id);
-                                  return (
-                                    <button
-                                      key={am.id}
-                                      type="button"
-                                      onClick={() => {
-                                        if (isHighlighted) {
-                                          setRoomField(
-                                            idx,
-                                            "highlight_amenity_ids",
-                                            room.highlight_amenity_ids.filter((id) => id !== am.id)
-                                          );
-                                        } else {
-                                          if (room.highlight_amenity_ids.length >= 3) {
-                                            toast.error("Maksimal 3 fasilitas sorotan");
-                                            return;
-                                          }
-                                          setRoomField(idx, "highlight_amenity_ids", [
-                                            ...room.highlight_amenity_ids,
-                                            am.id,
-                                          ]);
-                                        }
-                                      }}
-                                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
-                                        isHighlighted
-                                          ? "border-[#3A4A1F] bg-[#3A4A1F] text-white shadow-sm"
-                                          : "border-slate-200 bg-white text-slate-600 hover:border-[#3A4A1F]/30"
-                                      }`}
-                                    >
-                                      {isHighlighted && <Check className="h-3 w-3" />}
-                                      {am.name}
-                                    </button>
-                                  );
-                                })}
-                            </div>
-                            <p className="text-[10px] text-slate-400">
-                              {room.highlight_amenity_ids.length}/3 dipilih
-                            </p>
-                          </div>
-                        )}
-
-                        <div className="rounded-2xl border border-[#3A4A1F]/15 bg-[#F6F8F0] p-4">
-                          <div className="flex items-start gap-3">
-                            <div className="rounded-xl bg-[#3A4A1F]/10 p-2">
-                              <CalendarDays className="h-4 w-4 text-[#3A4A1F]" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#3A4A1F]/70">Price & Availability</p>
-                              <h4 className="mt-1 text-sm font-black text-slate-950">Kelola harga dan maintenance di calendar workspace</h4>
-                              <p className="mt-1 text-sm text-slate-500">
-                                Halaman ini khusus untuk data listing dan inventori kamar. Semua perubahan rate harian dilakukan di calendar agar lebih aman dan konsisten.
-                              </p>
-                              {!isCreate && room.id ? (
-                                <Link href="/admin/calendar" className="mt-3 inline-flex">
-                                  <Button variant="outline" className="h-9 rounded-xl border-[#3A4A1F]/20 text-xs font-bold text-[#3A4A1F]">
-                                    <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
-                                    Buka Calendar & Pricing
-                                  </Button>
-                                </Link>
-                              ) : (
-                                <p className="mt-3 text-xs font-semibold text-amber-700">
-                                  Simpan properti terlebih dahulu agar tipe kamar ini muncul di workspace kalender.
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <label className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Galeri Kamar</label>
-                          <span className="text-xs text-slate-400">Urutkan dan pilih foto utama kamar</span>
-                        </div>
-                        <GalleryUploader
-                          villaId={villa.id ?? ""}
-                          roomTypeId={room.id}
-                          items={room.gallery}
-                          onChange={(items) => setRoomField(idx, "gallery", items)}
-                          onUploadStatusChange={(uploading) => setUploadScope(`room-${room.id ?? idx}`, uploading)}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <RoomEditorPanel
+                    key={room.id ?? idx}
+                    room={room}
+                    idx={idx}
+                    villaId={villa.id ?? ""}
+                    isCreate={isCreate}
+                    allAmenities={allAmenities}
+                    onFieldChange={(key, value) => setRoomField(idx, key, value)}
+                    onRemove={() => removeRoom(idx)}
+                    onUploadStatusChange={(uploading) =>
+                      setUploadScope(`room-${room.id ?? idx}`, uploading)
+                    }
+                  />
                 ))}
 
                 {rooms.length === 0 && (
                   <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
                     <BedDouble className="mx-auto h-12 w-12 text-slate-200" />
                     <p className="mt-4 text-lg font-black text-slate-800">Belum ada tipe kamar</p>
-                    <p className="mt-2 text-sm text-slate-500">Tambahkan minimal satu kamar agar listing bisa disimpan dan dikelola.</p>
-                    <Button type="button" onClick={addRoom} className="mt-5 h-11 rounded-xl bg-[#3A4A1F] px-5 text-sm font-bold text-white">
+                    <p className="mt-2 text-sm text-slate-500">
+                      Tambahkan minimal satu kamar agar listing bisa disimpan dan dikelola.
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={addRoom}
+                      className="mt-5 h-11 rounded-xl bg-[#3A4A1F] px-5 text-sm font-bold text-white"
+                    >
                       <Plus className="mr-2 h-4 w-4" />
                       Tambah Tipe Kamar
                     </Button>
@@ -847,7 +675,9 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
             </section>
           </div>
 
+          {/* ── Sidebar ── */}
           <aside className="space-y-5 xl:col-span-4">
+            {/* Ringkasan Listing */}
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[#3A4A1F]" />
@@ -873,6 +703,7 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
               </div>
             </div>
 
+            {/* Checklist Kualitas */}
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-[#3A4A1F]" />
@@ -881,11 +712,7 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
               <div className="mt-4 space-y-3">
                 {checklist.map((item) => (
                   <div key={item.label} className="flex items-start gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-                    <span
-                      className={`mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full ${
-                        item.done ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"
-                      }`}
-                    >
+                    <span className={`mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full ${item.done ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"}`}>
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     </span>
                     <div>
@@ -897,6 +724,7 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
               </div>
             </div>
 
+            {/* Foto Properti */}
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="mb-4 border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
@@ -913,6 +741,7 @@ export default function VillaManagementEditor({ params }: { params: Promise<{ id
               />
             </div>
 
+            {/* Fasilitas Villa */}
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="mb-4 border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
