@@ -19,7 +19,7 @@ export function VillaTabs({ villaId }: VillaTabsProps) {
       icon: Info,
     },
     {
-      name: "Amenities",
+      name: "Villa Facilities",
       href: `/admin/villas/${villaId}/amenities`,
       icon: Star,
     },

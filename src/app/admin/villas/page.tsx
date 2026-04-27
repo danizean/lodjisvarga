@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { BedDouble, Building2, CalendarDays, Edit2, ImageIcon, Plus } from "lucide-react";
-import { StatusBadge } from "@/components/admin/StatusBadge";
 import { AdminEmptyState, AdminPageShell, AdminSection } from "@/components/admin/ui/AdminPageShell";
 import { AdminLinkButton } from "@/components/admin/ui/AdminLinkButton";
 import { Badge } from "@/components/ui/badge";
+import { VillaStatusToggle } from "@/components/admin/villas/VillaStatusToggle";
 import { getAdminVillasWithRooms } from "@/lib/queries/villas";
 
 export const dynamic = "force-dynamic";
@@ -124,7 +124,6 @@ export default async function AdminVillasPage() {
                   <div className="min-w-0 space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="truncate text-base font-semibold text-slate-900">{villa.name}</h3>
-                      <StatusBadge status={villa.status} variant="villa" />
                     </div>
                     <p className="text-sm text-slate-500">{villa.address || "Alamat belum diisi"}</p>
                     <div className="flex flex-wrap gap-2 text-xs text-slate-600">
@@ -139,15 +138,23 @@ export default async function AdminVillasPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 lg:flex-col lg:items-end">
-                    <AdminLinkButton href={`/admin/villas/${villa.id}/edit`} variant="outline" size="sm">
-                      <Edit2 className="h-3.5 w-3.5" />
-                      Edit
-                    </AdminLinkButton>
-                    <AdminLinkButton href="/admin/calendar" variant="outline" size="sm">
-                      <CalendarDays className="h-3.5 w-3.5" />
-                      Calendar
-                    </AdminLinkButton>
+                  <div className="flex items-center gap-2 lg:flex-col lg:items-end">
+                    {/* Inline status toggle — optimistic, no reload */}
+                    <VillaStatusToggle
+                      villaId={villa.id}
+                      villaName={villa.name}
+                      currentStatus={villa.status}
+                    />
+                    <div className="flex gap-2">
+                      <AdminLinkButton href={`/admin/villas/${villa.id}/edit`} variant="outline" size="sm">
+                        <Edit2 className="h-3.5 w-3.5" />
+                        Edit
+                      </AdminLinkButton>
+                      <AdminLinkButton href="/admin/calendar" variant="outline" size="sm">
+                        <CalendarDays className="h-3.5 w-3.5" />
+                        Calendar
+                      </AdminLinkButton>
+                    </div>
                   </div>
                 </article>
               );

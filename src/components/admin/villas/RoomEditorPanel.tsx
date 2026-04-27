@@ -310,6 +310,7 @@ export function RoomEditorPanel({
                 }}
                 highlightIds={room.highlight_amenity_ids}
                 onHighlightChange={(ids) => onFieldChange("highlight_amenity_ids", ids)}
+                roomName={room.name}
               />
             )}
 

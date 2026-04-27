@@ -85,6 +85,8 @@ export default function VillaRoomsPage({ params }: { params: Promise<{ id: strin
         villa_id: id,
         name: "New Room Type",
         base_price: 0,
+        capacity_adult: 1,
+        capacity_child: 0,
       });
 
       if (res.error) {

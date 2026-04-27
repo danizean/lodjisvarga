@@ -41,6 +41,8 @@ export const roomTypeSchema = z.object({
   capacity_child: z.coerce.number().int().optional().nullable(),
   description: z.string().optional().nullable(),
   status: z.enum(["active", "inactive"]).default("active"),
+  /** Ordered list of amenity IDs to display as highlight chips on the public card. Max 4. */
+  highlight_amenity_ids: z.array(z.string().uuid()).max(4, "Maksimal 4 highlight").default([]),
 });
 
 export type RoomTypeFormData = z.infer<typeof roomTypeSchema>;

@@ -16,8 +16,10 @@ export async function addRoomTypeToVilla(data: {
   villa_id: string;
   name: string;
   base_price: number;
-  capacity_adult: number;
-  capacity_child: number;
+  /** Optional — defaults to 1 if not provided */
+  capacity_adult?: number;
+  /** Optional — defaults to 0 if not provided */
+  capacity_child?: number;
   description?: string;
 }) {
   const { supabase, user, isAdmin } = await getAuthenticatedAdmin();
@@ -46,14 +48,16 @@ export async function addRoomTypeToVilla(data: {
 }
 
 export async function updateRoomType(
-  id: string, 
-  data: Partial<{ 
-    name: string; 
-    base_price: number; 
-    capacity_adult: number; 
-    capacity_child: number; 
+  id: string,
+  data: Partial<{
+    name: string;
+    base_price: number;
+    capacity_adult: number;
+    capacity_child: number;
     bed_type: string;
     description: string;
+    /** Ordered highlight amenity IDs written directly to the room_types column (max 4). */
+    highlight_amenity_ids: string[];
   }>
 ) {
   const { supabase, user, isAdmin } = await getAuthenticatedAdmin();
@@ -63,6 +67,11 @@ export async function updateRoomType(
   const payload: RoomTypeUpdate = {
     ...data,
     description: data.description ?? undefined,
+    // highlight_amenity_ids is spread in from `data` via the spread above;
+    // cast required because the generated type may not include the JSONB column.
+    ...(data.highlight_amenity_ids !== undefined
+      ? { highlight_amenity_ids: data.highlight_amenity_ids as unknown as any }
+      : {}),
   };
 
   const { data: old } = await supabase.from("room_types").select("*").eq("id", id).single();

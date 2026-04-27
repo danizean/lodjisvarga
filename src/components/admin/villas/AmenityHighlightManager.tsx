@@ -1,10 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { Pin, PinOff, Star, Sparkles, Check, Search } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  BedDouble,
+  Check,
+  Pin,
+  PinOff,
+  Search,
+  Sparkles,
+  Star,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { LucideDynamicIcon } from "@/components/shared/LucideDynamicIcon";
 import { cn } from "@/lib/utils";
+
+// ── Types ──────────────────────────────────────────────────────────────────────
 
 interface Amenity {
   id: string;
@@ -12,219 +25,560 @@ interface Amenity {
   icon_name?: string | null;
 }
 
-interface AmenityHighlightManagerProps {
-  /** All amenities available for this room (already filtered to room's selected IDs) */
+export interface AmenityHighlightManagerProps {
+  /** All available amenities across the whole catalog */
+  allAmenities: Amenity[];
+  /** Amenities that belong to this room (already filtered) */
   roomAmenities: Amenity[];
-  /** IDs of all amenities selected for this room */
+  /** IDs currently selected (checked) for this room */
   selectedIds: string[];
   onSelectedChange: (ids: string[]) => void;
-  /** IDs of highlighted amenities (max 4) */
+  /** IDs pinned as highlights (ordered, max 4) */
   highlightIds: string[];
   onHighlightChange: (ids: string[]) => void;
-  /** All available amenities (for selection) */
-  allAmenities: Amenity[];
+  /** Optional room name shown in live preview */
+  roomName?: string;
 }
+
+// ── Constants ─────────────────────────────────────────────────────────────────
 
 const HIGHLIGHT_SLOTS = 4;
 
+// ── Animation Variants ────────────────────────────────────────────────────────
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.92, y: 6 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 380, damping: 28 } },
+  exit: { opacity: 0, scale: 0.88, y: -4, transition: { duration: 0.15 } },
+};
+
+const slotVariants = {
+  empty: { scale: 1, backgroundColor: "transparent" },
+  filled: { scale: 1, backgroundColor: "transparent" },
+};
+
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
+/** Single amenity icon grid card */
+function AmenityCard({
+  amenity,
+  isSelected,
+  isHighlighted,
+  highlightSlot,
+  onToggleSelect,
+  onToggleHighlight,
+  isHighlightFull,
+}: {
+  amenity: Amenity;
+  isSelected: boolean;
+  isHighlighted: boolean;
+  highlightSlot: number; // -1 when not highlighted
+  onToggleSelect: () => void;
+  onToggleHighlight: () => void;
+  isHighlightFull: boolean;
+}) {
+  return (
+    <motion.div
+      layout
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className={cn(
+        "group relative flex flex-col items-center gap-2 rounded-2xl border-2 p-3 cursor-pointer select-none transition-colors duration-200",
+        isHighlighted
+          ? "border-[#3A4A1F] bg-[#3A4A1F] shadow-md shadow-[#3A4A1F]/20"
+          : isSelected
+          ? "border-[#3A4A1F]/40 bg-[#F6F8F0] hover:border-[#3A4A1F]/70"
+          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80"
+      )}
+      onClick={onToggleSelect}
+      role="checkbox"
+      aria-checked={isSelected}
+      aria-label={amenity.name}
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); onToggleSelect(); } }}
+    >
+      {/* ── Selection tick (top-left) ── */}
+      <AnimatePresence>
+        {isSelected && !isHighlighted && (
+          <motion.span
+            key="check"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+            className="absolute left-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#3A4A1F]/15"
+          >
+            <Check className="h-2.5 w-2.5 text-[#3A4A1F]" />
+          </motion.span>
+        )}
+      </AnimatePresence>
+
+      {/* ── Highlight slot badge (top-left when highlighted) ── */}
+      <AnimatePresence>
+        {isHighlighted && (
+          <motion.span
+            key="slot"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            className="absolute left-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white/30 text-[8px] font-black text-white"
+          >
+            {highlightSlot + 1}
+          </motion.span>
+        )}
+      </AnimatePresence>
+
+      {/* ── Icon ── */}
+      <span
+        className={cn(
+          "flex h-9 w-9 items-center justify-center rounded-xl transition-colors duration-200",
+          isHighlighted
+            ? "bg-white/20 text-white"
+            : isSelected
+            ? "bg-[#3A4A1F]/10 text-[#3A4A1F]"
+            : "bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600"
+        )}
+        aria-hidden="true"
+      >
+        <LucideDynamicIcon
+          iconName={amenity.icon_name}
+          amenityName={amenity.name}
+          className="h-4 w-4"
+        />
+      </span>
+
+      {/* ── Name ── */}
+      <p
+        className={cn(
+          "text-center text-[9px] font-bold leading-tight",
+          isHighlighted ? "text-white" : isSelected ? "text-[#3A4A1F]" : "text-slate-500"
+        )}
+      >
+        {amenity.name}
+      </p>
+
+      {/* ── Pin/Unpin star button (top-right) ── */}
+      {isSelected && (
+        <button
+          type="button"
+          aria-label={isHighlighted ? `Lepas ${amenity.name} dari highlight` : `Pin ${amenity.name} sebagai highlight`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleHighlight();
+          }}
+          title={isHighlighted ? "Lepas dari highlight" : "Pin sebagai highlight"}
+          className={cn(
+            "absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full shadow-sm transition-all duration-150",
+            isHighlighted
+              ? "bg-amber-400 text-white opacity-100"
+              : "bg-slate-100 text-slate-400 opacity-0 group-hover:opacity-100 hover:bg-amber-400 hover:text-white"
+          )}
+        >
+          {isHighlighted ? (
+            <Star className="h-2.5 w-2.5 fill-current" />
+          ) : (
+            <Pin className="h-2.5 w-2.5" />
+          )}
+        </button>
+      )}
+
+      {/* Disabled veil when highlights are full and this isn't highlighted */}
+      {!isHighlighted && isHighlightFull && isSelected && (
+        <span className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-amber-200/60" />
+      )}
+    </motion.div>
+  );
+}
+
+/** One highlight slot in the slots row */
+function HighlightSlot({
+  slot,
+  amenity,
+  onRemove,
+}: {
+  slot: number;
+  amenity?: Amenity;
+  onRemove: () => void;
+}) {
+  return (
+    <motion.div
+      layout
+      className={cn(
+        "group relative flex min-h-[80px] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 transition-all duration-200",
+        amenity
+          ? "border-[#3A4A1F] bg-[#3A4A1F] shadow-md shadow-[#3A4A1F]/20"
+          : "border-dashed border-slate-200 bg-slate-50 hover:border-[#3A4A1F]/30"
+      )}
+    >
+      <AnimatePresence mode="wait">
+        {amenity ? (
+          <motion.div
+            key={amenity.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18 }}
+            className="flex flex-col items-center gap-1.5 px-1"
+          >
+            {/* Slot number badge */}
+            <span className="absolute left-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white/25 text-[8px] font-black text-white">
+              {slot + 1}
+            </span>
+
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/20">
+              <LucideDynamicIcon
+                iconName={amenity.icon_name}
+                amenityName={amenity.name}
+                className="h-4 w-4 text-white"
+              />
+            </span>
+            <p className="text-center text-[9px] font-bold leading-tight text-white">
+              {amenity.name}
+            </p>
+
+            {/* Remove button */}
+            <button
+              type="button"
+              aria-label={`Lepas ${amenity.name}`}
+              onClick={onRemove}
+              className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+            >
+              <X className="h-2.5 w-2.5" />
+            </button>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center gap-1"
+          >
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-200">
+              <PinOff className="h-3 w-3 text-slate-400" />
+            </span>
+            <p className="text-[9px] font-semibold text-slate-400">Slot {slot + 1}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+/** Mock mobile villa card preview — mirrors VillaUnitCard's HighlightChip row */
+function LivePreview({
+  roomName,
+  highlights,
+}: {
+  roomName: string;
+  highlights: Amenity[];
+}) {
+  return (
+    <div className="sticky top-6">
+      {/* Header */}
+      <div className="mb-3 flex items-center gap-2">
+        <Sparkles className="h-3.5 w-3.5 text-[#3A4A1F]" />
+        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3A4A1F]">
+          Live Preview
+        </p>
+      </div>
+
+      {/* Mocked card shell */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        {/* Faux image placeholder */}
+        <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+          <span className="text-[10px] font-semibold text-slate-400">Foto kamar</span>
+          <span className="absolute bottom-2 right-2 rounded-full bg-black/40 px-2 py-0.5 text-[9px] text-white">
+            1 / 3
+          </span>
+        </div>
+
+        {/* Card body */}
+        <div className="p-3.5 space-y-2.5">
+          {/* Room name */}
+          <div>
+            <p className="text-sm font-black text-slate-900 truncate">
+              {roomName || "Nama Tipe Kamar"}
+            </p>
+            <p className="mt-0.5 flex items-center gap-1 text-[10px] text-slate-500">
+              <BedDouble className="h-3 w-3 text-[#3A4A1F]" />
+              1 King Bed
+            </p>
+          </div>
+
+          {/* Highlight chips */}
+          <div>
+            <p className="mb-1.5 text-[8px] font-black uppercase tracking-[0.18em] text-slate-400">
+              Unggulan
+            </p>
+
+            <AnimatePresence mode="popLayout">
+              {highlights.length === 0 ? (
+                <motion.p
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-[10px] italic text-slate-400"
+                >
+                  Belum ada highlight dipilih
+                </motion.p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {highlights.map((a) => (
+                    <motion.span
+                      key={a.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#3A4A1F]/6 px-2.5 py-1.5 text-[10px] font-semibold text-[#3A4A1F]"
+                    >
+                      <LucideDynamicIcon
+                        iconName={a.icon_name}
+                        amenityName={a.name}
+                        className="h-3 w-3 flex-shrink-0 text-[#3A4A1F]"
+                      />
+                      {a.name}
+                    </motion.span>
+                  ))}
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Faux price row */}
+          <div className="rounded-xl bg-slate-50 p-2 flex items-center justify-between">
+            <div>
+              <p className="text-[8px] font-bold uppercase tracking-wider text-slate-400">Mulai dari</p>
+              <p className="text-base font-black text-[#3A4A1F]">Rp X.XXX.XXX</p>
+            </div>
+            <div className="rounded-xl bg-[#25D366]/10 px-3 py-1.5 text-[10px] font-bold text-[#1da050]">
+              Pesan
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Slot counter below preview */}
+      <p className="mt-3 text-center text-[10px] text-slate-400">
+        {highlights.length}/{HIGHLIGHT_SLOTS} highlight terisi
+      </p>
+    </div>
+  );
+}
+
+// ── Main Export ────────────────────────────────────────────────────────────────
+
 export function AmenityHighlightManager({
-  roomAmenities,
+  allAmenities,
+  roomAmenities: _roomAmenities, // kept for API compat, unused internally
   selectedIds,
   onSelectedChange,
   highlightIds,
   onHighlightChange,
-  allAmenities,
+  roomName = "",
 }: AmenityHighlightManagerProps) {
   const [search, setSearch] = useState("");
 
-  const toggleSelected = (id: string) => {
-    if (selectedIds.includes(id)) {
-      onSelectedChange(selectedIds.filter((x) => x !== id));
-      // auto-remove from highlights
-      onHighlightChange(highlightIds.filter((h) => h !== id));
-    } else {
-      onSelectedChange([...selectedIds, id]);
-    }
-  };
+  // Track insertion order for FIFO using a ref (avoids stale closure issues)
+  const fifoQueueRef = useRef<string[]>(highlightIds);
 
-  const toggleHighlight = (id: string) => {
-    if (highlightIds.includes(id)) {
-      onHighlightChange(highlightIds.filter((h) => h !== id));
-    } else {
-      if (highlightIds.length >= HIGHLIGHT_SLOTS) {
-        toast.error(`Maksimal ${HIGHLIGHT_SLOTS} fasilitas sorotan per kamar`);
-        return;
-      }
-      onHighlightChange([...highlightIds, id]);
-    }
-  };
-
-  const filtered = allAmenities.filter((am) =>
-    am.name.toLowerCase().includes(search.toLowerCase())
+  // Keep fifoQueue in sync with external changes (parent resets etc.)
+  // We use useMemo to derive the ordered list from highlightIds directly
+  const highlightedAmenities = useMemo(
+    () =>
+      highlightIds
+        .map((id) => allAmenities.find((a) => a.id === id))
+        .filter(Boolean) as Amenity[],
+    [highlightIds, allAmenities]
   );
 
-  const highlightedAmenities = highlightIds
-    .map((id) => allAmenities.find((am) => am.id === id))
-    .filter(Boolean) as Amenity[];
+  const filtered = useMemo(
+    () =>
+      allAmenities.filter((am) =>
+        am.name.toLowerCase().includes(search.toLowerCase())
+      ),
+    [allAmenities, search]
+  );
+
+  const isFull = highlightIds.length >= HIGHLIGHT_SLOTS;
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
+
+  const toggleSelected = useCallback(
+    (id: string) => {
+      if (selectedIds.includes(id)) {
+        // Deselect — also remove from highlights
+        onSelectedChange(selectedIds.filter((x) => x !== id));
+        const nextHighlights = highlightIds.filter((h) => h !== id);
+        fifoQueueRef.current = nextHighlights;
+        onHighlightChange(nextHighlights);
+      } else {
+        onSelectedChange([...selectedIds, id]);
+      }
+    },
+    [selectedIds, highlightIds, onSelectedChange, onHighlightChange]
+  );
+
+  const toggleHighlight = useCallback(
+    (id: string) => {
+      if (highlightIds.includes(id)) {
+        // Un-pin
+        const next = highlightIds.filter((h) => h !== id);
+        fifoQueueRef.current = next;
+        onHighlightChange(next);
+        return;
+      }
+
+      if (highlightIds.length < HIGHLIGHT_SLOTS) {
+        // Add normally
+        const next = [...highlightIds, id];
+        fifoQueueRef.current = next;
+        onHighlightChange(next);
+        return;
+      }
+
+      // FIFO: remove oldest (index 0), append new
+      const queue = fifoQueueRef.current;
+      const removedId = queue[0];
+      const removedName = allAmenities.find((a) => a.id === removedId)?.name ?? "Highlight";
+      const next = [...queue.slice(1), id];
+      fifoQueueRef.current = next;
+      onHighlightChange(next);
+
+      toast.warning("Maksimal 4 highlights.", {
+        description: `"${removedName}" diganti otomatis.`,
+      });
+    },
+    [highlightIds, allAmenities, onHighlightChange]
+  );
+
+  const removeHighlight = useCallback(
+    (id: string) => {
+      const next = highlightIds.filter((h) => h !== id);
+      fifoQueueRef.current = next;
+      onHighlightChange(next);
+    },
+    [highlightIds, onHighlightChange]
+  );
+
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-5">
-      {/* ── "The Magic 4" Highlight Slots ── */}
-      <div className="rounded-2xl border border-[#3A4A1F]/20 bg-gradient-to-b from-[#F6F8F0] to-white p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[#3A4A1F]" />
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#3A4A1F]">
-              Highlight Sorotan
-            </p>
+    <div className="grid gap-6 lg:grid-cols-[1fr_260px] lg:items-start">
+
+      {/* ════════════ LEFT: Picker ════════════ */}
+      <div className="space-y-5">
+
+        {/* ── "The Magic 4" Slots ── */}
+        <div className="rounded-2xl border border-[#3A4A1F]/15 bg-gradient-to-b from-[#F6F8F0] to-white p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-[#3A4A1F]" />
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3A4A1F]">
+                Highlight Sorotan
+              </p>
+            </div>
+            <motion.span
+              layout
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-[10px] font-black transition-colors",
+                isFull
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-[#3A4A1F]/10 text-[#3A4A1F]/70"
+              )}
+            >
+              {highlightIds.length}/{HIGHLIGHT_SLOTS}
+            </motion.span>
           </div>
-          <span
-            className={cn(
-              "rounded-full px-2.5 py-0.5 text-[10px] font-bold",
-              highlightIds.length === HIGHLIGHT_SLOTS
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-[#3A4A1F]/10 text-[#3A4A1F]/70"
-            )}
-          >
-            {highlightIds.length}/{HIGHLIGHT_SLOTS}
-          </span>
-        </div>
 
-        <div className="grid grid-cols-4 gap-2">
-          {Array.from({ length: HIGHLIGHT_SLOTS }).map((_, slotIdx) => {
-            const amenity = highlightedAmenities[slotIdx];
-            return (
-              <div
+          <div className="grid grid-cols-4 gap-2">
+            {Array.from({ length: HIGHLIGHT_SLOTS }).map((_, slotIdx) => (
+              <HighlightSlot
                 key={slotIdx}
-                className={cn(
-                  "group relative flex min-h-[72px] flex-col items-center justify-center rounded-xl border-2 transition-all duration-200",
-                  amenity
-                    ? "border-[#3A4A1F] bg-[#3A4A1F] shadow-md shadow-[#3A4A1F]/20"
-                    : "border-dashed border-slate-200 bg-slate-50 hover:border-[#3A4A1F]/30"
-                )}
-              >
-                {amenity ? (
-                  <>
-                    <div className="mb-1 flex h-7 w-7 items-center justify-center rounded-lg bg-white/20">
-                      <Star className="h-3.5 w-3.5 fill-white text-white" />
-                    </div>
-                    <p className="px-1 text-center text-[9px] font-bold leading-tight text-white">
-                      {amenity.name}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => toggleHighlight(amenity.id)}
-                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
-                    >
-                      <PinOff className="h-2.5 w-2.5" />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-200">
-                      <Pin className="h-3 w-3 text-slate-400" />
-                    </div>
-                    <p className="mt-1 text-[9px] font-semibold text-slate-400">
-                      Slot {slotIdx + 1}
-                    </p>
-                  </>
-                )}
-              </div>
-            );
-          })}
+                slot={slotIdx}
+                amenity={highlightedAmenities[slotIdx]}
+                onRemove={() =>
+                  highlightedAmenities[slotIdx] &&
+                  removeHighlight(highlightedAmenities[slotIdx].id)
+                }
+              />
+            ))}
+          </div>
+
+          <p className="mt-2.5 text-[10px] text-slate-400">
+            Klik ikon{" "}
+            <Star className="inline h-3 w-3 text-amber-400 fill-amber-400" />{" "}
+            di kartu fasilitas untuk pin. Maks 4 — overflow diganti otomatis (FIFO).
+          </p>
         </div>
 
-        {/* Mini preview label */}
-        <p className="mt-2 text-[10px] text-slate-400">
-          Tampil sebagai ikon di kartu villa publik — klik ikon{" "}
-          <Pin className="inline h-3 w-3" /> di bawah untuk pin
-        </p>
+        {/* ── All Amenities Grid ── */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Semua Fasilitas
+            </p>
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+              {selectedIds.length} dipilih
+            </span>
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari fasilitas..."
+              className="h-9 rounded-xl border-slate-200 bg-slate-50 pl-8 text-xs"
+            />
+          </div>
+
+          {/* Icon grid */}
+          <motion.div
+            layout
+            className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5"
+          >
+            <AnimatePresence>
+              {filtered.map((am) => {
+                const isSelected = selectedIds.includes(am.id);
+                const isHighlighted = highlightIds.includes(am.id);
+                const highlightSlot = highlightIds.indexOf(am.id);
+
+                return (
+                  <AmenityCard
+                    key={am.id}
+                    amenity={am}
+                    isSelected={isSelected}
+                    isHighlighted={isHighlighted}
+                    highlightSlot={highlightSlot}
+                    isHighlightFull={isFull}
+                    onToggleSelect={() => toggleSelected(am.id)}
+                    onToggleHighlight={() => toggleHighlight(am.id)}
+                  />
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
+
+          {filtered.length === 0 && (
+            <p className="py-8 text-center text-xs text-slate-400">
+              Tidak ada fasilitas yang cocok dengan &ldquo;{search}&rdquo;
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* ── Full Amenity Grid ── */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
-            Semua Fasilitas
-          </p>
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">
-            {selectedIds.length} dipilih
-          </span>
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari fasilitas..."
-            className="h-9 rounded-xl border-slate-200 bg-slate-50 pl-8 text-xs"
-          />
-        </div>
-
-        {/* Amenity Chips Grid */}
-        <div className="flex flex-wrap gap-2">
-          {filtered.map((am) => {
-            const isSelected = selectedIds.includes(am.id);
-            const isHighlighted = highlightIds.includes(am.id);
-            const highlightSlot = highlightIds.indexOf(am.id);
-
-            return (
-              <div key={am.id} className="group relative">
-                <button
-                  type="button"
-                  onClick={() => toggleSelected(am.id)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 pr-8 text-xs font-semibold transition-all",
-                    isSelected
-                      ? isHighlighted
-                        ? "border-[#3A4A1F] bg-[#3A4A1F] text-white shadow-sm"
-                        : "border-[#3A4A1F]/40 bg-[#F6F8F0] text-[#3A4A1F]"
-                      : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
-                  )}
-                >
-                  {isSelected && !isHighlighted && (
-                    <Check className="h-3 w-3" />
-                  )}
-                  {isHighlighted && (
-                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/30 text-[8px] font-black">
-                      {highlightSlot + 1}
-                    </span>
-                  )}
-                  {am.name}
-                </button>
-
-                {/* Pin button — only shown when amenity is selected */}
-                {isSelected && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleHighlight(am.id);
-                    }}
-                    title={isHighlighted ? "Lepas dari highlight" : "Pin sebagai highlight"}
-                    className={cn(
-                      "absolute right-1.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full transition-all",
-                      isHighlighted
-                        ? "bg-white/20 text-white"
-                        : "bg-slate-100 text-slate-400 opacity-0 group-hover:opacity-100 hover:bg-[#3A4A1F]/10 hover:text-[#3A4A1F]"
-                    )}
-                  >
-                    <Pin className="h-2.5 w-2.5" />
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {filtered.length === 0 && (
-          <p className="text-center text-xs text-slate-400 py-4">
-            Tidak ada fasilitas yang cocok
-          </p>
-        )}
+      {/* ════════════ RIGHT: Live Preview Panel ════════════ */}
+      <div className="lg:block">
+        <LivePreview roomName={roomName} highlights={highlightedAmenities} />
       </div>
+
     </div>
   );
 }
