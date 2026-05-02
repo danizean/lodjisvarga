@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { createStaticClient } from "@/lib/supabase/static";
 import { VillasPageClient } from "@/components/features/villas/VillasPageClient";
+import { attachPublicPricing, getPublicPricingSnapshot } from "@/lib/queries/public-pricing";
+import { createStaticClient } from "@/lib/supabase/static";
+import type { PublicRoomTypeData, PublicVillaData } from "@/types/public-villas";
 
 export const metadata: Metadata = {
   title: "Daftar Villa | Lodjisvarga",
@@ -13,7 +15,7 @@ export const revalidate = 3600;
 export default async function VillasPage() {
   const supabase = createStaticClient();
 
-  const { data: villas } = await supabase
+  const { data: villas, error } = await supabase
     .from("villas")
     .select(`
       id, name, slug, description, address, whatsapp_number, status,
@@ -22,24 +24,44 @@ export default async function VillasPage() {
       room_types (
         id, name, status, base_price, highlight_amenity_ids,
         bed_type, capacity_adult, capacity_child, description,
-        room_gallery:gallery!gallery_room_type_id_fkey (image_url, is_primary, display_order),
+        gallery:gallery!gallery_room_type_id_fkey (image_url, is_primary, display_order),
         room_type_amenities (amenities (id, name, icon_name))
       )
     `)
-    .eq("status", "active")
+    .in("status", ["active", "coming_soon"])
     .order("name");
 
-  const { data: promos } = await supabase
-    .from("promos")
-    .select("id, title, discount_code, discount_value, expired_at, is_active")
-    .eq("is_active", true)
-    .order("discount_value", { ascending: false })
-    .limit(1);
+  if (error) {
+    console.error("Supabase Fetch Error (Villas Listing):", error.message);
+  }
 
-  return (
-    <VillasPageClient
-      villas={(villas ?? []) as any}
-      activePromo={(promos?.[0] ?? null) as any}
-    />
+  const villasWithActiveRooms: PublicVillaData[] = (villas ?? []).map((villa) => ({
+    ...villa,
+    status: villa.status ?? "inactive",
+    room_types: (villa.room_types ?? []).filter((room) => room.status !== "inactive"),
+  }));
+
+  const roomTypeIds = villasWithActiveRooms.flatMap((villa) =>
+    (villa.room_types ?? []).map((room) => room.id)
   );
+
+  const pricingSnapshot = await getPublicPricingSnapshot(supabase, roomTypeIds);
+
+  if (pricingSnapshot.pricesError) {
+    console.error("Supabase Fetch Error (Villas Listing Prices):", pricingSnapshot.pricesError.message);
+  }
+
+  if (pricingSnapshot.promosError) {
+    console.error("Supabase Fetch Error (Villas Listing Promo):", pricingSnapshot.promosError.message);
+  }
+
+  const villasFinal: PublicVillaData[] = villasWithActiveRooms.map((villa) => ({
+    ...villa,
+    room_types: attachPublicPricing(
+      (villa.room_types ?? []) as PublicRoomTypeData[],
+      pricingSnapshot.priceMap
+    ),
+  }));
+
+  return <VillasPageClient villas={villasFinal} activePromo={pricingSnapshot.activePromo} />;
 }

@@ -14,7 +14,6 @@ import {
   startOfWeek,
   subMonths,
   isBefore,
-  isWeekend,
 } from "date-fns";
 import { 
   CalendarDays, 
@@ -54,6 +53,11 @@ const getDateKey = (date: Date) => formatDate(date, "yyyy-MM-dd");
 const parseRupiahInput = (value: string) => Number(value.replace(/\D/g, "")) || 0;
 const formatRupiahInput = (value: number) => `Rp ${new Intl.NumberFormat("id-ID").format(value)}`;
 
+const isCustomWeekend = (date: Date) => {
+  const day = date.getDay();
+  return day === 5 || day === 6 || day === 0; // Fri, Sat, Sun
+};
+
 export function PricingCalendar({
   roomTypeId,
   basePrice,
@@ -88,7 +92,7 @@ export function PricingCalendar({
 
     return selectedRangeDays.filter((day) => {
       const date = parseISO(day.date);
-      return applyTo === "weekdays" ? !isWeekend(date) : isWeekend(date);
+      return applyTo === "weekdays" ? !isCustomWeekend(date) : isCustomWeekend(date);
     });
   }, [applyTo, selectedRangeDays]);
 
@@ -96,8 +100,8 @@ export function PricingCalendar({
     if (!startDate || !endDate) return 0;
     try {
       const interval = eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) });
-      if (applyTo === "weekdays") return interval.filter(d => !isWeekend(d)).length;
-      if (applyTo === "weekends") return interval.filter(d => isWeekend(d)).length;
+      if (applyTo === "weekdays") return interval.filter(d => !isCustomWeekend(d)).length;
+      if (applyTo === "weekends") return interval.filter(d => isCustomWeekend(d)).length;
       return interval.length;
     } catch { return 0; }
   }, [startDate, endDate, applyTo]);
@@ -241,7 +245,7 @@ export function PricingCalendar({
               const priceVal = day?.effectivePrice ?? basePrice;
               const blocked = day?.isBlocked ? day.blockReason ?? "Blocked" : null;
               const booked = Boolean(day?.reservation);
-              const isExcluded = (applyTo === "weekdays" && isWeekend(date)) || (applyTo === "weekends" && !isWeekend(date));
+              const isExcluded = (applyTo === "weekdays" && isCustomWeekend(date)) || (applyTo === "weekends" && !isCustomWeekend(date));
 
               return (
                 <button

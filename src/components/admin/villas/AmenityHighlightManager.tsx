@@ -46,7 +46,9 @@ const HIGHLIGHT_SLOTS = 4;
 
 // ── Animation Variants ────────────────────────────────────────────────────────
 
-const cardVariants = {
+import { type Variants } from "framer-motion";
+
+const cardVariants: Variants = {
   hidden: { opacity: 0, scale: 0.92, y: 6 },
   visible: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 380, damping: 28 } },
   exit: { opacity: 0, scale: 0.88, y: -4, transition: { duration: 0.15 } },

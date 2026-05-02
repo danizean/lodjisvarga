@@ -26,7 +26,7 @@ interface GalleryUploaderProps {
   villaId: string;
   roomTypeId?: string;
   items: GalleryItem[];
-  onChange: (items: GalleryItem[]) => void;
+  onChange: (items: GalleryItem[]) => Promise<void> | void;
   onUploadStatusChange?: (isUploading: boolean) => void;
   compact?: boolean;
 }
@@ -39,7 +39,7 @@ export function GalleryUploader({
   onUploadStatusChange,
   compact = false,
 }: GalleryUploaderProps) {
-  const { uploadFiles, isUploading, uploadProgress } = useUpload();
+  const { uploadFiles, deleteFiles, isUploading, uploadProgress } = useUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
@@ -61,8 +61,15 @@ export function GalleryUploader({
         is_primary: items.length === 0 && i === 0,
         display_order: items.length + i,
       }));
-      onChange([...items, ...newItems]);
-      toast.success(`${results.length} foto berhasil diunggah`);
+      
+      try {
+        await onChange([...items, ...newItems]);
+        toast.success(`${results.length} foto berhasil diunggah`);
+      } catch (dbError) {
+        console.error("DB Save Error:", dbError);
+        await deleteFiles(results.map(r => r.publicUrl));
+        toast.error("Gagal menyimpan foto kamar. Silakan coba lagi.");
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Upload gagal";
       toast.error(message);
@@ -72,16 +79,27 @@ export function GalleryUploader({
     }
   };
 
-  const setPrimary = (url: string) => {
-    onChange(items.map((item) => ({ ...item, is_primary: item.image_url === url })));
+  const setPrimary = async (url: string) => {
+    try {
+      await onChange(items.map((item) => ({ ...item, is_primary: item.image_url === url })));
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal mengubah foto utama.");
+    }
   };
 
-  const removeItem = (url: string) => {
+  const removeItem = async (url: string) => {
     const filtered = items.filter((i) => i.image_url !== url);
     if (filtered.length > 0 && !filtered.some((i) => i.is_primary)) {
       filtered[0].is_primary = true;
     }
-    onChange(filtered.map((item, idx) => ({ ...item, display_order: idx })));
+    try {
+      await onChange(filtered.map((item, idx) => ({ ...item, display_order: idx })));
+      await deleteFiles([url]);
+    } catch (dbError) {
+      console.error("DB Delete Error:", dbError);
+      toast.error("Gagal menghapus foto kamar.");
+    }
   };
 
   // ── Drag-to-reorder handlers ──
@@ -94,7 +112,7 @@ export function GalleryUploader({
   }, []);
 
   const handleDropOnItem = useCallback(
-    (idx: number) => {
+    async (idx: number) => {
       if (draggedIdx === null || draggedIdx === idx) {
         setDraggedIdx(null);
         setDragOverIdx(null);
@@ -103,7 +121,12 @@ export function GalleryUploader({
       const reordered = [...items];
       const [moved] = reordered.splice(draggedIdx, 1);
       reordered.splice(idx, 0, moved);
-      onChange(reordered.map((item, i) => ({ ...item, display_order: i })));
+      try {
+        await onChange(reordered.map((item, i) => ({ ...item, display_order: i })));
+      } catch (err) {
+        console.error(err);
+        toast.error("Gagal mengubah urutan foto.");
+      }
       setDraggedIdx(null);
       setDragOverIdx(null);
     },

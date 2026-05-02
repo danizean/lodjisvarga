@@ -152,6 +152,7 @@ export function VillaGallery({
                 src={item.url}
                 alt={item.label}
                 fill
+                priority={isPrimary}
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes={isPrimary ? "(max-width: 768px) 100vw, 58vw" : "(max-width: 768px) 50vw, 28vw"}
               />
@@ -241,7 +242,6 @@ export function VillaGallery({
                 fill
                 className="object-contain"
                 sizes="100vw"
-                priority
               />
             </div>
 

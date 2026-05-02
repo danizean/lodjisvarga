@@ -42,7 +42,7 @@ export async function addRoomTypeToVilla(data: {
   await logAudit(supabase, "CREATE", "room_types", newRoom.id, null, newRoom, user.id);
   
   revalidatePath("/admin/villas");
-  revalidateTag("villas");
+  revalidateTag("villas", "max");
   
   return { success: true, data: newRoom };
 }
@@ -82,7 +82,7 @@ export async function updateRoomType(
   await logAudit(supabase, "UPDATE", "room_types", id, old, payload, user.id);
   
   revalidatePath("/admin/villas");
-  revalidateTag("villas");
+  revalidateTag("villas", "max");
 
   return { success: true };
 }
@@ -100,7 +100,7 @@ export async function deleteRoomType(id: string) {
   await logAudit(supabase, "SOFT_DELETE", "room_types", id, old, { status: "inactive" }, user.id);
   
   revalidatePath("/admin/villas");
-  revalidateTag("villas");
+  revalidateTag("villas", "max");
 
   return { success: true };
 }
@@ -135,7 +135,7 @@ export async function saveRoomAmenities(roomId: string, amenityIds: string[]) {
   await logAudit(supabase, "UPDATE_AMENITIES", "room_types", roomId, null, { amenityIds }, user.id);
   
   revalidatePath("/admin/villas");
-  revalidateTag("villas");
+  revalidateTag("villas", "max");
 
   return { success: true };
 }
@@ -163,7 +163,7 @@ export async function saveRoomGallery(
   if (normalized.length > 0) {
     const payload: GalleryInsert[] = normalized.map((img) => ({
       room_type_id: roomId,
-      villa_id: villaId,
+      villa_id: null,
       image_url: img.image_url,
       is_primary: img.is_primary,
       display_order: img.display_order,
@@ -179,7 +179,7 @@ export async function saveRoomGallery(
   await logAudit(supabase, "UPDATE_GALLERY", "room_types", roomId, null, { gallery: normalized }, user.id);
   
   revalidatePath("/admin/villas");
-  revalidateTag("villas");
+  revalidateTag("villas", "max");
 
   return { success: true };
 }

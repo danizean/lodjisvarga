@@ -51,7 +51,7 @@ export default function VillaMediaPage({ params }: { params: Promise<{ id: strin
     // Background save to DB
     startTransition(async () => {
       const res = await saveVillaGallery(id, newItems);
-      if (res.error) {
+      if ("error" in res) {
         toast.error(res.error);
         // Optionally rollback if needed, but keeping it simple for now
       }

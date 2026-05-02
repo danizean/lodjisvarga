@@ -13,45 +13,45 @@ import "swiper/css/effect-fade";
 import "swiper/css/pagination";
 
 const villaImages = [
-  { id: 1, src: "/images/11.jpg" },
-  { id: 2, src: "/images/7.jpg" },
-  { id: 3, src: "/images/11.jpg" },
-  { id: 4, src: "/images/7.jpg" },
-  { id: 5, src: "/images/11.jpg" },
+  { id: 1, src: "/images/potrait/1.jpg" },
+  { id: 2, src: "/images/potrait/2.jpg" },
+  { id: 3, src: "/images/potrait/3.jpg" },
+  { id: 4, src: "/images/potrait/4.jpg" },
+  { id: 5, src: "/images/potrait/5.jpg" },
 ];
 
 export function AboutExperience() {
+  // Solusi Error: Menambahkan 'as const' untuk validasi tipe data Framer Motion
   const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
+    initial: { opacity: 0, y: 15 },
     whileInView: { opacity: 1, y: 0 },
     viewport: { once: true },
-    transition: { duration: 0.7, ease: "easeOut" }
+    transition: { 
+      duration: 0.6, 
+      ease: "easeOut" as const 
+    }
   };
 
   return (
-    <section className="relative pt-10 pb-20 md:pt-16 md:pb-28 bg-[#F7F6F2] overflow-hidden">
-      {/* Smooth Transition dari Hero */}
-      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-black/10 to-transparent -translate-y-full pointer-events-none z-0" />
+    <section className="relative pt-16 pb-8 md:pt-28 md:pb-12 bg-[#F7F6F2] overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black/5 to-transparent -translate-y-full pointer-events-none z-0" />
 
-      <Container className="max-w-6xl px-6 md:px-12 relative z-10">
-        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+      <Container className="max-w-6xl px-5 md:px-12 relative z-10">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-16 items-center">
           
-          {/* ===== RIGHT CONTENT (Visual Slider) ===== 
-              Ditaruh di atas pada mobile menggunakan order normal flex-col
-          */}
+          {/* Visual Slider Section */}
           <motion.div 
-            initial={{ opacity: 0, scale: 0.98 }}
+            initial={{ opacity: 0, scale: 0.99 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 1 }}
+            transition={{ duration: 0.8 }}
             className="w-full lg:col-span-5 order-1 lg:order-2"
           >
-            <div className="relative group mx-auto max-w-[420px]">
-              {/* Decorative Frame */}
-              <div className="absolute -inset-3 border border-[#D4AF37]/30 rounded-[2rem] -z-10" />
+            <div className="relative group mx-auto max-w-[340px] sm:max-w-[400px] lg:max-w-[420px]">
+              <div className="absolute -inset-2 md:-inset-3 border border-[#D4AF37]/25 rounded-[1.8rem] md:rounded-[2rem] -z-10" />
               
-              {/* Container Fixed Ratio 4:5 (Anti-Putih) */}
-              <div className="relative w-full pt-[125%] rounded-[1.8rem] overflow-hidden shadow-2xl border border-[#D4AF37]/10 bg-gray-200">
+              <div className="relative w-full pt-[125%] rounded-[1.6rem] md:rounded-[1.8rem] overflow-hidden shadow-xl border border-[#D4AF37]/10 bg-gray-200">
                 <div className="absolute inset-0 w-full h-full">
                   <Swiper
                     modules={[Autoplay, EffectFade, Pagination]}
@@ -60,26 +60,26 @@ export function AboutExperience() {
                     autoplay={{ delay: 4000, disableOnInteraction: false }}
                     pagination={{
                       clickable: true,
-                      bulletClass: 'swiper-pagination-bullet !bg-[#D4AF37]',
+                      bulletClass: 'swiper-pagination-bullet !bg-[#D4AF37] !opacity-50 !w-1.5 !h-1.5',
+                      bulletActiveClass: '!opacity-100 !w-4 !rounded-full transition-all duration-300',
                     }}
                     className="w-full h-full"
                   >
-                    {villaImages.map((img, idx) => (
-                      <SwiperSlide key={idx}>
+                    {villaImages.map((img) => (
+                      <SwiperSlide key={img.id} className="relative w-full h-full">
                         <Image
                           src={img.src}
                           alt="Lodjisvarga Villa Gallery"
                           fill
-                          sizes="(max-width: 768px) 100vw, 420px"
+                          sizes="(max-width: 768px) 340px, 420px"
                           className="object-cover"
-                          priority={idx === 0}
+                          priority={img.id === 1}
                         />
                       </SwiperSlide>
                     ))}
                   </Swiper>
 
-                  {/* Minimalist Badge */}
-                  <div className="absolute top-5 right-5 z-20 px-3 py-1.5 bg-[#3A4A1F]/80 text-white rounded-full backdrop-blur-sm flex items-center gap-2 border border-white/10">
+                  <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-[#3A4A1F]/80 text-white rounded-full backdrop-blur-md flex items-center gap-2 border border-white/10 scale-90 md:scale-100">
                     <SwatchBook className="w-3 h-3 text-[#D4AF37]" />
                     <span className="text-[9px] font-bold uppercase tracking-widest">Gallery</span>
                   </div>
@@ -88,33 +88,30 @@ export function AboutExperience() {
             </div>
           </motion.div>
 
-          {/* ===== LEFT CONTENT (Copywriting) ===== 
-              Ditaruh di bawah pada mobile menggunakan order normal flex-col
-          */}
+          {/* Copywriting Section */}
           <motion.div 
             initial="initial"
             whileInView="whileInView"
             viewport={{ once: true }}
-            className="w-full lg:col-span-7 space-y-8 order-2 lg:order-1"
+            className="w-full lg:col-span-7 space-y-6 md:space-y-8 order-2 lg:order-1"
           >
-            {/* Tagline & Location */}
-            <motion.div {...fadeInUp} className="space-y-4">
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1.5 text-[#D4AF37] font-bold text-[10px] tracking-[0.3em] uppercase">
+            <motion.div {...fadeInUp} className="space-y-3 md:space-y-4 text-center lg:text-left">
+              <div className="flex items-center justify-center lg:justify-start gap-2 md:gap-3">
+                <span className="flex items-center gap-1.5 text-[#D4AF37] font-bold text-[9px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em] uppercase shrink-0">
                   <Star className="w-3 h-3 fill-current" /> 
                   Jagonya Nyaman
                 </span>
-                <div className="h-px w-8 bg-[#3A4A1F]/20" />
-                <span className="text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-[#3A4A1F]/60 font-bold">
+                <div className="h-px w-6 md:w-8 bg-[#3A4A1F]/20" />
+                <span className="text-[9px] md:text-[11px] tracking-[0.1em] md:tracking-[0.2em] uppercase text-[#3A4A1F]/60 font-bold">
                   Villa Private Pool Yogyakarta
                 </span>
               </div>
 
-              <h2 className="text-[#3A4A1F] text-4xl md:text-5xl lg:text-6xl font-serif leading-[1.15] tracking-tight">
+              <h2 className="text-[#3A4A1F] text-3xl md:text-5xl lg:text-6xl font-serif leading-tight tracking-tight">
                 Destinasi <span className="italic text-[#D4AF37]">Private Villa</span> Terbaik di Yogyakarta
               </h2>
 
-              <p className="text-gray-600 text-base md:text-lg leading-relaxed font-light max-w-2xl">
+              <p className="text-gray-600 text-sm md:text-lg leading-relaxed font-light max-w-2xl mx-auto lg:mx-0">
                 Temukan harmoni antara kenyamanan modern dan ketenangan alam Sleman. 
                 <strong className="text-[#3A4A1F]"> Lodjisvarga Villa Jogja</strong> hadir sebagai pelarian eksklusif bebas rokok, 
                 hanya selangkah dari ikon kuliner <em className="text-[#D4AF37] not-italic font-medium">Jejamuran</em>. Tempat di mana privasi Anda 
@@ -125,41 +122,46 @@ export function AboutExperience() {
             {/* Feature Highlights */}
             <motion.div 
               {...fadeInUp}
-              transition={{ delay: 0.2 }}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-6 py-8 border-y border-[#3A4A1F]/10"
+              transition={{ ...fadeInUp.transition, delay: 0.2 }}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 py-6 md:py-8 border-y border-[#3A4A1F]/10"
             >
-              <div className="flex gap-4 group">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#3A4A1F]/5 flex items-center justify-center transition-colors group-hover:bg-[#D4AF37]/10">
-                  <Utensils className="w-5 h-5 text-[#3A4A1F]/70 group-hover:text-[#D4AF37]" />
+              <div className="flex gap-3 md:gap-4 group items-start text-left">
+                <div className="flex-shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-[#3A4A1F]/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors">
+                  <Utensils className="w-4 h-4 md:w-5 md:h-5 text-[#3A4A1F]/70 group-hover:text-[#D4AF37]" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-[#3A4A1F]">Wisata Kuliner</h4>
-                  <p className="text-xs text-gray-500 mt-1">Hanya 1 km dari Jejamuran, pusat hidangan lokal autentik.</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5">Hanya 1 km dari Jejamuran, pusat hidangan lokal autentik.</p>
                 </div>
               </div>
-              <div className="flex gap-4 group">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#3A4A1F]/5 flex items-center justify-center transition-colors group-hover:bg-[#D4AF37]/10">
-                  <MapPin className="w-5 h-5 text-[#3A4A1F]/70 group-hover:text-[#D4AF37]" />
+              <div className="flex gap-3 md:gap-4 group items-start text-left">
+                <div className="flex-shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-[#3A4A1F]/5 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors">
+                  <MapPin className="w-4 h-4 md:w-5 md:h-5 text-[#3A4A1F]/70 group-hover:text-[#D4AF37]" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-[#3A4A1F]">Akses Strategis</h4>
-                  <p className="text-xs text-gray-500 mt-1">±10 km menuju Tugu Jogja dan keramaian Malioboro.</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5">±10 km menuju Tugu Jogja dan keramaian Malioboro.</p>
                 </div>
               </div>
             </motion.div>
 
-            {/* Call to Action */}
-            <motion.div {...fadeInUp} transition={{ delay: 0.3 }} className="pt-4 flex justify-center lg:justify-start">
-              <button className="group relative overflow-hidden bg-[#3A4A1F] text-white px-10 py-5 rounded-full transition-all duration-500 hover:bg-[#2D3621] shadow-lg hover:shadow-[#3A4A1F]/20">
-                <div className="absolute inset-0 bg-[#D4AF37] translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-                <span className="relative z-10 flex items-center gap-3 font-bold text-[10px] uppercase tracking-[0.2em] group-hover:text-[#3A4A1F]">
+            {/* Premium CTA Button */}
+            <motion.div 
+              {...fadeInUp} 
+              transition={{ ...fadeInUp.transition, delay: 0.3 }} 
+              className="pt-2 flex justify-center lg:justify-start"
+            >
+              <button className="group flex items-center gap-4 bg-[#3A4A1F] text-white pl-7 md:pl-9 pr-2 py-2 rounded-full hover:bg-[#2D3621] transition-all duration-300 shadow-lg hover:shadow-[#3A4A1F]/20 focus:outline-none">
+                <span className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em]">
                   Pelajari Selengkapnya
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1.5" />
                 </span>
+                <div className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-[#D4AF37] flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-[#3A4A1F]" />
+                </div>
               </button>
             </motion.div>
-          </motion.div>
 
+          </motion.div>
         </div>
       </Container>
     </section>

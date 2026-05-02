@@ -46,5 +46,16 @@ export function useUpload() {
     }
   };
 
-  return { uploadFiles, isUploading, uploadProgress };
+  const deleteFiles = async (urls: string[]) => {
+    const supabase = createClient();
+    const paths = urls.map((url) => {
+      const parts = url.split("/villa-media/");
+      return parts.length > 1 ? parts[1] : url;
+    });
+    if (paths.length > 0) {
+      await supabase.storage.from("villa-media").remove(paths);
+    }
+  };
+
+  return { uploadFiles, deleteFiles, isUploading, uploadProgress };
 }

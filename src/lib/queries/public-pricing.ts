@@ -39,13 +39,19 @@ export async function getPublicPricingSnapshot(
       .limit(1),
   ]);
 
+  const priceEntries: Array<[string, number]> = [];
+  for (const row of pricesRes.data ?? []) {
+    if (!row.room_type_id) continue;
+    priceEntries.push([row.room_type_id, Number(row.price)]);
+  }
+
   return {
     date,
     prices: pricesRes.data ?? [],
     pricesError: pricesRes.error,
     activePromo: (promosRes.data?.[0] ?? null) as PromoRow | null,
     promosError: promosRes.error,
-    priceMap: new Map((pricesRes.data ?? []).map((row) => [row.room_type_id, Number(row.price)])),
+    priceMap: new Map<string, number>(priceEntries),
   };
 }
 
@@ -55,7 +61,7 @@ export function attachPublicPricing<T extends RoomPricingShape>(
 ) {
   return rooms.map((room) => ({
     ...room,
-    effective_price: priceMap.get(room.id) ?? 0,
+    effective_price: priceMap.get(room.id) ?? Number(room.base_price ?? 0),
     price_source: priceMap.has(room.id) ? ("override" as const) : ("base" as const),
   }));
 }

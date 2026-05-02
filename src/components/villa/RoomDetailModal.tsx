@@ -10,16 +10,11 @@ import {
   BedDouble,
   Camera,
   Percent,
-  Wind,
-  Wifi,
-  MonitorPlay,
-  Refrigerator,
-  ShowerHead,
-  Waves,
 } from "lucide-react";
 import { WhatsAppMessageForm } from "@/components/features/villas/WhatsAppMessageForm";
 import { LucideDynamicIcon } from "@/components/shared/LucideDynamicIcon";
-import type { RoomTypeCardData } from "@/components/features/villas/VillaCard";
+import { resolveRoomDisplayPricing } from "@/lib/mappers/public-villas";
+import type { RoomTypeCardData } from "@/types/public-villas";
 
 // ─── Formatter ─────────────────────────────────────────────────────────────
 const formatIDR = (v: number) =>
@@ -63,7 +58,7 @@ function ModalGallery({
   roomName: string;
 }) {
   const [idx, setIdx] = useState(0);
-  const list = images.length > 0 ? images : ["/assets/placeholder-villa.webp"];
+  const list = images.length > 0 ? images : ["/images/hero-villa.jpg"];
 
   const prev = useCallback(
     () => setIdx((i) => (i === 0 ? list.length - 1 : i - 1)),
@@ -82,7 +77,6 @@ function ModalGallery({
         fill
         className="object-cover transition-opacity duration-500"
         sizes="(max-width: 768px) 100vw, 80vw"
-        priority
       />
       {/* bottom gradient */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />
@@ -153,14 +147,13 @@ interface Props {
 }
 
 export function RoomDetailModal({ room, trigger }: Props) {
-  const effectivePrice = room.effective_price ?? 0;
-  const discountPct = room.activePromo?.discount_value ?? 0;
-  const hasPromo = discountPct > 0 && effectivePrice > 0;
-  const hasManagedPrice = effectivePrice > 0;
+  const pricing = resolveRoomDisplayPricing(room);
+  const discountPct = pricing.discountPercentage;
+  const hasPromo = pricing.hasPromo;
+  const hasManagedPrice = pricing.hasManagedPrice;
   const isComingSoon = room.villaStatus === "coming_soon";
-  const finalPrice = hasPromo
-    ? Math.max(0, Math.round(effectivePrice * (1 - discountPct / 100)))
-    : effectivePrice;
+  const isBookable = room.villaStatus === "active";
+  const finalPrice = pricing.finalPrice;
 
   // ── Gallery ──────────────────────────────────────────────────────────────
   const sortedImages = [...(room.gallery ?? [])]
@@ -285,7 +278,7 @@ export function RoomDetailModal({ room, trigger }: Props) {
                         </p>
                         {hasPromo && (
                           <p className="text-[12px] font-semibold text-slate-400 line-through">
-                            {formatIDR(effectivePrice)}
+                            {formatIDR(pricing.displayPrice)}
                           </p>
                         )}
                       </div>
@@ -372,7 +365,7 @@ export function RoomDetailModal({ room, trigger }: Props) {
               </div>
 
               {/* CTA button */}
-              {!isComingSoon && room.villaWhatsapp ? (
+              {isBookable && !isComingSoon && room.villaWhatsapp ? (
                 <WhatsAppMessageForm
                   whatsappNumber={room.villaWhatsapp}
                   villaName={room.villaName}

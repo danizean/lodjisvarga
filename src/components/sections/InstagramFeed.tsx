@@ -1,118 +1,120 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
+
+const SOCIAL_POSTS = [
+  {
+    image: "/images/ig/1.jpg",
+    link: "https://www.instagram.com/p/DU4nAO9krIY/",
+    caption: "Private pool & suasana tenang",
+  },
+  {
+    image: "/images/ig/2.jpg",
+    link: "https://www.instagram.com/p/DVKvpFFkmAm/",
+    caption: "Interior estetik & nyaman",
+  },
+  {
+    image: "/images/ig/3.jpg",
+    link: "https://www.instagram.com/p/DVAYg2OEgeg/",
+    caption: "Staycation vibes di Sleman",
+  },
+  {
+    image: "/images/ig/4.jpg",
+    link: "https://www.instagram.com/p/DUM7_4cEr-Y/",
+    caption: "Cocok untuk pasangan & keluarga",
+  },
+];
 
 export function InstagramFeed() {
-  const posts = [
-    {
-      image: "/images/ig/1.jpg",
-      link: "https://www.instagram.com/p/DU4nAO9krIY/",
-      caption: "Private pool & suasana tenang",
-    },
-    {
-      image: "/images/ig/2.jpg",
-      link: "https://www.instagram.com/p/DVKvpFFkmAm/",
-      caption: "Interior estetik & nyaman",
-    },
-    {
-      image: "/images/ig/3.jpg",
-      link: "https://www.instagram.com/p/DVAYg2OEgeg/",
-      caption: "Staycation vibes di Sleman",
-    },
-    {
-      image: "/images/ig/4.jpg",
-      link: "https://www.instagram.com/p/DUM7_4cEr-Y/",
-      caption: "Cocok untuk pasangan & keluarga",
-    },
-  ];
-
   return (
-    <section className="py-20 md:py-28 bg-white overflow-hidden">
+    // bg-[#F7F6F2] disamakan dengan background krem di atas
+    <section className="relative pt-16 pb-12 md:pt-20 md:pb-16 bg-[#F7F6F2] overflow-hidden border-t border-[#3A4A1F]/5">
 
       {/* ===== HEADER ===== */}
-      <div className="text-center mb-10 px-6 space-y-4">
-        <h2 className="text-[#3A4A1F] text-3xl md:text-5xl font-serif tracking-tight">
-          Lihat <span className="italic text-[#D4AF37]">Suasana Asli Villa</span>
-        </h2>
-
-        <p className="text-gray-500 font-light text-sm md:text-lg max-w-xl mx-auto">
-          Cuplikan langsung dari Instagram @lodjisvarga. Geser untuk melihat pengalaman menginap di villa kami.
-        </p>
-
-        <p className="text-xs text-gray-400">
-          ← Geser untuk melihat →
+      <div className="text-center mb-10 px-6 space-y-3 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-[#3A4A1F] text-3xl md:text-5xl font-serif tracking-tight leading-tight">
+            Lihat <span className="italic text-[#D4AF37]">Suasana Asli Villa</span>
+          </h2>
+          <p className="text-gray-500 font-light text-sm md:text-lg max-w-xl mx-auto mt-3">
+            Cuplikan momen nyata dari tamu kami. Geser untuk melihat pengalaman menginap di Lodjisvarga.
+          </p>
+        </motion.div>
+        
+        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold pt-4">
+          ← Geser Galeri →
         </p>
       </div>
 
-      {/* ===== WRAPPER CENTER ===== */}
-      <div className="max-w-6xl mx-auto">
-
-        {/* ===== SCROLL CONTAINER ===== */}
-        <div className="flex md:justify-center overflow-x-auto gap-4 px-4 md:px-0 pb-4 no-scrollbar snap-x snap-mandatory">
-
-          {posts.map((post, idx) => (
-            <a
+      {/* ===== SOCIAL CARDS CONTAINER ===== */}
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="flex md:justify-center overflow-x-auto gap-5 px-6 md:px-0 pb-8 no-scrollbar snap-x snap-mandatory">
+          {SOCIAL_POSTS.map((post, idx) => (
+            <motion.a
               key={idx}
               href={post.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="relative snap-start min-w-[240px] md:min-w-[260px] aspect-[4/5] rounded-3xl overflow-hidden group shadow-md border border-[#3A4A1F]/10"
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.1 }}
+              viewport={{ once: true }}
+              className="relative snap-start min-w-[260px] md:min-w-[260px] aspect-[4/5] rounded-[2rem] overflow-hidden group shadow-xl border border-white/50"
             >
-
-              {/* IMAGE */}
               <Image
                 src={post.image}
-                alt={`Instagram Lodjisvarga ${idx + 1}`}
+                alt={`Social Feed ${idx + 1}`}
                 fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                sizes="(max-width: 768px) 260px, 260px"
+                className="object-cover transition-transform duration-1000 group-hover:scale-110"
               />
-
-              {/* GRADIENT */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-
-              {/* CAPTION */}
-              <div className="absolute bottom-4 left-4 right-4 text-white text-sm font-medium">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#3A4A1F]/80 via-transparent to-transparent opacity-70" />
+              <div className="absolute bottom-5 left-5 right-5 text-white text-xs font-light leading-relaxed">
                 {post.caption}
               </div>
-
-              {/* BADGE */}
-              <div className="absolute top-3 left-3 text-white text-[10px] font-bold bg-black/50 px-3 py-1 rounded-full">
-                Instagram
+              <div className="absolute top-4 left-4 text-white text-[9px] font-bold bg-[#3A4A1F]/60 backdrop-blur-md px-3 py-1.5 rounded-full uppercase tracking-widest">
+                Gallery
               </div>
-
-              {/* HOVER ICON */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                  <svg width="20" height="20" fill="#3A4A1F" viewBox="0 0 24 24">
-                    <rect width="20" height="20" x="2" y="2" rx="5" />
-                    <circle cx="12" cy="12" r="4" />
-                    <circle cx="17.5" cy="6.5" r="0.5" fill="#3A4A1F" />
-                  </svg>
-                </div>
-              </div>
-
-            </a>
+            </motion.a>
           ))}
-
         </div>
       </div>
 
-      {/* ===== CTA ===== */}
-      <div className="text-center mt-10 space-y-4">
-        <p className="text-sm text-gray-600">
-          Lihat lebih banyak aktivitas & update terbaru di Instagram kami
-        </p>
+      {/* ===== DUAL CTA (INSTAGRAM & TIKTOK) ===== */}
+      <div className="max-w-xl mx-auto mt-12 px-6 relative z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Tombol Instagram */}
+          <a
+            href="https://www.instagram.com/lodjisvarga/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-3 bg-[#3A4A1F] text-white px-6 py-4 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-[#2D3621] transition-all shadow-lg hover:shadow-[#3A4A1F]/20 active:scale-95"
+          >
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849s-.011 3.585-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.849-.07c-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849s.012-3.584.07-4.849c.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072s3.667-.014 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.058-1.28.072-1.689.072-4.947s-.014-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.28-.058-1.689-.072-4.948-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+            Instagram
+          </a>
 
-        <a
-          href="https://www.instagram.com/lodjisvarga/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block bg-[#3A4A1F] text-white px-8 py-4 rounded-full text-sm font-bold tracking-wide hover:bg-[#2F3F1A] transition"
-        >
-          Follow @lodjisvarga
-        </a>
+          {/* Tombol TikTok */}
+          <a
+            href="https://www.tiktok.com/@lodjisvarga"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-3 bg-white text-[#3A4A1F] px-6 py-4 rounded-full text-[10px] font-bold uppercase tracking-widest border border-[#3A4A1F]/20 hover:bg-gray-50 transition-all shadow-lg hover:shadow-gray-200 active:scale-95"
+          >
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.09-1.47-.88-.64-1.61-1.47-2.12-2.44v10.17c-.03 2.16-.76 4.31-2.23 5.9-1.48 1.6-3.6 2.61-5.77 2.81-2.16.2-4.41-.33-6.16-1.67-1.75-1.34-2.88-3.41-3.05-5.61-.17-2.19.46-4.45 1.83-6.18 1.36-1.73 3.44-2.84 5.64-3.04.14-.01.27-.02.41-.02v4.03c-.11.01-.22.01-.32.02-1.38.13-2.67.92-3.37 2.12-.71 1.21-.8 2.72-.25 3.98.56 1.26 1.76 2.22 3.11 2.47 1.35.24 2.84-.1 3.84-1.07 1-.98 1.48-2.4 1.45-3.79V.02z"/>
+            </svg>
+            TikTok
+          </a>
+        </div>
       </div>
-
     </section>
   );
 }

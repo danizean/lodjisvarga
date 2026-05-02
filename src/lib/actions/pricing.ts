@@ -54,7 +54,7 @@ function getTargetDates(startDate: string, endDate: string, applyTo: "all" | "we
     .filter((day) => {
       if (applyTo === "all") return true;
       const dayIndex = day.getDay();
-      const isWeekend = dayIndex === 0 || dayIndex === 6;
+      const isWeekend = dayIndex === 5 || dayIndex === 6 || dayIndex === 0;
       return applyTo === "weekends" ? isWeekend : !isWeekend;
     })
     .map((day) => formatDate(day, "yyyy-MM-dd"));

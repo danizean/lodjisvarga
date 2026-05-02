@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const payload = await request.json();
     
     // 2. Revalidate by tag (clears the unstable_cache)
-    revalidateTag('villas');
+    revalidateTag('villas', "max");
     
     // 3. Revalidate the specific path if you know the slug
     if (payload?.record?.slug) {

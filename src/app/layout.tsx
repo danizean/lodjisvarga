@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="id" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className={`${font.variable} font-sans min-h-screen flex flex-col antialiased bg-background text-foreground`}>
         {children}
         <Toaster />

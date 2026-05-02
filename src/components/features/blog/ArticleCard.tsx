@@ -5,7 +5,7 @@ import { formatDate } from "@/lib/utils/format";
 import type { ArticleListing } from "@/lib/queries/blog";
 
 // ─── Placeholder ──────────────────────────────────────────────────────────────
-const PLACEHOLDER = "/assets/placeholder-villa.webp";
+const PLACEHOLDER = "/images/hero-villa.jpg";
 
 // ─── Category badge colors ────────────────────────────────────────────────────
 const CATEGORY_COLORS: Record<string, string> = {

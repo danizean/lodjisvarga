@@ -61,7 +61,7 @@ export async function getRoomCalendarSnapshot(
   const supabase = await createClient();
   const { startDate, endDate } = formatMonthRange(year, month);
 
-  const { data, error } = await supabase.rpc("admin_get_room_calendar", {
+  const { data, error } = await (supabase.rpc as any)("admin_get_room_calendar", {
     p_room_type_id: roomTypeId,
     p_start_date: startDate,
     p_end_date: endDate,
@@ -119,7 +119,7 @@ export async function getRoomCalendarSnapshot(
       start: new Date(`${startDate}T00:00:00`),
       end: new Date(`${endDate}T00:00:00`),
     }).map((date) => {
-      const dateKey = date.toISOString().slice(0, 10);
+      const dateKey = formatDate(date, "yyyy-MM-dd");
       const matchedReservation =
         reservationRows.find(
           (reservation) => dateKey >= reservation.check_in && dateKey < reservation.check_out
@@ -144,7 +144,7 @@ export async function getRoomCalendarSnapshot(
     });
   }
 
-  return (data ?? []).map((day) => ({
+  return (data ?? []).map((day: any) => ({
     date: day.date,
     effectivePrice: Number(day.effective_price ?? 0),
     basePrice: Number(day.base_price ?? 0),

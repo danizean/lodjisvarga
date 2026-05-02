@@ -78,7 +78,7 @@ export default function RoomEditorPage({
 
   // ── Form ──────────────────────────────────────────────────────────────────
   const form = useForm<RoomTypeFormData>({
-    resolver: zodResolver(roomTypeSchema),
+    resolver: zodResolver(roomTypeSchema as any),
     mode: "onChange",
   });
 
@@ -231,11 +231,36 @@ export default function RoomEditorPage({
     return () => subscription.unsubscribe();
   }, [form, performSave]);
 
-  const handleGalleryChange = (newItems: GalleryItem[]) => {
+  const gallerySaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const gallerySavePromiseRef = useRef<{ resolve: () => void; reject: (err: any) => void } | null>(null);
+
+  const handleGalleryChange = (newItems: GalleryItem[]): Promise<void> => {
     setGallery(newItems);
-    startTransition(async () => {
-      const res = await saveRoomGallery(roomId, villaId, newItems);
-      if (res.error) toast.error(res.error);
+
+    return new Promise((resolve, reject) => {
+      if (gallerySaveTimerRef.current) {
+        clearTimeout(gallerySaveTimerRef.current);
+        if (gallerySavePromiseRef.current) {
+          gallerySavePromiseRef.current.resolve();
+        }
+      }
+
+      gallerySavePromiseRef.current = { resolve, reject };
+
+      gallerySaveTimerRef.current = setTimeout(async () => {
+        try {
+          const res = await saveRoomGallery(roomId, villaId, newItems);
+          if (res.error) {
+            throw new Error(res.error);
+          }
+          gallerySavePromiseRef.current?.resolve();
+        } catch (error) {
+          gallerySavePromiseRef.current?.reject(error);
+        } finally {
+          gallerySavePromiseRef.current = null;
+          gallerySaveTimerRef.current = null;
+        }
+      }, 500);
     });
   };
 

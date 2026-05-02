@@ -1,103 +1,117 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Container } from "@/components/shared/Container";
-import { MapPin, Navigation } from "lucide-react";
+import { MapPin, Navigation, Star, Clock } from "lucide-react";
+
+const locations = [
+  { title: "Masjid Agung Sleman", time: "2 menit", desc: "Tempat ibadah utama Sleman, bisa dijangkau dengan jalan kaki santai." },
+  { title: "Sleman City Hall", time: "4 menit", desc: "Mal modern dengan bioskop dan tenant lengkap di jalur utama." },
+  { title: "Kampung Flory", time: "5 menit", desc: "Wisata alam keluarga, resto pedesaan, dan terapi ikan." },
+  { title: "Jejamuran Jogja", time: "8 menit", desc: "Kuliner ikonik olahan jamur yang wajib dikunjungi wisatawan." },
+  { title: "Obelix Village", time: "9 menit", desc: "Destinasi wisata viral dengan mini zoo dan taman bunga cantik." },
+  { title: "Ibarbo Park", time: "10 menit", desc: "Pusat oleh-oleh terbesar dengan taman aviary yang megah." },
+  { title: "Terminal Jombor", time: "11 menit", desc: "Pusat akses transportasi bus antarkota dan travel." },
+  { title: "Tugu Jogja", time: "18 menit", desc: "Ikon jantung kota Yogyakarta, akses lurus melalui Jl. Magelang." }
+];
 
 export function LocationHighlight() {
-  const locations = [
-    {
-      title: "Sleman City Hall",
-      desc: "Pusat belanja dan hiburan modern hanya ±900 meter dari villa.",
-    },
-    {
-      title: "Jejamuran Jogja",
-      desc: "Destinasi kuliner legendaris berjarak sekitar 1 km dari lokasi.",
-    },
-    {
-      title: "Masjid Agung Sleman",
-      desc: "Tempat ibadah utama hanya sekitar 200 meter dari villa.",
-    },
-    {
-      title: "Kampung Flory",
-      desc: "Wisata keluarga dan edukasi alam sekitar 1.3 km dari properti.",
-    },
-    {
-      title: "RSUD Sleman",
-      desc: "Fasilitas kesehatan hanya sekitar 3.4 km dari lokasi.",
-    },
-    {
-      title: "Terminal Jombor",
-      desc: "Akses transportasi umum utama sekitar 3.8 km dari villa.",
-    },
-  ];
+  const fadeInUp = {
+    initial: { opacity: 0, y: 15 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true },
+    transition: { duration: 0.6, ease: "easeOut" as const }
+  };
 
   return (
-    <section className="py-20 md:py-28 bg-[#F7F6F2]">
-      <Container className="max-w-6xl px-6 md:px-12">
-        <div className="flex flex-col lg:flex-row gap-12 items-center">
+    <section id="location" className="relative pt-12 pb-12 md:pt-20 md:pb-16 bg-[#F7F6F2] overflow-hidden">
+      <Container className="max-w-6xl px-6 md:px-12 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
 
-          {/* ===== LEFT CONTENT ===== */}
-          <div className="flex-1 space-y-6">
+          {/* ===== SISI KIRI: KONTEN INFO ===== */}
+          <motion.div 
+            className="lg:col-span-7 space-y-8 md:space-y-10"
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true }}
+          >
+            {/* Tagline & Judul */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Star className="w-3 h-3 text-[#D4AF37] fill-current" />
+                <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#3A4A1F]/60">
+                  Prime Location
+                </span>
+              </div>
+              <h2 className="text-3xl md:text-5xl font-serif text-[#3A4A1F] leading-[1.1] tracking-tight">
+                Akses Strategis <br /> 
+                <span className="italic text-[#D4AF37]">Lodjisvarga Jogja</span>
+              </h2>
+            </div>
 
-            <h2 className="text-3xl md:text-5xl font-serif text-[#3A4A1F] tracking-tight leading-tight">
-              Lokasi <span className="italic text-[#D4AF37]">Strategis Villa</span> di Sleman
-            </h2>
-
-            <p className="text-gray-600 text-base md:text-lg font-light leading-relaxed">
-              <strong>Lodjisvarga Villa Jogja</strong> berlokasi di 
-              <strong> Tridadi, Sleman</strong>, dekat berbagai destinasi populer 
-              seperti pusat kuliner, tempat belanja, dan fasilitas umum. 
-              Lokasi ideal untuk menikmati ketenangan tanpa jauh dari pusat aktivitas Yogyakarta.
-            </p>
-
-            <ul className="space-y-4 pt-4">
+            {/* Grid Lokasi 2 Kolom */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-8">
               {locations.map((item, index) => (
-                <li
+                <motion.div
                   key={index}
-                  className="flex items-start gap-4 border-b border-[#3A4A1F]/10 pb-4"
+                  {...fadeInUp}
+                  transition={{ delay: index * 0.05 }}
+                  className="group flex items-start gap-4 transition-all"
                 >
-                  <div className="w-11 h-11 rounded-full bg-[#3A4A1F]/5 flex items-center justify-center shrink-0">
-                    <MapPin className="text-[#3A4A1F] w-5 h-5" />
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-[#3A4A1F] transition-colors duration-300">
+                    <MapPin className="text-[#3A4A1F]/40 w-4 h-4 group-hover:text-white transition-colors" />
                   </div>
-                  <div>
-                    <h4 className="font-bold text-[#1A1A1A] text-sm md:text-base">
-                      {item.title}
-                    </h4>
-                    <p className="text-xs md:text-sm text-gray-500 font-light mt-1 leading-relaxed">
+                  <div className="space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="font-bold text-[#1A1A1A] text-sm leading-none">
+                        {item.title}
+                      </h4>
+                      <span className="inline-flex items-center gap-1 text-[8px] font-bold px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full border border-gray-200">
+                        <Clock className="w-2 h-2" />
+                        {item.time}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 font-light leading-relaxed">
                       {item.desc}
                     </p>
                   </div>
-                </li>
+                </motion.div>
               ))}
-            </ul>
-          </div>
-
-          {/* ===== RIGHT MAP ===== */}
-          <div className="flex-1 w-full">
-
-            {/* IMPORTANT: relative di sini biar CTA tidak kabur */}
-            <div className="relative w-full h-[400px] md:h-[500px] rounded-[2.5rem] overflow-hidden shadow-xl border-4 border-white">
-
-              {/* GOOGLE MAPS */}
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.7181638114434!2d110.35467617476525!3d-7.71336029230447!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5f002a693b21%3A0xbd135fb0b7d7091e!2sLODJISVARGA%20VILLA%20JOGYA!5e0!3m2!1sid!2sid!4v1776119419862!5m2!1sid!2sid"
-                className="absolute inset-0 w-full h-full border-0"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-
-              {/* CTA MAP (SUDAH FIX POSITION) */}
-              <a
-                href="https://maps.app.goo.gl/u1bYtTEwvKzM55cFA"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-md px-5 py-3 rounded-full shadow-lg flex items-center gap-2 text-xs md:text-sm font-bold text-[#3A4A1F] hover:bg-white transition"
-              >
-                <Navigation className="w-4 h-4" />
-                Lihat di Google Maps
-              </a>
-
             </div>
-          </div>
+          </motion.div>
+
+          {/* ===== SISI KANAN: KARTU PETA ===== */}
+          <motion.div 
+            className="lg:col-span-5 w-full flex justify-center lg:justify-end"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
+            {/* Map Card Container */}
+            <div className="relative w-full max-w-[420px] aspect-square rounded-[2.5rem] bg-white p-3 shadow-[0_20px_50px_rgba(58,74,31,0.1)] border border-white">
+              <div className="relative w-full h-full rounded-[2rem] overflow-hidden">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.7181638114434!2d110.35467617476525!3d-7.71336029230447!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5f002a693b21%3A0xbd135fb0b7d7091e!2sLODJISVARGA%20VILLA%20JOGYA!5e0!3m2!1sid!2sid!4v1776119419862!5m2!1sid!2sid"
+                  className="absolute inset-0 w-full h-full border-0 grayscale-[0.1] contrast-[1.05]"
+                  allowFullScreen
+                  loading="lazy"
+                />
+                
+                {/* Overlay CTA Button */}
+                <div className="absolute bottom-6 left-6 right-6">
+                  <a
+                    href="https://maps.app.goo.gl/G6NxSCE7w4Xz8F4s6"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-[#3A4A1F] text-white px-6 py-4 rounded-xl shadow-xl flex items-center justify-center gap-3 text-xs font-bold hover:bg-[#2D3621] transition-all active:scale-95 group"
+                  >
+                    <Navigation className="w-4 h-4 text-[#D4AF37] group-hover:animate-pulse" />
+                    Lihat Lokasi di Google Maps
+                  </a>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
         </div>
       </Container>

@@ -60,7 +60,7 @@ export async function createBooking(formData: BookingFormData) {
       throw new Error(roomTypeError.message);
     }
 
-    const { data, error } = await supabase.rpc("create_reservation_with_pricing", {
+    const { data, error } = await (supabase.rpc as any)("create_reservation_with_pricing", {
       p_room_type_id: validated.data.roomTypeId,
       p_customer_name: validated.data.customerName,
       p_customer_phone: validated.data.customerPhone,

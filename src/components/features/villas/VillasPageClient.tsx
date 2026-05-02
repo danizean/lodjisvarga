@@ -4,104 +4,44 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, LayoutGrid, SlidersHorizontal, X } from "lucide-react";
 import { Container } from "@/components/shared/Container";
-import { VillaCard, type RoomTypeCardData } from "@/components/features/villas/VillaCard";
-import type { VillaData, ActivePromoData } from "@/components/sections/FeaturedVillasClient";
+import { VillaCard } from "@/components/features/villas/VillaCard";
+import { flattenToRoomCards } from "@/lib/mappers/public-villas";
+import type { ActivePromoData, PublicVillaData } from "@/types/public-villas";
 
-// ─── Location filter config ───────────────────────────────────────────────────
 const LOCATION_FILTERS = [
   { label: "Semua", value: "all" },
   { label: "Sleman", value: "sleman" },
   { label: "Seturan", value: "seturan" },
 ];
 
-function flattenToRoomCards(
-  villas: VillaData[],
-  activePromo: ActivePromoData
-): RoomTypeCardData[] {
-  const cards: RoomTypeCardData[] = [];
-  for (const villa of villas) {
-    if (villa.room_types.length === 0 && villa.status === "coming_soon") {
-      cards.push({
-        id: villa.id + "_placeholder",
-        name: "Segera Hadir",
-        base_price: 0,
-        effective_price: 0,
-        price_source: "base",
-        activePromo,
-        // USP fields – no room data available for placeholder cards
-        bed_type: null,
-        amenities: [],
-        description: villa.description,
-        gallery: [],
-        villaName: villa.name,
-        villaSlug: villa.slug,
-        villaStatus: villa.status,
-        villaWhatsapp: villa.whatsapp_number,
-      });
-      continue;
-    }
-    for (const rt of villa.room_types) {
-      // Extract all amenity objects from the Supabase join
-      const amenities = (rt.room_type_amenities ?? [])
-        .flatMap((link) => (link.amenities ? [link.amenities] : []));
-
-      // Resolve the up-to-3 highlighted amenity objects from the raw ID array
-      const highlightIds = rt.highlight_amenity_ids ?? [];
-      const highlight_amenities = highlightIds
-        .map((hid) => amenities.find((a) => a.id === hid))
-        .filter((a): a is { id: string; name: string; icon_name: string | null } => Boolean(a))
-        .slice(0, 3);
-
-      cards.push({
-        id: rt.id,
-        name: rt.name,
-        base_price: rt.base_price,
-        effective_price: rt.effective_price ?? 0,
-        price_source: rt.price_source ?? "base",
-        activePromo,
-        // USP fields
-        bed_type: rt.bed_type ?? null,
-        amenities,
-        highlight_amenities,
-        description: rt.description,
-        gallery: rt.gallery,
-        villaName: villa.name,
-        villaSlug: villa.slug,
-        villaStatus: villa.status,
-        villaWhatsapp: villa.whatsapp_number,
-      });
-    }
-  }
-  return cards;
-}
-
-// ─── Props ────────────────────────────────────────────────────────────────────
 interface Props {
-  villas: VillaData[];
+  villas: PublicVillaData[];
   activePromo?: ActivePromoData;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export function VillasPageClient({ villas, activePromo = null }: Props) {
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const allCards = useMemo(
-    () => flattenToRoomCards(villas, activePromo),
+    () =>
+      flattenToRoomCards(villas, activePromo, {
+        includeComingSoonPlaceholder: true,
+        highlightLimit: 3,
+        fallbackToFirstAmenities: false,
+      }),
     [villas, activePromo]
   );
 
   const filteredCards = useMemo(() => {
     let cards = allCards;
 
-    // Location filter
     if (activeFilter !== "all") {
       cards = cards.filter((card) =>
         card.villaName.toLowerCase().includes(activeFilter.toLowerCase())
       );
     }
 
-    // Search filter – includes bed_type so users can search "King Bed", "Twin", etc.
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       cards = cards.filter(
@@ -116,41 +56,30 @@ export function VillasPageClient({ villas, activePromo = null }: Props) {
     return cards;
   }, [allCards, activeFilter, searchQuery]);
 
-  const totalActive = allCards.filter(
-    (c) => c.villaStatus !== "coming_soon"
-  ).length;
+  const totalActive = allCards.filter((card) => card.villaStatus !== "coming_soon").length;
 
   return (
     <section className="min-h-screen bg-[#F7F6F2] pb-28">
       <Container className="max-w-7xl px-4 sm:px-6 lg:px-8 pt-16">
-
-        {/* ── Toolbar ── */}
         <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-
-          {/* Result count */}
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37]">
               Koleksi Villa
             </p>
             <p className="mt-0.5 text-sm text-[#3A4A1F]/60">
               Menampilkan{" "}
-              <span className="font-semibold text-[#3A4A1F]">
-                {filteredCards.length}
-              </span>{" "}
+              <span className="font-semibold text-[#3A4A1F]">{filteredCards.length}</span>{" "}
               dari {totalActive} unit aktif
             </p>
           </div>
 
-          {/* Search + Filter row */}
           <div className="flex flex-wrap items-center gap-3">
-
-            {/* Search */}
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 id="villa-search"
                 type="text"
-                placeholder="Cari villa atau kamar…"
+                placeholder="Cari villa atau kamar..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-10 w-64 rounded-full border border-[#3A4A1F]/10 bg-white pl-9 pr-9 text-sm text-gray-700 placeholder-gray-400 shadow-sm outline-none ring-0 transition focus:border-[#3A4A1F]/30 focus:ring-2 focus:ring-[#3A4A1F]/10"
@@ -166,26 +95,25 @@ export function VillasPageClient({ villas, activePromo = null }: Props) {
               )}
             </div>
 
-            {/* Location filter pills */}
             <div
               className="flex items-center gap-1 rounded-full border border-[#3A4A1F]/10 bg-white p-1 shadow-sm"
               role="group"
               aria-label="Filter lokasi"
             >
               <SlidersHorizontal className="ml-2 h-3.5 w-3.5 text-[#3A4A1F]/40" />
-              {LOCATION_FILTERS.map((f) => (
+              {LOCATION_FILTERS.map((filter) => (
                 <button
-                  key={f.value}
-                  id={`filter-${f.value}`}
-                  onClick={() => setActiveFilter(f.value)}
+                  key={filter.value}
+                  id={`filter-${filter.value}`}
+                  onClick={() => setActiveFilter(filter.value)}
                   className={`relative px-5 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-bold transition-all duration-400 whitespace-nowrap ${
-                    activeFilter === f.value
+                    activeFilter === filter.value
                       ? "text-white"
                       : "text-[#3A4A1F]/50 hover:text-[#3A4A1F]"
                   }`}
                 >
-                  <span className="relative z-10">{f.label}</span>
-                  {activeFilter === f.value && (
+                  <span className="relative z-10">{filter.label}</span>
+                  {activeFilter === filter.value && (
                     <motion.div
                       layoutId="villasPageActiveTab"
                       className="absolute inset-0 rounded-full bg-[#3A4A1F] z-0 shadow-md"
@@ -198,19 +126,15 @@ export function VillasPageClient({ villas, activePromo = null }: Props) {
           </div>
         </div>
 
-        {/* ── Card Grid ── */}
         <AnimatePresence mode="popLayout">
           {filteredCards.length > 0 ? (
-            <motion.div
-              layout
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:gap-8"
-            >
-              {filteredCards.map((card, idx) => (
+            <motion.div layout className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:gap-8">
+              {filteredCards.map((card, index) => (
                 <motion.div
                   layout
                   key={card.id}
                   initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0, transition: { delay: idx * 0.06, duration: 0.4 } }}
+                  animate={{ opacity: 1, y: 0, transition: { delay: index * 0.06, duration: 0.4 } }}
                   exit={{ opacity: 0, scale: 0.96 }}
                 >
                   <VillaCard room={card} />
@@ -228,14 +152,15 @@ export function VillasPageClient({ villas, activePromo = null }: Props) {
               <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#3A4A1F]/5">
                 <LayoutGrid className="h-8 w-8 text-[#3A4A1F]/20" />
               </div>
-              <p className="font-serif text-xl font-bold text-[#3A4A1F]">
-                Tidak ada unit ditemukan
-              </p>
+              <p className="font-serif text-xl font-bold text-[#3A4A1F]">Tidak ada unit ditemukan</p>
               <p className="mt-2 max-w-xs text-sm text-gray-400">
                 Coba ubah filter lokasi atau kata kunci pencarian Anda.
               </p>
               <button
-                onClick={() => { setActiveFilter("all"); setSearchQuery(""); }}
+                onClick={() => {
+                  setActiveFilter("all");
+                  setSearchQuery("");
+                }}
                 className="mt-6 rounded-full bg-[#3A4A1F] px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-[#2A3A1F]"
               >
                 Reset Filter

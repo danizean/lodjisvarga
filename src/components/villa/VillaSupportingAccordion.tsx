@@ -61,7 +61,7 @@ export function VillaSupportingAccordion({
       <div className="divide-y divide-slate-100">
         {/* ── 1. Stay Rules ── */}
         {rules.length > 0 && (
-          <Accordion className="w-full">
+          <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="rules" className="border-0">
               <AccordionTrigger className="flex items-center gap-3 px-5 py-4 text-left no-underline hover:bg-slate-50 hover:no-underline sm:px-6">
                 <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-[#3A4A1F]/10">
@@ -101,7 +101,7 @@ export function VillaSupportingAccordion({
 
         {/* ── 2. FAQ ── */}
         {faqs.length > 0 && (
-          <Accordion className="w-full">
+          <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="faq" className="border-0">
               <AccordionTrigger className="flex items-center gap-3 px-5 py-4 text-left no-underline hover:bg-slate-50 hover:no-underline sm:px-6">
                 <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50">
@@ -138,7 +138,7 @@ export function VillaSupportingAccordion({
 
         {/* ── 3. Nearby Spots ── */}
         {nearby.length > 0 && (
-          <Accordion className="w-full">
+          <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="nearby" className="border-0">
               <AccordionTrigger className="flex items-center gap-3 px-5 py-4 text-left no-underline hover:bg-slate-50 hover:no-underline sm:px-6">
                 <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-amber-50">

@@ -35,6 +35,7 @@ export function VillaGalleryGrid({ items }: VillaGalleryGridProps) {
               src={item.url}
               alt={item.label}
               fill
+              priority={index === 0}
               className="object-cover transition-transform duration-500 hover:scale-105"
               sizes={index === 0 ? "(max-width: 768px) 100vw, 60vw" : "(max-width: 768px) 50vw, 20vw"}
             />

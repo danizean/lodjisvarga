@@ -58,7 +58,7 @@ function getTargetDates(startDate: string, endDate: string, applyTo: ApplyTo) {
     .filter((day) => {
       if (applyTo === "all") return true;
       const dayIndex = day.getDay();
-      const isWeekend = dayIndex === 0 || dayIndex === 6;
+      const isWeekend = dayIndex === 5 || dayIndex === 6 || dayIndex === 0;
       return applyTo === "weekends" ? isWeekend : !isWeekend;
     })
     .map((day) => formatDate(day, "yyyy-MM-dd"));
@@ -156,7 +156,7 @@ export async function bulkUpsertPrices(formData: unknown) {
     }
 
     const { room_type_id, start_date, end_date, price, apply_to } = parsed.data;
-    const { data, error } = await supabase.rpc("admin_set_room_price_range", {
+    const { data, error } = await (supabase.rpc as any)("admin_set_room_price_range", {
       p_room_type_id: room_type_id,
       p_start_date: start_date,
       p_end_date: end_date,
@@ -233,7 +233,7 @@ export async function blockDates(formData: unknown) {
     }
 
     const { room_type_id, start_date, end_date, reason, apply_to } = parsed.data;
-    const { data, error } = await supabase.rpc("admin_block_room_dates", {
+    const { data, error } = await (supabase.rpc as any)("admin_block_room_dates", {
       p_room_type_id: room_type_id,
       p_start_date: start_date,
       p_end_date: end_date,
@@ -312,7 +312,7 @@ export async function unblockDates(
     }
 
     const { room_type_id, start_date, end_date, apply_to } = parsed.data;
-    const { data, error } = await supabase.rpc("admin_unblock_room_dates", {
+    const { data, error } = await (supabase.rpc as any)("admin_unblock_room_dates", {
       p_room_type_id: room_type_id,
       p_start_date: start_date,
       p_end_date: end_date,
