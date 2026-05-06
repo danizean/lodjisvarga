@@ -24,8 +24,11 @@ const CONFIGS: Record<BadgeVariant, Record<string, { label: string; class: strin
     Archived:    { label: "Diarsipkan",  class: "bg-red-50 text-red-700 border-red-200" },
   },
   promo: {
-    true:  { label: "Promo Aktif",  class: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    false: { label: "Tanpa Promo",  class: "bg-slate-50 text-slate-500 border-slate-200" },
+    draft:     { label: "Draft",       class: "bg-slate-50 text-slate-500 border-slate-200" },
+    active:    { label: "Promo Aktif", class: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+    scheduled: { label: "Dijadwalkan", class: "bg-blue-50 text-blue-700 border-blue-200" },
+    expired:   { label: "Kedaluwarsa", class: "bg-orange-50 text-orange-700 border-orange-200" },
+    disabled:  { label: "Nonaktif",    class: "bg-red-50 text-red-700 border-red-200" },
   },
   lead: {
     New:       { label: "Baru",        class: "bg-blue-50 text-blue-700 border-blue-200" },

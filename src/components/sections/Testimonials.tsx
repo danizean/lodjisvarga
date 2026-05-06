@@ -13,33 +13,32 @@ const testimonials = [
   { name: "Guest", review: "Suasana tenang dan nyaman. Kamar bersih, perlengkapan lengkap, dan pelayanan sangat membantu. Worth it.", rating: 5 },
 ];
 
-// Sub-komponen Kartu agar kode lebih bersih
-function TestimonialCard({ item, index }: { item: typeof testimonials[0], index: number }) {
+function TestimonialCard({ item, index }: { item: typeof testimonials[0]; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-[#3A4A1F]/5 flex flex-col justify-between hover:shadow-xl hover:shadow-[#3A4A1F]/5 transition-all duration-500 group"
+      transition={{ delay: Math.min(index * 0.08, 0.32), duration: 0.5, ease: "easeOut" }}
+      className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-[#3A4A1F]/5 flex flex-col justify-between hover:shadow-xl hover:shadow-[#3A4A1F]/5 transition-all duration-500 group h-full"
     >
       <div>
         <div className="flex justify-between items-start mb-4">
-          <div className="flex gap-1">
+          <div className="flex gap-1" aria-label={`Rating: ${item.rating} dari 5 bintang`}>
             {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
+              <Star key={i} className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" aria-hidden="true" />
             ))}
           </div>
-          <Quote className="w-8 h-8 text-[#3A4A1F]/5 group-hover:text-[#D4AF37]/20 transition-colors" />
+          <Quote className="w-8 h-8 text-[#3A4A1F]/5 group-hover:text-[#D4AF37]/20 transition-colors duration-300" aria-hidden="true" />
         </div>
-        
+
         <p className="text-gray-600 text-sm md:text-base leading-relaxed italic mb-6">
-          "{item.review}"
+          &ldquo;{item.review}&rdquo;
         </p>
       </div>
 
       <div className="flex items-center gap-3 border-t border-gray-50 pt-4">
-        <div className="w-10 h-10 rounded-full bg-[#3A4A1F]/5 flex items-center justify-center text-[#3A4A1F] font-bold text-xs">
+        <div className="w-10 h-10 rounded-full bg-[#3A4A1F]/5 flex items-center justify-center text-[#3A4A1F] font-bold text-xs" aria-hidden="true">
           {item.name.charAt(0)}
         </div>
         <p className="text-xs font-bold text-[#3A4A1F] uppercase tracking-widest">
@@ -55,11 +54,12 @@ export function Testimonials() {
     <section className="relative pt-16 pb-16 md:pt-24 md:pb-24 bg-[#F7F6F2] overflow-hidden">
       <Container className="max-w-6xl px-6 md:px-12 relative z-10">
 
-        {/* HEADER */}
-        <motion.div 
+        {/* Header */}
+        <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.55, ease: "easeOut" }}
           className="text-center max-w-2xl mx-auto mb-12 md:mb-16 space-y-4"
         >
           <h2 className="text-3xl md:text-5xl font-serif text-[#3A4A1F] tracking-tight">
@@ -71,7 +71,7 @@ export function Testimonials() {
           </p>
 
           <div className="flex items-center justify-center gap-3 pt-2">
-            <div className="flex -space-x-1">
+            <div className="flex -space-x-0.5" aria-hidden="true">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
               ))}
@@ -82,18 +82,18 @@ export function Testimonials() {
           </div>
         </motion.div>
 
-        {/* MOBILE SLIDER (Menggunakan Flex & Snap) */}
+        {/* Mobile slider */}
         <div className="md:hidden">
           <div className="flex gap-4 overflow-x-auto pb-8 snap-x snap-mandatory no-scrollbar -mx-6 px-6">
             {testimonials.map((item, index) => (
-              <div key={index} className="snap-start min-w-[280px] flex">
+              <div key={index} className="snap-start flex-shrink-0 w-[280px] flex">
                 <TestimonialCard item={item} index={index} />
               </div>
             ))}
           </div>
         </div>
 
-        {/* DESKTOP GRID */}
+        {/* Desktop grid */}
         <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((item, index) => (
             <TestimonialCard key={index} item={item} index={index} />

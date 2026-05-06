@@ -2,6 +2,19 @@ import { createClient } from "@/lib/supabase/client";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+// ─── Blog Content Image (in-editor) ─────────────────────────────────────────
+
+export const BLOG_CONTENT_IMAGE_CONFIG = {
+  bucket: "villa-media",
+  folder: "blog-content",
+  /** 5 MB — body images can be larger than thumbnails */
+  maxSizeBytes: 5 * 1024 * 1024,
+  accept: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+  acceptString: ".jpg,.jpeg,.png,.webp,.gif",
+} as const;
+
+// ─── Blog Thumbnail ───────────────────────────────────────────────────────────
+
 export const BLOG_THUMBNAIL_CONFIG = {
   bucket: "villa-media",
   folder: "blog-thumbnails",
@@ -92,6 +105,78 @@ export async function uploadBlogThumbnail(
     .getPublicUrl(path);
 
   return { publicUrl: data.publicUrl, path };
+}
+
+// ─── Core Upload Function: Content Images ────────────────────────────────────
+
+/**
+ * Uploads a single image file to Supabase Storage under the blog-content folder.
+ * Intended for in-editor image insertion (not thumbnails).
+ * Returns the public URL on success, throws on failure.
+ *
+ * Must be called from a browser context (uses the browser Supabase client).
+ *
+ * @example
+ *   const { publicUrl } = await uploadBlogContentImage(file, user.id);
+ *   editor.chain().focus().setImage({ src: publicUrl }).run();
+ */
+export async function uploadBlogContentImage(
+  file: File,
+  userId: string
+): Promise<UploadImageResult> {
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 7);
+  const safeName = file.name
+    .replace(/\.[^.]+$/, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .substring(0, 40);
+
+  const filename = `${timestamp}-${random}-${safeName}.${ext}`;
+  const path = `${BLOG_CONTENT_IMAGE_CONFIG.folder}/${userId}/${filename}`;
+
+  const supabase = createClient();
+
+  const { error } = await supabase.storage
+    .from(BLOG_CONTENT_IMAGE_CONFIG.bucket)
+    .upload(path, file, {
+      upsert: false,
+      cacheControl: "31536000",
+      contentType: file.type,
+    });
+
+  if (error) {
+    throw new Error(`Upload gagal: ${error.message}`);
+  }
+
+  const { data } = supabase.storage
+    .from(BLOG_CONTENT_IMAGE_CONFIG.bucket)
+    .getPublicUrl(path);
+
+  return { publicUrl: data.publicUrl, path };
+}
+
+// ─── Validation: Content Images ───────────────────────────────────────────────
+
+export function validateContentImageFile(file: File): UploadImageError | null {
+  if (!BLOG_CONTENT_IMAGE_CONFIG.accept.includes(file.type as (typeof BLOG_CONTENT_IMAGE_CONFIG.accept)[number])) {
+    return {
+      code: "BAD_TYPE",
+      message: `Format tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.`,
+    };
+  }
+
+  if (file.size > BLOG_CONTENT_IMAGE_CONFIG.maxSizeBytes) {
+    const mb = (file.size / (1024 * 1024)).toFixed(1);
+    return {
+      code: "TOO_LARGE",
+      message: `Ukuran file terlalu besar (${mb} MB). Maksimal 5 MB.`,
+    };
+  }
+
+  return null;
 }
 
 /**

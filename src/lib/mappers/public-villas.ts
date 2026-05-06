@@ -93,15 +93,30 @@ export function resolveHighlightAmenities(params: {
 
 export function mapRoomTypeToCard(params: {
   room: PublicRoomTypeData;
-  villa: Pick<PublicVillaData, "name" | "slug" | "status" | "whatsapp_number">;
+  villa: Pick<PublicVillaData, "name" | "slug" | "status" | "whatsapp_number" | "villa_amenities">;
   activePromo: ActivePromoData;
   highlightLimit?: number;
   fallbackToFirstAmenities?: boolean;
 }): RoomTypeCardData {
   const { room, villa, activePromo, highlightLimit = 3, fallbackToFirstAmenities = true } = params;
-  const amenities = extractRoomAmenities(room);
+  
+  const roomAmenities = extractRoomAmenities(room);
+  const villaAmenities = (villa.villa_amenities ?? [])
+    .flatMap(link => (link.amenities ? [link.amenities] : []))
+    .filter((a): a is AmenityData => Boolean(a?.id && a?.name));
+    
+  // Merge unique amenities using reduce (plain JSON-serializable output)
+  const seenIds = new Set<string>();
+  const combinedAmenities: AmenityData[] = [];
+  for (const a of [...villaAmenities, ...roomAmenities]) {
+    if (a.id && !seenIds.has(a.id)) {
+      seenIds.add(a.id);
+      combinedAmenities.push({ id: a.id, name: a.name, icon_name: a.icon_name ?? null });
+    }
+  }
+
   const highlightAmenities = resolveHighlightAmenities({
-    amenities,
+    amenities: combinedAmenities,
     highlightIds: room.highlight_amenity_ids,
     limit: highlightLimit,
     fallbackToFirstAmenities,
@@ -126,7 +141,7 @@ export function mapRoomTypeToCard(params: {
     capacity_child: room.capacity_child ?? null,
     description: room.description ?? null,
     gallery: normalizeRoomGallery(room),
-    amenities,
+    amenities: combinedAmenities,
     highlight_amenities: highlightAmenities,
     villaName: villa.name,
     villaSlug: villa.slug,
@@ -190,7 +205,7 @@ export function flattenToRoomCards(
 }
 
 export function mapRoomTypesToUnitCards(params: {
-  villa: Pick<PublicVillaData, "name" | "slug" | "status" | "whatsapp_number">;
+  villa: Pick<PublicVillaData, "name" | "slug" | "status" | "whatsapp_number" | "villa_amenities">;
   roomTypes: PublicRoomTypeData[];
   activePromo: ActivePromoData;
 }) {

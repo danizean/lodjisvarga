@@ -123,7 +123,7 @@ export function VillaFacilitiesGrid({ amenities, facilities }: VillaFacilitiesGr
       {/* Header */}
       <div className="mb-5">
         <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#3A4A1F]/70">
-          Facilities
+          Fasilitas
         </p>
         <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
           Fasilitas properti

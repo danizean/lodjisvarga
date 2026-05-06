@@ -32,8 +32,9 @@ export async function getPublicPricingSnapshot(
       : Promise.resolve({ data: [], error: null }),
     supabase
       .from("promos")
-      .select("id, title, discount_code, discount_value, expired_at, is_active")
-      .eq("is_active", true)
+      .select("id, title, discount_code, discount_type, discount_value, discount_text, start_date, expired_at, status")
+      .eq("status", "published")
+      .or(`start_date.is.null,start_date.lte.${date}`)
       .or(`expired_at.is.null,expired_at.gte.${date}`)
       .order("discount_value", { ascending: false })
       .limit(1),

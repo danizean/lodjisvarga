@@ -155,8 +155,13 @@ export function TipTapEditor({
     },
     onUpdate({ editor }) {
       if (!onChange) return;
-      const json = editor.getJSON() as TipTapJSON;
-      onChange(json);
+      // PROSE MIRROR WORKAROUND:
+      // TipTap/ProseMirror often uses Object.create(null) for 'attrs'. 
+      // Next.js Server Actions silently drops null-prototype objects during serialization.
+      // We must deep-clone the JSON to restore standard Object prototypes before sending it to the form state.
+      const rawJson = editor.getJSON();
+      const safeJson = JSON.parse(JSON.stringify(rawJson)) as TipTapJSON;
+      onChange(safeJson);
     },
     immediatelyRender: false,        // prevents SSR hydration mismatch
   });

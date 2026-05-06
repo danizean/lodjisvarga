@@ -7,23 +7,23 @@ import { z } from "zod";
 // ─── Schema Validation ────────────────────────────────────────────────────────
 const promoSchema = z.object({
   title: z.string().min(3, "Judul promo minimal 3 karakter"),
+  slug: z.string().min(3, "Slug minimal 3 karakter").optional().nullable(),
   description: z.string().optional().nullable(),
+  short_description: z.string().optional().nullable(),
+  promo_badge: z.string().optional().nullable(),
   discount_code: z.string().min(3, "Kode diskon minimal 3 karakter"),
-  discount_value: z.coerce.number().min(1, "Nilai diskon minimal 1").max(100),
-  // Accept null/undefined/empty string for optional fields
-  expired_at: z.string().nullable().optional(),
-  image_url: z
-    .string()
-    .nullable()
-    .optional()
-    .refine(
-      (v) => !v || v === "" || v.startsWith("http"),
-      { message: "URL gambar harus diawali dengan http/https" }
-    ),
-  is_active: z.boolean().default(true),
+  discount_type: z.enum(["percentage", "fixed_amount", "textual"]).default("percentage"),
+  discount_value: z.coerce.number().min(0).optional().nullable(),
+  discount_text: z.string().optional().nullable(),
+  start_date: z.string().optional().nullable(),
+  expired_at: z.string().optional().nullable(),
+  image_url: z.string().optional().nullable(),
+  banner_image_url: z.string().optional().nullable(),
+  status: z.enum(["draft", "published", "disabled"]).default("draft"),
+  associated_villa_ids: z.array(z.string()).optional(),
 });
 
-// ─── Helper: Gunakan is_admin() DB function (hindari circular RLS) ────────────
+// ─── Helper: Gunakan is_admin() DB function ────────────
 async function getAdminClient() {
   const supabase = await createClient();
   const {
@@ -32,7 +32,6 @@ async function getAdminClient() {
 
   if (!user) return { supabase, user: null, isAdmin: false };
 
-  // Gunakan DB function is_admin() yang mengevaluasi role via auth.uid()
   const { data: isAdminResult, error } = await supabase.rpc("is_admin");
   const isAdmin = !error && isAdminResult === true;
 
@@ -48,8 +47,23 @@ export async function createPromo(data: unknown) {
   if (!parsed.success)
     return { error: "Validasi gagal", details: parsed.error.flatten().fieldErrors };
 
-  const { data: promo, error } = await supabase.from("promos").insert(parsed.data).select().single();
+  const { associated_villa_ids, ...promoData } = parsed.data;
+
+  const { data: promo, error } = await supabase
+    .from("promos")
+    .insert(promoData)
+    .select()
+    .single();
+
   if (error) return { error: error.message };
+
+  if (promo && associated_villa_ids && associated_villa_ids.length > 0) {
+    const pivotData = associated_villa_ids.map((villa_id) => ({
+      promo_id: promo.id,
+      villa_id,
+    }));
+    await supabase.from("promo_villas").insert(pivotData);
+  }
 
   revalidatePath("/admin/promos");
   revalidatePath("/admin/dashboard");
@@ -65,19 +79,34 @@ export async function updatePromo(id: string, data: unknown) {
   if (!parsed.success)
     return { error: "Validasi gagal", details: parsed.error.flatten().fieldErrors };
 
-  const { error } = await supabase.from("promos").update(parsed.data).eq("id", id);
+  const { associated_villa_ids, ...promoData } = parsed.data;
+
+  const { error } = await supabase.from("promos").update(promoData).eq("id", id);
   if (error) return { error: error.message };
+
+  if (associated_villa_ids !== undefined) {
+    // Delete old
+    await supabase.from("promo_villas").delete().eq("promo_id", id);
+    // Insert new
+    if (associated_villa_ids.length > 0) {
+      const pivotData = associated_villa_ids.map((villa_id) => ({
+        promo_id: id,
+        villa_id,
+      }));
+      await supabase.from("promo_villas").insert(pivotData);
+    }
+  }
 
   revalidatePath("/admin/promos");
   return { success: true };
 }
 
-// ─── Toggle Promo Active ──────────────────────────────────────────────────────
-export async function togglePromoStatus(id: string, isActive: boolean) {
+// ─── Toggle Promo Status ──────────────────────────────────────────────────────
+export async function togglePromoStatus(id: string, status: "draft" | "published" | "disabled") {
   const { supabase, user, isAdmin } = await getAdminClient();
   if (!user || !isAdmin) return { error: "Unauthorized" };
 
-  const { error } = await supabase.from("promos").update({ is_active: isActive }).eq("id", id);
+  const { error } = await supabase.from("promos").update({ status }).eq("id", id);
   if (error) return { error: error.message };
 
   revalidatePath("/admin/promos");
@@ -90,6 +119,7 @@ export async function deletePromo(id: string) {
   const { supabase, user, isAdmin } = await getAdminClient();
   if (!user || !isAdmin) return { error: "Unauthorized" };
 
+  // associated promo_villas should be deleted by ON DELETE CASCADE
   const { error } = await supabase.from("promos").delete().eq("id", id);
   if (error) return { error: error.message };
 
@@ -103,7 +133,12 @@ export async function getPromos() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("promos")
-    .select("*")
+    .select(`
+      *,
+      promo_villas(
+        villa_id
+      )
+    `)
     .order("created_at", { ascending: false });
 
   if (error) return [];

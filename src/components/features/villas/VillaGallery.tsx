@@ -20,8 +20,8 @@ interface VillaGalleryProps {
 
 export function VillaGallery({
   items,
-  title = "Lihat villa dan unit dengan cepat",
-  description = "Pisahkan foto area villa dan foto unit kamar agar tamu lebih mudah memahami properti sebelum memilih kamar.",
+  title = "Foto Villa & Unit",
+  description = "",
 }: VillaGalleryProps) {
   const galleryItems = useMemo(
     () =>
@@ -99,7 +99,9 @@ export function VillaGallery({
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#3A4A1F]/70">Gallery</p>
           <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">{title}</h2>
-          <p className="mt-2 max-w-2xl text-sm text-slate-500">{description}</p>
+          {description && (
+            <p className="mt-2 max-w-2xl text-sm text-slate-500">{description}</p>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           {filterTabs
@@ -177,26 +179,16 @@ export function VillaGallery({
         })}
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-        <div>
-          <p className="text-sm font-semibold text-slate-900">
-            {activeFilter === "villa" ? "Fokus pada area villa" : activeFilter === "unit" ? "Fokus pada unit kamar" : "Lihat semua kategori"}
-          </p>
-          <p className="text-xs text-slate-500">
-            {activeFilter === "villa"
-              ? "Cocok untuk memahami ambience, fasad, dan area umum."
-              : activeFilter === "unit"
-                ? "Cocok untuk membandingkan kamar sebelum booking."
-                : "Gabungan foto villa dan unit untuk scan cepat."}
-          </p>
-        </div>
+
+      {/* View all link */}
+      <div className="mt-3 flex justify-end">
         <button
           type="button"
           onClick={() => openLightbox(0)}
-          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#3A4A1F]/60 transition-colors hover:text-[#3A4A1F] focus-visible:outline-none"
         >
-          <Camera className="h-4 w-4" />
-          View all
+          <Camera className="h-3.5 w-3.5" />
+          Lihat Semua Foto
         </button>
       </div>
 

@@ -100,12 +100,12 @@ export default async function BlogPage() {
             </div>
 
           ) : (
-            <div className="space-y-10">
+            <div className="space-y-16 lg:space-y-24">
 
               {/* Featured article (first, larger) */}
               {featured && (
                 <div>
-                  <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.4em] text-[#D4AF37]">
+                  <p className="mb-6 text-[11px] font-bold uppercase tracking-[0.4em] text-[#D4AF37]">
                     Artikel Unggulan
                   </p>
                   <ArticleCard article={featured} featured />
@@ -115,10 +115,10 @@ export default async function BlogPage() {
               {/* Rest of articles — 3-column grid */}
               {rest.length > 0 && (
                 <div>
-                  <p className="mb-6 text-[10px] font-bold uppercase tracking-[0.4em] text-[#3A4A1F]/50">
+                  <p className="mb-8 text-[11px] font-bold uppercase tracking-[0.4em] text-[#3A4A1F]/50">
                     Artikel Terbaru
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
                     {rest.map((article) => (
                       <ArticleCard key={article.id} article={article} />
                     ))}

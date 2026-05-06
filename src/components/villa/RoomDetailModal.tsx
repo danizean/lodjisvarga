@@ -32,21 +32,11 @@ const WaIcon = () => (
   </svg>
 );
 
-// ─── Default amenities — shown when room has no amenity data ───────────────
-const DEFAULT_AMENITIES = [
-  { id: "_d1", name: "AC", icon_name: "wind" },
-  { id: "_d2", name: "WiFi", icon_name: "wifi" },
-  { id: "_d3", name: "Google TV", icon_name: "monitor-play" },
-  { id: "_d4", name: "Kulkas", icon_name: "refrigerator" },
-  { id: "_d5", name: "Water Heater", icon_name: "shower-head" },
-  { id: "_d6", name: "Kolam Renang", icon_name: "waves" },
-];
-
 // ─── Amenity type ────────────────────────────────────────────────────────────
 type AmenityItem = {
-  id?: string;
+  id: string;
   name: string;
-  icon_name?: string | null;
+  icon_name: string | null;
 };
 
 // ─── Modal Gallery Slider ───────────────────────────────────────────────────
@@ -165,16 +155,13 @@ export function RoomDetailModal({ room, trigger }: Props) {
     .map((img) => img.image_url)
     .filter(Boolean);
 
-  // ── Amenities — use DB data if available, else show defaults ─────────────
-  const rawAmenities = (room.amenities ?? []) as AmenityItem[];
-  const amenities: AmenityItem[] =
-    rawAmenities.length > 0 ? rawAmenities : DEFAULT_AMENITIES;
+  // ── Amenities — use real DB data only, no hardcoded fallback ─────────────
+  const amenities: AmenityItem[] = room.amenities;
+  const hasAmenities = amenities.length > 0;
 
   const description =
     room.description?.trim() ||
     "Unit premium yang dirancang untuk kenyamanan maksimal selama menginap Anda di Lodjisvarga.";
-
-  const isUsingFallback = rawAmenities.length === 0;
 
   return (
     <DialogPrimitive.Root>
@@ -303,26 +290,27 @@ export function RoomDetailModal({ room, trigger }: Props) {
 
               {/* ── Amenity grid ── */}
               <div className="mt-6">
-                <div className="mb-3 flex items-center justify-between">
+                <div className="mb-3 flex items-center gap-2">
                   <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
                     Fasilitas Kamar
-                    {!isUsingFallback && (
-                      <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500">
-                        {amenities.length}
-                      </span>
-                    )}
                   </p>
-                  {isUsingFallback && (
-                    <span className="text-[10px] text-slate-400 italic">
-                      Fasilitas standar
+                  {hasAmenities && (
+                    <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500">
+                      {amenities.length}
                     </span>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {amenities.map((amenity, i) => (
-                    <AmenityChip key={amenity.id ?? i} amenity={amenity} />
-                  ))}
-                </div>
+                {hasAmenities ? (
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {amenities.map((amenity, i) => (
+                      <AmenityChip key={amenity.id ?? i} amenity={amenity} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-2xl border border-dashed border-slate-200 py-4 text-center text-[12px] italic text-slate-400">
+                    Belum ada data fasilitas untuk kamar ini.
+                  </p>
+                )}
               </div>
 
               {/* bottom spacer so sticky footer clears content */}

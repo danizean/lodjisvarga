@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -11,31 +11,6 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
-  }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
   }
   public: {
     Tables: {
@@ -387,38 +362,102 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_villas: {
+        Row: {
+          created_at: string | null
+          id: string
+          promo_id: string
+          villa_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          promo_id: string
+          villa_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          promo_id?: string
+          villa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_villas_promo_id_fkey"
+            columns: ["promo_id"]
+            isOneToOne: false
+            referencedRelation: "promos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_villas_villa_id_fkey"
+            columns: ["villa_id"]
+            isOneToOne: false
+            referencedRelation: "villa_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_villas_villa_id_fkey"
+            columns: ["villa_id"]
+            isOneToOne: false
+            referencedRelation: "villas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promos: {
         Row: {
+          banner_image_url: string | null
           created_at: string | null
           description: string | null
           discount_code: string
+          discount_text: string | null
+          discount_type: string | null
           discount_value: number | null
           expired_at: string | null
           id: string
           image_url: string | null
-          is_active: boolean | null
+          promo_badge: string | null
+          short_description: string | null
+          slug: string | null
+          start_date: string | null
+          status: string | null
           title: string
         }
         Insert: {
+          banner_image_url?: string | null
           created_at?: string | null
           description?: string | null
           discount_code: string
+          discount_text?: string | null
+          discount_type?: string | null
           discount_value?: number | null
           expired_at?: string | null
           id?: string
           image_url?: string | null
-          is_active?: boolean | null
+          promo_badge?: string | null
+          short_description?: string | null
+          slug?: string | null
+          start_date?: string | null
+          status?: string | null
           title: string
         }
         Update: {
+          banner_image_url?: string | null
           created_at?: string | null
           description?: string | null
           discount_code?: string
+          discount_text?: string | null
+          discount_type?: string | null
           discount_value?: number | null
           expired_at?: string | null
           id?: string
           image_url?: string | null
-          is_active?: boolean | null
+          promo_badge?: string | null
+          short_description?: string | null
+          slug?: string | null
+          start_date?: string | null
+          status?: string | null
           title?: string
         }
         Relationships: []
@@ -1063,9 +1102,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       lead_status_enum: [
@@ -1078,9 +1114,12 @@ export const Constants = {
       ],
       payment_status_enum: ["pending", "paid", "failed", "refunded"],
       tipe_villa_enum: [
+        "Standard",
         "Superior",
         "Deluxe",
-        "Executive Deluxe",
+        "Executive",
+        "Suite",
+        "Presidential",
       ],
       villa_status_enum: ["Published", "Maintenance", "Hidden", "Archived"],
     },

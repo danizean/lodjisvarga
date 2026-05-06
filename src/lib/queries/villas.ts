@@ -45,7 +45,7 @@ export async function getDashboardStats() {
   const [villasRes, leadsRes, promosRes] = await Promise.all([
     supabase.from("villas").select("id, status", { count: "exact" }).eq("status", "active"),
     supabase.from("leads").select("id", { count: "exact" }).eq("status", "New"),
-    supabase.from("promos").select("id", { count: "exact" }).eq("is_active", true),
+    supabase.from("promos").select("id", { count: "exact" }).eq("status", "published"),
   ]);
 
   return {

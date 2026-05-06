@@ -21,7 +21,7 @@ export const getAdminDashboardOverview = cache(async () => {
       .from("leads")
       .select("id", { count: "exact", head: true })
       .or("status.eq.New,status.eq.new"),
-    supabase.from("promos").select("id", { count: "exact", head: true }).eq("is_active", true),
+    supabase.from("promos").select("id", { count: "exact", head: true }).eq("status", "published"),
     supabase
       .from("villas")
       .select("id, name, status, room_types(id)")
@@ -29,8 +29,8 @@ export const getAdminDashboardOverview = cache(async () => {
       .limit(5),
     supabase
       .from("promos")
-      .select("id, title, discount_code, discount_value, is_active")
-      .eq("is_active", true)
+      .select("id, title, discount_code, discount_value, status, discount_type, discount_text")
+      .eq("status", "published")
       .order("created_at", { ascending: false })
       .limit(5),
   ]);

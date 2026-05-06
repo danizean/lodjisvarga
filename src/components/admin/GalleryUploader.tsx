@@ -55,7 +55,8 @@ export function GalleryUploader({
 
     try {
       onUploadStatusChange?.(true);
-      const results = await uploadFiles(fileArray, villaId, roomTypeId);
+      const type = roomTypeId ? "room" : "villa";
+      const results = await uploadFiles(fileArray, villaId, type, roomTypeId);
       const newItems: GalleryItem[] = results.map((r, i) => ({
         image_url: r.publicUrl,
         is_primary: items.length === 0 && i === 0,

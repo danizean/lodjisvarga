@@ -4,9 +4,12 @@ export type ActivePromoData = {
   id: string;
   title: string;
   discount_code: string;
+  discount_type: string | null;
   discount_value: number | null;
+  discount_text: string | null;
+  start_date?: string | null;
   expired_at: string | null;
-  is_active: boolean | null;
+  status: string | null;
 } | null;
 
 export type AmenityData = {
@@ -65,8 +68,8 @@ export type RoomTypeCardData = {
   price_source?: "base" | "override";
   activePromo?: ActivePromoData;
   bed_type?: string | null;
-  amenities?: { id?: string; name: string; icon_name?: string | null }[];
-  highlight_amenities?: { id: string; name: string; icon_name: string | null }[];
+  amenities: { id: string; name: string; icon_name: string | null }[];
+  highlight_amenities: { id: string; name: string; icon_name: string | null }[];
   capacity_adult?: number | null;
   capacity_child?: number | null;
   description: string | null;

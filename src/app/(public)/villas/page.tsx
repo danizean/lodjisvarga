@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { VillasPageClient } from "@/components/features/villas/VillasPageClient";
 import { attachPublicPricing, getPublicPricingSnapshot } from "@/lib/queries/public-pricing";
-import { createStaticClient } from "@/lib/supabase/static";
+import { createClient } from "@/lib/supabase/server";
 import type { PublicRoomTypeData, PublicVillaData } from "@/types/public-villas";
 
 export const metadata: Metadata = {
@@ -10,15 +10,15 @@ export const metadata: Metadata = {
     "Temukan villa dan kamar terbaik di Lodjisvarga. Nikmati pengalaman menginap premium dengan fasilitas lengkap di Yogyakarta.",
 };
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export default async function VillasPage() {
-  const supabase = createStaticClient();
+  const supabase = await createClient();
 
   const { data: villas, error } = await supabase
     .from("villas")
     .select(`
-      id, name, slug, description, address, whatsapp_number, status,
+      id, name, slug, description, address, whatsapp_number, gmaps_url, status,
       villa_gallery:gallery!gallery_villa_id_fkey (image_url, is_primary, display_order, room_type_id),
       villa_amenities (amenities (id, name, icon_name)),
       room_types (
@@ -29,7 +29,7 @@ export default async function VillasPage() {
       )
     `)
     .in("status", ["active", "coming_soon"])
-    .order("name");
+    .order("created_at", { ascending: true });
 
   if (error) {
     console.error("Supabase Fetch Error (Villas Listing):", error.message);

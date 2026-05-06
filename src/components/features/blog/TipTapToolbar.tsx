@@ -4,12 +4,13 @@ import { type Editor } from "@tiptap/react";
 import {
   Bold, Italic, Underline, Strikethrough,
   Heading2, Heading3,
-  List, ListOrdered, Quote, Code,
+  List, ListOrdered, Quote, Code, Minus,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
-  Link2, Image, Undo2, Redo2,
+  Link2, Undo2, Redo2,
   Highlighter, RemoveFormatting,
 } from "lucide-react";
 import { useCallback } from "react";
+import { EditorImageUploader } from "./EditorImageUploader";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ function ToolbarButton({ onClick, active, disabled, title, children }: ButtonPro
       type="button"
       onMouseDown={(e) => {
         e.preventDefault(); // prevent editor blur
-        onClick();
+        if (!disabled) onClick();
       }}
       disabled={disabled}
       title={title}
@@ -82,13 +83,6 @@ export function TipTapToolbar({ editor }: ToolbarProps) {
     editor.chain().focus().setLink({ href: url, target: "_blank", rel: "noopener noreferrer" }).run();
   }, [editor]);
 
-  // ── Image handler ──
-  const insertImage = useCallback(() => {
-    const url = window.prompt("URL gambar:", "https://");
-    if (!url) return;
-    editor.chain().focus().setImage({ src: url }).run();
-  }, [editor]);
-
   return (
     <div
       className="flex flex-wrap items-center gap-0.5 px-3 py-2 bg-[#FAFAF8] border-b border-gray-100 rounded-t-xl"
@@ -102,7 +96,7 @@ export function TipTapToolbar({ editor }: ToolbarProps) {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         active={editor.isActive("bold")}
-        disabled={!editor.can().chain().toggleBold().run()}
+        disabled={!editor.can().toggleBold()}
         title="Bold (Ctrl+B)"
       >
         <Bold className="w-3.5 h-3.5" />
@@ -111,7 +105,7 @@ export function TipTapToolbar({ editor }: ToolbarProps) {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         active={editor.isActive("italic")}
-        disabled={!editor.can().chain().toggleItalic().run()}
+        disabled={!editor.can().toggleItalic()}
         title="Italic (Ctrl+I)"
       >
         <Italic className="w-3.5 h-3.5" />
@@ -128,7 +122,7 @@ export function TipTapToolbar({ editor }: ToolbarProps) {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleStrike().run()}
         active={editor.isActive("strike")}
-        disabled={!editor.can().chain().toggleStrike().run()}
+        disabled={!editor.can().toggleStrike()}
         title="Strikethrough"
       >
         <Strikethrough className="w-3.5 h-3.5" />
@@ -195,6 +189,14 @@ export function TipTapToolbar({ editor }: ToolbarProps) {
         <Code className="w-3.5 h-3.5" />
       </ToolbarButton>
 
+      {/* ── Horizontal Rule — was missing, StarterKit includes it ── */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        title="Horizontal Rule (Divider)"
+      >
+        <Minus className="w-3.5 h-3.5" />
+      </ToolbarButton>
+
       <Divider />
 
       {/* ── ALIGNMENT ───────────────────────────────────────── */}
@@ -245,12 +247,11 @@ export function TipTapToolbar({ editor }: ToolbarProps) {
         <Link2 className="w-3.5 h-3.5" />
       </ToolbarButton>
 
-      <ToolbarButton
-        onClick={insertImage}
-        title="Sisipkan Gambar (URL)"
-      >
-        <Image className="w-3.5 h-3.5" />
-      </ToolbarButton>
+      {/*
+        Image insertion — replaced window.prompt() with a proper CMS-grade
+        uploader that supports file upload + drag-drop + URL fallback.
+      */}
+      <EditorImageUploader editor={editor} />
 
       <Divider />
 

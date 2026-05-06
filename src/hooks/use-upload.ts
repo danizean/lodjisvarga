@@ -12,7 +12,8 @@ export function useUpload() {
 
   const uploadFiles = async (
     files: File[],
-    villaId: string,
+    id: string,
+    type: "villa" | "room" | "promo" = "villa",
     roomTypeId?: string
   ): Promise<UploadResult[]> => {
     setIsUploading(true);
@@ -25,9 +26,15 @@ export function useUpload() {
         const file = files[i];
         const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
         const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
-        const path = roomTypeId
-          ? `villas/rooms/${villaId}/${roomTypeId}/${uniqueName}`
-          : `villas/villas/${villaId}/${uniqueName}`;
+        
+        let path = "";
+        if (type === "promo") {
+          path = `promos/${uniqueName}`;
+        } else if (type === "room" && roomTypeId) {
+          path = `villas/rooms/${id}/${roomTypeId}/${uniqueName}`;
+        } else {
+          path = `villas/villas/${id}/${uniqueName}`;
+        }
 
         const { error } = await supabase.storage
           .from("villa-media")

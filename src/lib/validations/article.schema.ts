@@ -8,7 +8,7 @@ import { SLUG_REGEX } from "@/lib/constants/slug";
 const tiptapDocSchema = z
   .object({
     type: z.literal("doc"),
-    content: z.array(z.record(z.string(), z.unknown())).min(1, "Konten tidak boleh kosong"),
+    content: z.array(z.any()).min(1, "Konten tidak boleh kosong"),
   })
   .passthrough(); // allow extra keys (marks, attrs, etc.)
 
@@ -26,7 +26,7 @@ export const articleSchema = z.object({
     .optional()
     .or(z.literal("")),
 
-  content: tiptapDocSchema.nullable().optional(),
+  content: z.any().nullable().optional(),
 
   excerpt: z
     .string()

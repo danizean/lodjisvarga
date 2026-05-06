@@ -17,6 +17,7 @@ import {
 import { VillaDescriptionBlock } from "@/components/villa/VillaDescriptionBlock";
 import { VillaDetailHero } from "@/components/villa/VillaDetailHero";
 import { VillaFacilitiesGrid } from "@/components/villa/VillaFacilitiesGrid";
+import { VillaFloatingCTA } from "@/components/villa/VillaFloatingCTA";
 import { VillaKeyInfoGrid } from "@/components/villa/VillaKeyInfoGrid";
 import { VillaSupportingAccordion } from "@/components/villa/VillaSupportingAccordion";
 import { VillaUnitCard } from "@/components/villa/VillaUnitCard";
@@ -155,10 +156,10 @@ const getCachedVillaDetail = (slug: string) =>
           room_types (
             id, name, status, base_price, description, bed_type, capacity_adult, capacity_child, highlight_amenity_ids,
             gallery:gallery!gallery_room_type_id_fkey (image_url, is_primary, display_order),
-            room_type_amenities (amenities(id, name, icon_name))
+            room_type_amenities (amenities!room_type_amenities_amenity_id_fkey(id, name, icon_name))
           ),
           villa_amenities (
-            amenities (id, name, icon_name)
+            amenities!villa_amenities_amenity_id_fkey (id, name, icon_name)
           )
         `)
         .eq("slug", slug)
@@ -287,6 +288,7 @@ export default async function VillaDetailPage({ params }: PageProps) {
       slug: villa.slug,
       status: villa.status,
       whatsapp_number: villa.whatsapp_number,
+      villa_amenities: villa.villa_amenities,
     },
     roomTypes: roomTypesWithPricing,
     activePromo,
@@ -372,12 +374,13 @@ export default async function VillaDetailPage({ params }: PageProps) {
           startingPriceText={startingPriceText}
           guestSummary={guestSummary}
           totalPhotos={allGalleryItems.length}
+          whatsappNumber={villa.whatsapp_number}
         />
 
         <div className="absolute left-4 top-20 z-30 sm:left-6 lg:left-8">
           <Link
             href="/#featured-villas"
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/30 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-black/50"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/50 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition-colors hover:bg-black/65"
           >
             <ChevronLeft className="h-4 w-4" />
             Kembali
@@ -406,12 +409,12 @@ export default async function VillaDetailPage({ params }: PageProps) {
 
       <div className="relative bg-[#FAF8F4] pb-16">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="space-y-6 pt-8">
+          <div className="space-y-5 pt-8">
             {unitCards.length > 0 ? (
               <section
                 id="units"
                 aria-labelledby="units-heading"
-                className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+                className="rounded-[28px] border border-[#3A4A1F]/12 bg-white p-5 shadow-md ring-1 ring-[#3A4A1F]/5 sm:p-6"
               >
                 <div className="mb-6">
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#3A4A1F]/70">
@@ -462,6 +465,13 @@ export default async function VillaDetailPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* Floating mobile CTA — appears after scrolling past hero */}
+      <VillaFloatingCTA
+        whatsappNumber={villa.whatsapp_number}
+        villaName={villa.name}
+        isActive={!isComingSoon && villa.status === "active"}
+      />
     </>
   );
 }
