@@ -14,7 +14,8 @@ export async function getPublicPromos() {
     .select(`
       id, title, slug, short_description, description, promo_badge,
       discount_code, discount_type, discount_value, discount_text,
-      start_date, expired_at, image_url, banner_image_url
+      start_date, expired_at, image_url, banner_image_url,
+      created_at, status
     `)
     .eq("status", "published")
     .or(`start_date.is.null,start_date.lte.${date}`)
