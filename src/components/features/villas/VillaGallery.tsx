@@ -155,6 +155,7 @@ export function VillaGallery({
                 alt={item.label}
                 fill
                 priority={isPrimary}
+                unoptimized={item.url.includes("supabase.co")}
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes={isPrimary ? "(max-width: 768px) 100vw, 58vw" : "(max-width: 768px) 50vw, 28vw"}
               />
@@ -232,6 +233,7 @@ export function VillaGallery({
                 src={activeItem.url}
                 alt={activeItem.label}
                 fill
+                unoptimized={activeItem.url.includes("supabase.co")}
                 className="object-contain"
                 sizes="100vw"
               />
@@ -277,6 +279,7 @@ export function VillaGallery({
                       src={item.url}
                       alt={item.label}
                       fill
+                      unoptimized={item.url.includes("supabase.co")}
                       className="object-cover"
                       sizes="96px"
                     />

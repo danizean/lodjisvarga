@@ -5,11 +5,11 @@ import { Container } from "@/components/shared/Container";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapPin, Utensils, Star, SwatchBook } from "lucide-react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, EffectFade, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/effect-fade";
-import "swiper/css/pagination";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import Fade from "embla-carousel-fade";
+import { useEffect, useState, useCallback } from "react";
+import { cn } from "@/lib/utils";
 
 const villaImages = [
   { id: 1, src: "/images/potrait/1.jpg" },
@@ -27,6 +27,27 @@ const fadeInUp = {
 };
 
 export function AboutExperience() {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 40 }, [
+    Fade(),
+    Autoplay({ delay: 4000, stopOnInteraction: false }),
+  ]);
+  const [current, setCurrent] = useState(0);
+
+  const scrollTo = useCallback(
+    (index: number) => emblaApi && emblaApi.scrollTo(index),
+    [emblaApi]
+  );
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    const handleSelect = () => setCurrent(emblaApi.selectedScrollSnap());
+    handleSelect();
+    emblaApi.on("select", handleSelect);
+    return () => {
+      emblaApi.off("select", handleSelect);
+    };
+  }, [emblaApi]);
+
   return (
     <section className="relative pt-16 pb-10 md:pt-28 md:pb-16 bg-[#F7F6F2] overflow-hidden">
       <Container className="max-w-6xl px-5 md:px-12 relative z-10">
@@ -43,21 +64,10 @@ export function AboutExperience() {
             <div className="relative group mx-auto max-w-[340px] sm:max-w-[400px] lg:max-w-[420px]">
               <div className="absolute -inset-2 md:-inset-3 border border-[#D4AF37]/20 rounded-[2rem] -z-10" />
               <div className="relative w-full pt-[125%] rounded-[1.6rem] md:rounded-[1.8rem] overflow-hidden shadow-2xl shadow-[#3A4A1F]/10 border border-[#D4AF37]/10 bg-gray-200">
-                <div className="absolute inset-0 w-full h-full">
-                  <Swiper
-                    modules={[Autoplay, EffectFade, Pagination]}
-                    effect="fade"
-                    loop={true}
-                    autoplay={{ delay: 4000, disableOnInteraction: false }}
-                    pagination={{
-                      clickable: true,
-                      bulletClass: "swiper-pagination-bullet !bg-[#D4AF37] !opacity-50 !w-1.5 !h-1.5",
-                      bulletActiveClass: "!opacity-100 !w-4 !rounded-full transition-all duration-300",
-                    }}
-                    className="w-full h-full"
-                  >
+                <div className="absolute inset-0 w-full h-full" ref={emblaRef}>
+                  <div className="flex h-full w-full">
                     {villaImages.map((img) => (
-                      <SwiperSlide key={img.id} className="relative w-full h-full">
+                      <div key={img.id} className="relative h-full w-full flex-[0_0_100%] min-w-0">
                         <Image
                           src={img.src}
                           alt="Lodjisvarga Villa Gallery"
@@ -66,9 +76,25 @@ export function AboutExperience() {
                           className="object-cover"
                           priority={img.id === 1}
                         />
-                      </SwiperSlide>
+                      </div>
                     ))}
-                  </Swiper>
+                  </div>
+                  {/* Custom Pagination */}
+                  <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-1.5">
+                    {villaImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => scrollTo(index)}
+                        aria-label={`Go to slide ${index + 1}`}
+                        className={cn(
+                          "transition-all duration-300 rounded-full",
+                          index === current
+                            ? "w-4 h-1.5 bg-[#D4AF37] opacity-100"
+                            : "w-1.5 h-1.5 bg-[#D4AF37] opacity-50 hover:opacity-75"
+                        )}
+                      />
+                    ))}
+                  </div>
                   <div className="absolute top-4 right-4 z-20 px-3 py-1.5 bg-[#3A4A1F]/80 text-white rounded-full backdrop-blur-md flex items-center gap-1.5 border border-white/10">
                     <SwatchBook className="w-3 h-3 text-[#D4AF37]" />
                     <span className="text-[9px] font-bold uppercase tracking-widest">Gallery</span>

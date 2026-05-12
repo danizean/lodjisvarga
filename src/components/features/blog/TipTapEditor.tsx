@@ -2,20 +2,9 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import type { Content } from "@tiptap/core";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 
-// StarterKit covers: Bold, Italic, Strike, Code, Heading, BulletList,
-// OrderedList, Blockquote, CodeBlock, HardBreak, HorizontalRule, History
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import TextAlign from "@tiptap/extension-text-align";
-import Placeholder from "@tiptap/extension-placeholder";
-import CharacterCount from "@tiptap/extension-character-count";
-import Highlight from "@tiptap/extension-highlight";
-import Typography from "@tiptap/extension-typography";
-
+import { getEditorExtensions } from "@/lib/tiptap/extensions";
 import { TipTapToolbar } from "./TipTapToolbar";
 import type { Json } from "@/types/database";
 
@@ -44,49 +33,6 @@ interface TipTapEditorProps {
   characterLimit?: number;
 }
 
-// ─── Extension Config ─────────────────────────────────────────────────────────
-
-function buildExtensions(placeholder: string, characterLimit?: number) {
-  return [
-    StarterKit.configure({
-      // Disable nodes we're extending separately
-      heading: { levels: [2, 3, 4] },
-      codeBlock: { languageClassPrefix: "language-" },
-    }),
-    Underline,
-    Link.configure({
-      openOnClick: false,            // don't navigate in editor
-      HTMLAttributes: {
-        class: "text-[#3A4A1F] underline underline-offset-2 hover:text-[#D4AF37] transition-colors",
-        rel: "noopener noreferrer",
-        target: "_blank",
-      },
-      autolink: true,
-    }),
-    Image.configure({
-      inline: false,
-      allowBase64: false,            // URL-only; base64 would bloat DB
-      HTMLAttributes: {
-        class: "rounded-xl max-w-full my-6 mx-auto shadow-sm",
-      },
-    }),
-    TextAlign.configure({
-      types: ["heading", "paragraph"],
-      alignments: ["left", "center", "right", "justify"],
-    }),
-    Placeholder.configure({
-      placeholder,
-      emptyEditorClass: "is-editor-empty",
-    }),
-    CharacterCount.configure({
-      limit: characterLimit,
-    }),
-    Highlight.configure({
-      multicolor: false,
-    }),
-    Typography,                      // smart quotes, dashes, etc.
-  ];
-}
 
 // ─── Parse initial content safely ────────────────────────────────────────────
 
@@ -121,11 +67,13 @@ export function TipTapEditor({
 }: TipTapEditorProps) {
   const initialContent = parseInitialContent(value);
 
+  const extensions = useMemo(() => getEditorExtensions({ placeholder, characterLimit }), [placeholder, characterLimit]);
+
   // Track whether the editor has been externally reset
   const lastValueRef = useRef<typeof value>(value);
 
   const editor = useEditor({
-    extensions: buildExtensions(placeholder, characterLimit),
+    extensions,
     content: initialContent || undefined,
     editable: !readOnly,
     editorProps: {

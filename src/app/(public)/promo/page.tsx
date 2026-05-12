@@ -11,8 +11,7 @@ export const metadata: Metadata = {
     "Temukan promo, diskon, dan penawaran eksklusif terbaru untuk menginap di Lodjisvarga Yogyakarta.",
 };
 
-export const dynamic = "force-dynamic";
-
+export const revalidate = 3600;
 export default async function PromoPage() {
   const promos = await getPublicPromos();
 

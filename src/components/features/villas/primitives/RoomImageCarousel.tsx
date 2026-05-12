@@ -14,6 +14,7 @@ interface RoomImageCarouselProps {
   rootClassName?: string;
   imageClassName?: string;
   sizes?: string;
+  priority?: boolean;
   topBadge?: ReactNode;
   bottomOverlayClassName?: string;
   topOverlayClassName?: string;
@@ -35,6 +36,7 @@ export function RoomImageCarousel({
   rootClassName,
   imageClassName,
   sizes = "(max-width: 1024px) 100vw, 33vw",
+  priority = false,
   topBadge,
   bottomOverlayClassName,
   topOverlayClassName,
@@ -97,6 +99,8 @@ export function RoomImageCarousel({
                 src={src}
                 alt={`${roomName} - foto ${index + 1}`}
                 fill
+                priority={priority && index === 0}
+                unoptimized={src.includes("supabase.co")}
                 className={cn("object-cover transition-transform duration-700 ease-in-out", imageClassName)}
                 sizes={sizes}
               />

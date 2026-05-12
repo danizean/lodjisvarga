@@ -1,7 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/static";
 
 export async function getPublicPromos() {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
   const date = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Jakarta",
     year: "numeric",

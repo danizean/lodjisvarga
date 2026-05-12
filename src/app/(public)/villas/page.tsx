@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { VillasPageClient } from "@/components/features/villas/VillasPageClient";
 import { attachPublicPricing, getPublicPricingSnapshot } from "@/lib/queries/public-pricing";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/static";
 import type { PublicRoomTypeData, PublicVillaData } from "@/types/public-villas";
 
 export const metadata: Metadata = {
@@ -10,10 +10,10 @@ export const metadata: Metadata = {
     "Temukan villa dan kamar terbaik di Lodjisvarga. Nikmati pengalaman menginap premium dengan fasilitas lengkap di Yogyakarta.",
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function VillasPage() {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
   const { data: villas, error } = await supabase
     .from("villas")

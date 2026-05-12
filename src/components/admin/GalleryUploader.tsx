@@ -243,6 +243,7 @@ export function GalleryUploader({
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 33vw, 20vw"
+                  unoptimized
                 />
 
                 {/* Drag handle overlay */}

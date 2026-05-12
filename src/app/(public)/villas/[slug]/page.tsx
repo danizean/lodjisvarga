@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
-import Link from "next/link";
+
 import { notFound } from "next/navigation";
 import {
   Ban,
   CarFront,
-  ChevronLeft,
+
   Clock3,
   MapPin,
   MessageCircle,
@@ -83,7 +83,7 @@ const TRAVELER_FAQS: TravelerFaq[] = [
   {
     question: "Bagaimana akses parkir?",
     answer:
-      "Tersedia area parkir privat di dalam properti - aman, tertutup, dan bebas biaya untuk tamu menginap.",
+      "Tersedia area parkir  - aman, tertutup, dan bebas biaya untuk tamu menginap.",
   },
   {
     question: "Apakah WiFi kencang?",
@@ -297,7 +297,7 @@ export default async function VillaDetailPage({ params }: PageProps) {
   const heroPhoto = allGalleryItems[0]?.url ?? null;
   const overviewText = buildOverview(villa.name, villa.address, villa.description);
   const heroSummary =
-    overviewText.length > 170 ? `${overviewText.slice(0, 170).trimEnd()}...` : overviewText;
+    overviewText.length > 280 ? `${overviewText.slice(0, 280).trimEnd()}...` : overviewText;
 
   const propertyAmenities: AmenityData[] = (villa.villa_amenities ?? [])
     .flatMap((item) => (item.amenities ? [item.amenities] : []))
@@ -330,11 +330,11 @@ export default async function VillaDetailPage({ params }: PageProps) {
   const keyInfoItems = [
     { label: "Check-in", value: "Mulai 14.00 WIB", icon: Clock3 },
     { label: "WiFi", value: "Gratis di area properti", icon: Wifi },
-    { label: "Parkir", value: "Parkir privat tersedia", icon: CarFront },
+    { label: "Parkir", value: "Bebas Biaya Parkir", icon: CarFront },
     { label: "Kamar", value: `${roomTypesWithPricing.length} tipe kamar aktif`, icon: Users },
   ];
 
-  const jsonLd = {
+  const lodgingBusinessLd = {
     "@context": "https://schema.org",
     "@type": "LodgingBusiness",
     name: villa.name,
@@ -356,6 +356,33 @@ export default async function VillaDetailPage({ params }: PageProps) {
     })),
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Beranda",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Villas",
+        item: `${SITE_URL}/#featured-villas`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: villa.name,
+        item: `${SITE_URL}/villas/${villa.slug}`,
+      },
+    ],
+  };
+
+  const jsonLd = [lodgingBusinessLd, breadcrumbLd];
+
   return (
     <>
       <script
@@ -363,8 +390,7 @@ export default async function VillaDetailPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="relative">
-        <VillaDetailHero
+      <VillaDetailHero
           name={villa.name}
           address={villa.address}
           summary={heroSummary}
@@ -376,17 +402,6 @@ export default async function VillaDetailPage({ params }: PageProps) {
           totalPhotos={allGalleryItems.length}
           whatsappNumber={villa.whatsapp_number}
         />
-
-        <div className="absolute left-4 top-20 z-30 sm:left-6 lg:left-8">
-          <Link
-            href="/#featured-villas"
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/50 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition-colors hover:bg-black/65"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Kembali
-          </Link>
-        </div>
-      </div>
 
       <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md lg:hidden">
         <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2.5 sm:px-6">
@@ -434,8 +449,8 @@ export default async function VillaDetailPage({ params }: PageProps) {
                 </div>
 
                 <div className="space-y-5">
-                  {unitCards.map((unit) => (
-                    <VillaUnitCard key={unit.id} room={unit} />
+                  {unitCards.map((unit, index) => (
+                    <VillaUnitCard key={unit.id} room={unit} priority={index === 0} />
                   ))}
                 </div>
               </section>

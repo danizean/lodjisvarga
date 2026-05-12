@@ -113,6 +113,7 @@ export default async function AdminVillasPage() {
                         fill
                         sizes="180px"
                         className="object-cover"
+                        unoptimized
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-slate-300">

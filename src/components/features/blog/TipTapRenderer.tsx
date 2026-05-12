@@ -1,44 +1,6 @@
 import { generateHTML } from "@tiptap/html";
-
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import TextAlign from "@tiptap/extension-text-align";
-import Highlight from "@tiptap/extension-highlight";
-import Typography from "@tiptap/extension-typography";
-
+import { getRendererExtensions } from "@/lib/tiptap/extensions";
 import type { Json } from "@/types/database";
-
-// ─── Extension set (mirrors TipTapEditor.tsx exactly) ────────────────────────
-//
-// HTMLAttributes on Image: we keep only semantic attrs (no Tailwind classes)
-// because generated HTML strings are NOT scanned by Tailwind JIT.
-// All visual styling is handled by .article-prose img in globals.css.
-//
-const RENDERER_EXTENSIONS = [
-  StarterKit.configure({
-    heading: { levels: [2, 3, 4] },
-    codeBlock: { languageClassPrefix: "language-" },
-  }),
-  Underline,
-  Link.configure({
-    HTMLAttributes: {
-      rel: "noopener noreferrer",
-      target: "_blank",
-    },
-  }),
-  Image.configure({
-    inline: false,
-    allowBase64: false,
-  }),
-  TextAlign.configure({
-    types: ["heading", "paragraph"],
-    alignments: ["left", "center", "right", "justify"],
-  }),
-  Highlight.configure({ multicolor: false }),
-  Typography,
-];
 
 // ─── HTML generator (server-safe) ────────────────────────────────────────────
 
@@ -56,7 +18,7 @@ export function renderTipTapToHTML(content: Json | null): string {
 
     return generateHTML(
       content as Parameters<typeof generateHTML>[0],
-      RENDERER_EXTENSIONS
+      getRendererExtensions()
     );
   } catch (err) {
     console.error("[TipTapRenderer] generateHTML failed:", err);

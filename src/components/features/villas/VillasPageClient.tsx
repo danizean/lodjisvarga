@@ -253,7 +253,7 @@ export function VillasPageClient({ villas, activePromo = null }: Props) {
                     ease: "easeOut",
                   }}
                 >
-                  <VillaCard room={card} />
+                  <VillaCard room={card} priority={index < 3} />
                 </motion.div>
               ))}
             </motion.div>

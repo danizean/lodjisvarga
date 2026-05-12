@@ -29,11 +29,6 @@ export function CTASection() {
     <section className="relative pt-16 pb-20 md:pt-24 md:pb-32 bg-[#F7F6F2] overflow-hidden">
       {/* Texture & Glow Overlays */}
       <div
-        className="absolute inset-0 opacity-[0.025] pointer-events-none"
-        style={{ backgroundImage: "url('/images/pattern.png')", backgroundRepeat: "repeat" }}
-        aria-hidden="true"
-      />
-      <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(212,175,55,0.07) 0%, transparent 70%)",

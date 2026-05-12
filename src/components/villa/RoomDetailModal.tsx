@@ -67,6 +67,7 @@ function ModalGallery({
         fill
         className="object-cover transition-opacity duration-500"
         sizes="(max-width: 768px) 100vw, 80vw"
+        unoptimized
       />
       {/* bottom gradient */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />

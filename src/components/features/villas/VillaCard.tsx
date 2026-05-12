@@ -22,7 +22,7 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
-export function VillaCard({ room }: { room: RoomTypeCardData }) {
+export function VillaCard({ room, priority = false }: { room: RoomTypeCardData; priority?: boolean }) {
   const isComingSoon = room.villaStatus === "coming_soon";
   const isActiveVilla = room.villaStatus === "active";
 
@@ -56,7 +56,8 @@ export function VillaCard({ room }: { room: RoomTypeCardData }) {
               roomName={room.name}
               rootClassName="h-full"
               imageClassName="group-hover:scale-105"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1200px) 33vw, 400px"
+              priority={priority}
               bottomOverlayClassName="h-24 bg-gradient-to-t from-black/40 to-transparent"
               leftNavClassName="opacity-0 group-hover:opacity-100"
               rightNavClassName="opacity-0 group-hover:opacity-100"

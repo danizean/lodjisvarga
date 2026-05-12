@@ -1,171 +1,149 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Container } from "@/components/shared/Container";
-import { Smartphone, MapPin, Mail, ArrowUpRight } from "lucide-react";
-import { WhatsAppMessageForm } from "@/components/features/villas/WhatsAppMessageForm";
+import { MapPin, Mail, Smartphone } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#F7F6F2] pt-24 pb-12 border-t border-[#3A4A1F]/5">
-      <Container className="max-w-7xl">
+    <footer className="bg-[#1A2312] text-white pt-24 pb-8 relative overflow-hidden">
+      {/* Background aesthetic touches */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
+      <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-[#3A4A1F]/50 rounded-full blur-[100px] pointer-events-none" />
 
-        {/* ===== MAIN GRID ===== */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-y-16 md:gap-x-12 mb-20">
-
-          {/* BRAND */}
-          <div className="md:col-span-4 space-y-6">
-            <Link
-              href="/"
-              className="text-3xl font-serif text-[#3A4A1F] tracking-tight hover:opacity-80 transition"
-            >
-              Lodjisvarga
+      <Container className="max-w-7xl relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-20">
+          
+          {/* Kolom 1 (Branding) */}
+          <div className="space-y-8">
+            <Link href="/" className="inline-flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] rounded-lg">
+              <div className="relative w-10 h-10 transition-transform duration-500 group-hover:scale-105">
+                <Image
+                  src="/logo-lodji.png"
+                  alt="Logo Lodjisvarga"
+                  fill
+                  sizes="40px"
+                  className="object-contain brightness-0 invert opacity-95"
+                  priority={false}
+                  loading="lazy"
+                />
+              </div>
+              <span className="text-2xl font-serif tracking-tight group-hover:text-[#D4AF37] transition-colors duration-500">
+                Lodjisvarga Villa
+              </span>
             </Link>
 
-            <p className="text-gray-500 text-base font-light leading-relaxed max-w-sm">
-              Membangun kenangan indah di jantung Sleman. Nikmati harmoni alam dan kenyamanan modern dalam setiap detik masa inap Anda.
+            <p className="text-white/60 font-light leading-relaxed text-sm">
+              Menghadirkan harmoni alam dan kenyamanan modern dalam setiap detik masa inap Anda. Destinasi staycation privat di Yogyakarta.
             </p>
 
-            {/* SOCIAL */}
-            <div className="flex items-center gap-6 pt-4">
-
-              {/* INSTAGRAM (FIXED) */}
-              <Link
-                href="https://www.instagram.com/lodjisvarga/"
-                target="_blank"
-                className="group flex items-center gap-2 text-sm font-medium text-[#3A4A1F]"
-              >
-                {/* SVG ICON */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="transition-transform group-hover:scale-110"
-                >
-                  <rect width="20" height="20" x="2" y="2" rx="5" />
-                  <circle cx="12" cy="12" r="4" />
-                  <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" />
-                </svg>
-
-                <span className="border-b border-transparent group-hover:border-[#3A4A1F] transition-all">
-                  Instagram
-                </span>
-              </Link>
-
-              <div className="h-4 w-[1px] bg-gray-300" />
-
-              {/* WHATSAPP */}
-              <WhatsAppMessageForm
-                villaName="Lodjisvarga Villa Jogja"
-                buttonLabel="WhatsApp"
-                title="Chat Lodjisvarga"
-                buttonClassName="group flex items-center gap-1 text-sm font-medium text-[#3A4A1F]"
-              >
-                <span className="border-b border-transparent group-hover:border-[#3A4A1F] transition-all">
-                  WhatsApp
-                </span>
-                <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition -translate-y-1" />
-              </WhatsAppMessageForm>
-
+            <div className="flex items-center gap-4">
+              <a href="https://www.instagram.com/lodjisvarga/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/70 hover:bg-[#D4AF37] hover:text-white transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+              </a>
+              <a href="https://www.tiktok.com/@lodjisvarga.villa" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/70 hover:bg-[#D4AF37] hover:text-white transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+              </a>
             </div>
           </div>
 
-          {/* LINKS */}
-          <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-8">
+          {/* Kolom 2 (Quick Links) */}
+          <div className="lg:pl-8 space-y-6">
+            <h4 className="font-bold text-[11px] tracking-[0.25em] uppercase text-[#D4AF37]">
+              Quick Links
+            </h4>
+            <ul className="space-y-4">
+              <li><FooterLink href="/">Home</FooterLink></li>
+              <li><FooterLink href="/villas">Villas</FooterLink></li>
+              <li><FooterLink href="/blog">Blog</FooterLink></li>
+              <li><FooterLink href="/promo">Promo</FooterLink></li>
+            </ul>
+          </div>
 
-            {/* DESTINATIONS */}
-            <div className="space-y-6">
-              <h4 className="text-[#3A4A1F] font-bold text-xs tracking-[0.2em] uppercase">
-                Destinations
-              </h4>
-              <ul className="space-y-4">
-                <li><FooterLink href="/villas?location=sleman">Lodjisvarga Sleman</FooterLink></li>
-                <li><FooterLink href="/villas?location=seturan">Lodjisvarga Seturan</FooterLink></li>
-                <li><FooterLink href="/experience">Local Experience</FooterLink></li>
-              </ul>
-            </div>
+          {/* Kolom 3 (Support) */}
+          <div className="space-y-6">
+            <h4 className="font-bold text-[11px] tracking-[0.25em] uppercase text-[#D4AF37]">
+              Support
+            </h4>
+            <ul className="space-y-4">
+              <li><FooterLink href="/about">About</FooterLink></li>
+              <li><FooterLink href="/faq">FAQ</FooterLink></li>
+              <li><FooterLink href="/contact">Contact</FooterLink></li>
+              <li><FooterLink href="/privacy">Privacy Policy</FooterLink></li>
+            </ul>
+          </div>
 
-            {/* EXPLORE */}
-            <div className="space-y-6">
-              <h4 className="text-[#3A4A1F] font-bold text-xs tracking-[0.2em] uppercase">
-                Explore
-              </h4>
-              <ul className="space-y-4">
-                <li><FooterLink href="/about">Our Story</FooterLink></li>
-                <li><FooterLink href="/contact">Get in Touch</FooterLink></li>
-                <li><FooterLink href="/faq">Help Center</FooterLink></li>
-              </ul>
-            </div>
-
-            {/* CONTACT */}
-            <div className="space-y-6 col-span-2 sm:col-span-1">
-              <h4 className="text-[#3A4A1F] font-bold text-xs tracking-[0.2em] uppercase">
-                Office
-              </h4>
-
-              <div className="space-y-4 text-sm text-gray-500 font-light">
-
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-4 h-4 mt-0.5 text-[#3A4A1F]" />
-                  <span>Sleman, Yogyakarta<br />Indonesia</span>
+          {/* Kolom 4 (Contact Info) */}
+          <div className="space-y-6">
+            <h4 className="font-bold text-[11px] tracking-[0.25em] uppercase text-[#D4AF37]">
+              Contact Info
+            </h4>
+            <div className="space-y-5 text-sm text-white/60 font-light">
+              <div className="flex items-start gap-3.5 group">
+                <div className="mt-1">
+                  <MapPin className="w-4 h-4 text-[#D4AF37]" />
                 </div>
+                <span className="leading-relaxed">
+                  Sleman, Yogyakarta<br />
+                  Indonesia
+                </span>
+              </div>
 
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-[#3A4A1F]" />
-                  <a href="mailto:hello@lodjisvarga.com" className="hover:text-[#3A4A1F] transition">
-                    hello@lodjisvarga.com
+              <div className="flex items-center gap-3.5 group">
+                <div>
+                  <Mail className="w-4 h-4 text-[#D4AF37]" />
+                </div>
+                <a href="mailto:hello@lodjisvarga.com" className="hover:text-white transition-colors duration-300">
+                  hello@lodjisvarga.com
+                </a>
+              </div>
+
+              <div className="flex flex-col gap-2 pt-2">
+                <div className="flex items-center gap-3.5 group">
+                  <div>
+                    <Smartphone className="w-4 h-4 text-[#D4AF37]" />
+                  </div>
+                  <a href="https://wa.me/6285184779808" className="hover:text-white transition-colors duration-300">
+                    0851-8477-9808
                   </a>
                 </div>
-
-                <div className="pt-2">
-                  <WhatsAppMessageForm
-                    villaName="Lodjisvarga Villa Jogja"
-                    buttonLabel="WhatsApp"
-                    title="Chat Lodjisvarga"
-                    buttonClassName="flex items-center gap-2 bg-[#3A4A1F] text-white px-4 py-2 rounded-full text-xs font-medium hover:bg-[#2A3616] transition shadow-sm active:scale-95"
-                  >
-                    <Smartphone className="w-3.5 h-3.5" />
-                    Book via WhatsApp
-                  </WhatsAppMessageForm>
+                <div className="flex items-center gap-3.5 group">
+                  <div className="w-4 opacity-0" />
+                  <a href="https://wa.me/6285123518847" className="hover:text-white transition-colors duration-300">
+                    0851-2351-8847
+                  </a>
                 </div>
-
               </div>
             </div>
-
           </div>
+          
         </div>
 
-        {/* ===== BOTTOM ===== */}
-        <div className="pt-8 border-t border-[#3A4A1F]/10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[10px] sm:text-xs text-gray-400 tracking-widest uppercase">
-            © {currentYear} Lodjisvarga Villa Jogja. Crafted for comfort.
+        {/* Legal Bottom */}
+        <div className="pt-8 border-t border-white/10 text-center">
+          <p className="text-[11px] text-white/40 tracking-[0.15em] uppercase">
+            © {currentYear} Lodjisvarga Villa. All rights reserved.
           </p>
-
-          <div className="flex gap-8 text-[10px] text-gray-400 uppercase tracking-[0.1em]">
-            <Link href="/privacy" className="hover:text-[#3A4A1F] transition">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-[#3A4A1F] transition">Terms of Service</Link>
-          </div>
         </div>
-
       </Container>
     </footer>
   );
 }
 
-/* ===== LINK COMPONENT ===== */
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <Link
       href={href}
-      className="text-sm text-gray-500 font-light hover:text-[#3A4A1F] hover:translate-x-1 transition inline-block"
+      className="group text-sm text-white/60 font-light hover:text-white transition-colors duration-300 inline-flex items-center"
     >
-      {children}
+      <span className="relative">
+        {children}
+        <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#D4AF37] transition-all duration-300 group-hover:w-full" />
+      </span>
     </Link>
   );
 }

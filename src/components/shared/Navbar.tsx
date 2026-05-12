@@ -98,8 +98,8 @@ export function Navbar() {
                   priority
                 />
               </div>
-              <span className={`text-xl md:text-2xl font-serif tracking-tight transition-colors duration-500 ${textColorClass}`}>
-                Lodjisvarga
+              <span suppressHydrationWarning className={`text-xl md:text-2xl font-serif tracking-tight transition-colors duration-500 ${textColorClass}`}>
+                Lodjisvarga Villa
               </span>
             </Link>
 

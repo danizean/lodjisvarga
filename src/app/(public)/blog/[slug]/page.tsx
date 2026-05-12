@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // ─── JSON-LD ──────────────────────────────────────────────────────────────────
 function buildJsonLd(article: NonNullable<Awaited<ReturnType<typeof getArticleBySlug>>>) {
-  return {
+  const articleLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: article.title,
@@ -80,10 +80,37 @@ function buildJsonLd(article: NonNullable<Awaited<ReturnType<typeof getArticleBy
     publisher: {
       "@type": "Organization",
       name: SITE_NAME,
-      logo: { "@type": "ImageObject", url: `${SITE_URL}/assets/logo.png` },
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/apple-touch-icon.png` },
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/blog/${article.slug}` },
   };
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Beranda",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Blog",
+        item: `${SITE_URL}/blog`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: article.title,
+        item: `${SITE_URL}/blog/${article.slug}`,
+      },
+    ],
+  };
+
+  return [articleLd, breadcrumbLd];
 }
 
 // ─── Inline WhatsApp CTA (used twice — mid-article + footer) ─────────────────

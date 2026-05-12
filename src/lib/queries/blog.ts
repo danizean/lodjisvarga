@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/static";
 import type { Database, Json } from "@/types/database";
 
 // ─── Shared Types ─────────────────────────────────────────────────────────────
@@ -94,7 +95,7 @@ export async function getPublishedArticles(
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
   const { data, error, count } = await supabase
     .from("articles_listing")
@@ -148,7 +149,7 @@ export async function getArticleBySlug(
 ): Promise<ArticleDetail | null> {
   if (!slug || typeof slug !== "string") return null;
 
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
   const { data, error } = await supabase
     .from("articles")
@@ -323,7 +324,7 @@ export async function getRelatedArticles(params: {
   limit?: number;
 }): Promise<ArticleListing[]> {
   const { currentSlug, category, limit = 3 } = params;
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
   const query = supabase
     .from("articles_listing")

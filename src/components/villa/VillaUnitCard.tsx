@@ -18,7 +18,7 @@ const WaIcon = () => (
   </svg>
 );
 
-export function VillaUnitCard({ room }: { room: RoomTypeCardData }) {
+export function VillaUnitCard({ room, priority = false }: { room: RoomTypeCardData; priority?: boolean }) {
   const isComingSoon = room.villaStatus === "coming_soon";
   const isActiveVilla = room.villaStatus === "active";
   const sortedImages = [...(room.gallery ?? [])]
@@ -52,7 +52,8 @@ export function VillaUnitCard({ room }: { room: RoomTypeCardData }) {
                 roomName={room.name}
                 rootClassName="h-full w-full group/img"
                 imageClassName="group-hover/img:scale-[1.05] transition-transform duration-500"
-                sizes="(max-width: 1024px) 100vw, 296px"
+                sizes="(max-width: 1024px) 100vw, (max-width: 1280px) 280px, 300px"
+                priority={priority}
                 topOverlayClassName={pricing.hasPromo ? "h-12 bg-gradient-to-b from-black/30 to-transparent" : undefined}
                 bottomOverlayClassName="h-16 bg-gradient-to-t from-black/50 to-transparent"
                 leftNavClassName="left-2 h-7 w-7 bg-white/20 opacity-0 group-hover/img:opacity-100 hover:bg-white/40"

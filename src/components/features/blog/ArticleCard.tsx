@@ -66,6 +66,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
           }
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           priority={featured}
+          unoptimized={Boolean(article.thumbnail_url?.includes("supabase.co"))}
         />
 
         {/* Category badge overlay */}

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Camera, MapPin, Sparkles, Users } from "lucide-react";
 
 type GalleryItem = {
@@ -48,7 +49,8 @@ export function VillaDetailHero({
 
   return (
     <section
-      className="relative min-h-[65vh] w-full overflow-hidden bg-slate-900 md:min-h-[72vh]"
+      className="relative w-full overflow-hidden bg-slate-900"
+      style={{ minHeight: "85svh" }}
       aria-label={`${name} hero`}
     >
       {/* Background photo */}
@@ -60,18 +62,42 @@ export function VillaDetailHero({
           className="object-cover"
           priority
           sizes="100vw"
+          unoptimized
         />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-[#3A4A1F] to-[#0f1a09]" />
       )}
 
-      {/* Gradient overlays — deeper at bottom for text legibility */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/45 to-slate-950/10" />
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/65 via-transparent to-transparent" />
+      {/* Gradient overlays */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-slate-950/20" />
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/60 via-transparent to-transparent" />
+
+      {/* ── Breadcrumb — sits right below the fixed navbar ── */}
+      <div className="absolute left-4 top-[68px] z-10 sm:left-6 sm:top-[72px] lg:left-8">
+        <nav
+          aria-label="Breadcrumb"
+          className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-black/50 px-3 py-1.5 backdrop-blur-md"
+        >
+          <Link href="/" className="text-[11px] font-medium text-white/75 hover:text-white transition-colors">
+            Beranda
+          </Link>
+          <span className="text-white/35 text-[11px]">/</span>
+          <Link href="/#featured-villas" className="text-[11px] font-medium text-white/75 hover:text-white transition-colors">
+            Villas
+          </Link>
+          <span className="text-white/35 text-[11px]">/</span>
+          <span
+            className="text-[11px] font-semibold text-white max-w-[100px] sm:max-w-[180px] truncate"
+            aria-current="page"
+          >
+            {name}
+          </span>
+        </nav>
+      </div>
 
       {/* Coming soon badge */}
       {isComingSoon && (
-        <div className="absolute right-4 top-20 z-10 sm:right-6 lg:right-8">
+        <div className="absolute right-4 top-[68px] z-10 sm:right-6 sm:top-[72px]">
           <span className="inline-flex items-center rounded-full bg-amber-500/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
             Coming Soon
           </span>
@@ -79,67 +105,68 @@ export function VillaDetailHero({
       )}
 
       {/* Hero content — anchored to bottom */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 lg:p-12">
+      <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 lg:p-12">
         <div className="mx-auto max-w-7xl">
-          <div className="max-w-2xl space-y-4">
-            {/* Villa name */}
-            <h1 className="font-serif text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+          <div className="max-w-2xl space-y-3 sm:space-y-4">
+
+            {/* Villa name — smaller on mobile so it doesn't bleed into breadcrumb */}
+            <h1 className="font-serif text-3xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
               {name}
             </h1>
 
             {/* Address */}
             {address && (
-              <p className="flex items-center gap-2 text-sm font-medium text-white/65">
-                <MapPin className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
-                {address}
+              <p className="flex items-start gap-2 text-sm font-medium text-white/65">
+                <MapPin className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <span className="leading-snug">{address}</span>
               </p>
             )}
 
-            {/* Summary — clamped to 2 lines on mobile */}
-            <p className="max-w-xl text-sm leading-7 text-white/65 line-clamp-2 sm:line-clamp-none sm:text-[15px]">
+            {/* Summary — hidden on mobile to prevent crowding, visible sm+ */}
+            <p className="hidden sm:block max-w-xl text-[15px] leading-7 text-white/65">
               {summary}
             </p>
 
             {/* ── Stats row ── */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              {/* Price pill — gold accent, slightly more prominent */}
-              <div className="flex items-center gap-2 rounded-full border border-[#D4AF37]/35 bg-[#D4AF37]/12 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+              {/* Price pill */}
+              <div className="flex items-center gap-2 rounded-full border border-[#D4AF37]/35 bg-[#D4AF37]/12 px-3.5 py-1.5 text-sm font-semibold text-white backdrop-blur-sm">
                 <Sparkles className="h-3.5 w-3.5 text-[#D4AF37]" aria-hidden="true" />
                 {priceLabel}
               </div>
 
               {/* Guests pill */}
-              <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm">
+              <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-sm font-medium text-white/80 backdrop-blur-sm">
                 <Users className="h-3.5 w-3.5" aria-hidden="true" />
                 {guestSummary}
               </div>
 
               {/* Photo count pill */}
               {totalPhotos > 0 && (
-                <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm">
+                <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-sm font-medium text-white/80 backdrop-blur-sm">
                   <Camera className="h-3.5 w-3.5" aria-hidden="true" />
                   {totalPhotos} foto
                 </div>
               )}
             </div>
 
-            {/* ── CTA row — hierarchy: primary = units, secondary = WA ── */}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
+            {/* ── CTA row ── */}
+            <div className="flex flex-wrap items-center gap-2.5 pt-0.5">
               {/* Primary: scroll to units */}
               <a
                 href="#units"
-                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-[#3A4A1F] shadow-lg transition-all hover:bg-white/90 active:scale-95"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#3A4A1F] shadow-lg transition-all hover:bg-white/90 active:scale-95"
               >
                 Lihat Unit & Harga
               </a>
 
-              {/* Secondary: WhatsApp — lower visual weight */}
+              {/* Secondary: WhatsApp */}
               {waUrl && !isComingSoon && (
                 <a
                   href={waUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-5 py-2.5 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/20 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/20 active:scale-95"
                 >
                   <WaIconSmall />
                   Tanya via WhatsApp
@@ -149,7 +176,7 @@ export function VillaDetailHero({
               {/* Gallery shortcut */}
               <a
                 href="#gallery"
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-transparent px-5 py-2.5 text-sm font-medium text-white/70 transition-all hover:text-white hover:border-white/30 active:scale-95"
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-transparent px-4 py-2.5 text-sm font-medium text-white/70 transition-all hover:text-white hover:border-white/30 active:scale-95"
               >
                 Galeri
               </a>
