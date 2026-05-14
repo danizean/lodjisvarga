@@ -9,20 +9,10 @@ import {
   ChevronRight,
   BedDouble,
   Camera,
-  Percent,
 } from "lucide-react";
 import { WhatsAppMessageForm } from "@/components/features/villas/WhatsAppMessageForm";
 import { LucideDynamicIcon } from "@/components/shared/LucideDynamicIcon";
-import { resolveRoomDisplayPricing } from "@/lib/mappers/public-villas";
 import type { RoomTypeCardData } from "@/types/public-villas";
-
-// ─── Formatter ─────────────────────────────────────────────────────────────
-const formatIDR = (v: number) =>
-  new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(v);
 
 // ─── WhatsApp SVG ───────────────────────────────────────────────────────────
 const WaIcon = () => (
@@ -138,13 +128,8 @@ interface Props {
 }
 
 export function RoomDetailModal({ room, trigger }: Props) {
-  const pricing = resolveRoomDisplayPricing(room);
-  const discountPct = pricing.discountPercentage;
-  const hasPromo = pricing.hasPromo;
-  const hasManagedPrice = pricing.hasManagedPrice;
   const isComingSoon = room.villaStatus === "coming_soon";
   const isBookable = room.villaStatus === "active";
-  const finalPrice = pricing.finalPrice;
 
   // ── Gallery ──────────────────────────────────────────────────────────────
   const sortedImages = [...(room.gallery ?? [])]
@@ -224,12 +209,6 @@ export function RoomDetailModal({ room, trigger }: Props) {
                     {room.villaName}
                   </p>
                 </div>
-                {hasPromo && (
-                  <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-rose-500 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm">
-                    <Percent className="h-3 w-3" />
-                    {room.activePromo?.discount_code} −{discountPct}%
-                  </span>
-                )}
               </div>
 
               {/* ── Key Specs Bento Row ── */}
@@ -246,35 +225,6 @@ export function RoomDetailModal({ room, trigger }: Props) {
                     <p className="mt-0.5 truncate text-[13px] font-bold text-slate-800">
                       {room.bed_type?.trim() || "By Request"}
                     </p>
-                  </div>
-                </div>
-
-                {/* Price */}
-                <div className="col-span-1 flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3.5 sm:col-span-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
-                      Harga / malam
-                    </p>
-                    {hasManagedPrice ? (
-                      <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
-                        <p
-                          className={`text-lg font-black leading-none ${
-                            hasPromo ? "text-emerald-600" : "text-[#3A4A1F]"
-                          }`}
-                        >
-                          {formatIDR(finalPrice)}
-                        </p>
-                        {hasPromo && (
-                          <p className="text-[12px] font-semibold text-slate-400 line-through">
-                            {formatIDR(pricing.displayPrice)}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="mt-0.5 text-sm font-bold text-slate-500">
-                        Konfirmasi via WhatsApp
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
@@ -324,31 +274,15 @@ export function RoomDetailModal({ room, trigger }: Props) {
               ════════════════════════════════════════════════════════════ */}
           <div className="flex-shrink-0 border-t border-slate-100 bg-white/95 px-5 py-4 backdrop-blur-sm sm:px-7">
             <div className="flex items-center justify-between gap-4">
-              {/* Price summary */}
+              {/* Info text */}
               <div className="min-w-0">
                 {isComingSoon ? (
                   <p className="text-sm font-semibold text-slate-500">
                     Segera hadir
                   </p>
-                ) : hasManagedPrice ? (
-                  <>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
-                      Mulai dari
-                    </p>
-                    <p
-                      className={`text-xl font-black leading-tight ${
-                        hasPromo ? "text-emerald-600" : "text-[#3A4A1F]"
-                      }`}
-                    >
-                      {formatIDR(finalPrice)}
-                      <span className="ml-1 text-xs font-normal text-slate-400">
-                        /malam
-                      </span>
-                    </p>
-                  </>
                 ) : (
                   <p className="text-sm font-medium text-slate-500">
-                    Tanyakan harga via WhatsApp
+                    Tanyakan ketersediaan via WhatsApp
                   </p>
                 )}
               </div>
@@ -359,12 +293,12 @@ export function RoomDetailModal({ room, trigger }: Props) {
                   whatsappNumber={room.villaWhatsapp}
                   villaName={room.villaName}
                   roomTypeName={room.name}
-                  buttonLabel="Pesan Sekarang"
-                  title={`Pesan ${room.name}`}
+                  buttonLabel="Tanya Harga"
+                  title={`Tanya Harga ${room.name}`}
                   buttonClassName="flex flex-shrink-0 items-center gap-2 rounded-2xl bg-[#25D366] px-5 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1ebe5d] active:scale-95 sm:px-7"
                 >
                   <WaIcon />
-                  Pesan Sekarang
+                  Tanya Harga
                 </WhatsAppMessageForm>
               ) : (
                 <div className="flex items-center gap-2 rounded-2xl border border-dashed border-slate-300 px-5 py-3 text-sm font-medium text-slate-400">

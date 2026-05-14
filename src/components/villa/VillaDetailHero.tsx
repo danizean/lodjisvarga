@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Camera, MapPin, Sparkles, Users } from "lucide-react";
+import { Camera, MapPin, Users } from "lucide-react";
 
 type GalleryItem = {
   url: string;
@@ -14,7 +14,6 @@ interface VillaDetailHeroProps {
   heroPhoto: string | null;
   galleryPreview: GalleryItem[];
   isComingSoon: boolean;
-  startingPriceText: string;
   guestSummary: string;
   totalPhotos: number;
   whatsappNumber?: string | null;
@@ -33,14 +32,10 @@ export function VillaDetailHero({
   summary,
   heroPhoto,
   isComingSoon,
-  startingPriceText,
   guestSummary,
   totalPhotos,
   whatsappNumber,
 }: VillaDetailHeroProps) {
-  const hasPrice = startingPriceText !== "Cek harga";
-  const priceLabel = hasPrice ? `Mulai ${startingPriceText} / malam` : "Tanyakan harga";
-
   const waUrl = whatsappNumber
     ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
         "Halo Lodjisvarga, saya ingin menanyakan ketersediaan kamar. Reff: Villa Detail"
@@ -109,7 +104,7 @@ export function VillaDetailHero({
         <div className="mx-auto max-w-7xl">
           <div className="max-w-2xl space-y-3 sm:space-y-4">
 
-            {/* Villa name — smaller on mobile so it doesn't bleed into breadcrumb */}
+            {/* Villa name */}
             <h1 className="font-serif text-3xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
               {name}
             </h1>
@@ -122,19 +117,13 @@ export function VillaDetailHero({
               </p>
             )}
 
-            {/* Summary — hidden on mobile to prevent crowding, visible sm+ */}
+            {/* Summary — hidden on mobile */}
             <p className="hidden sm:block max-w-xl text-[15px] leading-7 text-white/65">
               {summary}
             </p>
 
             {/* ── Stats row ── */}
             <div className="flex flex-wrap items-center gap-2 pt-0.5">
-              {/* Price pill */}
-              <div className="flex items-center gap-2 rounded-full border border-[#D4AF37]/35 bg-[#D4AF37]/12 px-3.5 py-1.5 text-sm font-semibold text-white backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5 text-[#D4AF37]" aria-hidden="true" />
-                {priceLabel}
-              </div>
-
               {/* Guests pill */}
               <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-sm font-medium text-white/80 backdrop-blur-sm">
                 <Users className="h-3.5 w-3.5" aria-hidden="true" />
@@ -157,7 +146,7 @@ export function VillaDetailHero({
                 href="#units"
                 className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#3A4A1F] shadow-lg transition-all hover:bg-white/90 active:scale-95"
               >
-                Lihat Unit & Harga
+                Lihat Unit
               </a>
 
               {/* Secondary: WhatsApp */}

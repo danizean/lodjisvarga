@@ -26,7 +26,6 @@ import { SITE_URL } from "@/lib/constants/site";
 import {
   buildDetailGalleryItems,
   mapRoomTypesToUnitCards,
-  resolveRoomDisplayPricing,
 } from "@/lib/mappers/public-villas";
 import {
   attachPublicPricing,
@@ -64,14 +63,6 @@ type NearbySpot = {
 
 export const revalidate = 86400;
 export const dynamicParams = true;
-
-const formatIDR = (price: number) =>
-  new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(price);
-
 const getJakartaDateKey = getPublicJakartaDateKey;
 
 const TRAVELER_FAQS: TravelerFaq[] = [
@@ -315,18 +306,6 @@ export default async function VillaDetailPage({ params }: PageProps) {
 
   const guestSummary = `${roomTypesWithPricing.length} tipe kamar`;
 
-  const validRoomPricing = unitCards
-    .map((room) => resolveRoomDisplayPricing(room))
-    .filter((pricing) => pricing.hasManagedPrice);
-
-  const lowestFinalPrice =
-    validRoomPricing.length > 0
-      ? Math.min(...validRoomPricing.map((pricing) => pricing.finalPrice))
-      : null;
-
-  const startingPriceText =
-    lowestFinalPrice !== null && lowestFinalPrice > 0 ? formatIDR(lowestFinalPrice) : "Cek harga";
-
   const keyInfoItems = [
     { label: "Check-in", value: "Mulai 14.00 WIB", icon: Clock3 },
     { label: "WiFi", value: "Gratis di area properti", icon: Wifi },
@@ -348,7 +327,7 @@ export default async function VillaDetailPage({ params }: PageProps) {
       addressCountry: "ID",
     },
     image: allGalleryItems.map((item) => item.url),
-    priceRange: startingPriceText,
+    priceRange: "Hubungi kami",
     amenityFeature: allFacilityNames.map((name) => ({
       "@type": "LocationFeatureSpecification",
       name,
@@ -397,7 +376,6 @@ export default async function VillaDetailPage({ params }: PageProps) {
           heroPhoto={heroPhoto}
           galleryPreview={allGalleryItems}
           isComingSoon={isComingSoon}
-          startingPriceText={startingPriceText}
           guestSummary={guestSummary}
           totalPhotos={allGalleryItems.length}
           whatsappNumber={villa.whatsapp_number}
@@ -444,7 +422,7 @@ export default async function VillaDetailPage({ params }: PageProps) {
                       : `${unitCards.length} pilihan unit - cari yang paling cocok`}
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-                    Bandingkan tipe kamar, fasilitas, dan harga. Booking langsung via WhatsApp.
+                    Bandingkan tipe kamar dan fasilitas. Booking langsung via WhatsApp.
                   </p>
                 </div>
 

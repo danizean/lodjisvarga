@@ -1,15 +1,11 @@
 "use client";
 
-import { Info, MessageCircle, Percent, BedDouble } from "lucide-react";
+import { Info, MessageCircle, BedDouble } from "lucide-react";
 import { RoomDetailModal } from "@/components/villa/RoomDetailModal";
-import { PriceBlock } from "@/components/features/villas/primitives/PriceBlock";
 import { AmenityChipGroup } from "@/components/features/villas/primitives/AmenityChipGroup";
 import { RoomImageCarousel } from "@/components/features/villas/primitives/RoomImageCarousel";
 import { InquiryCTA } from "@/components/features/villas/primitives/InquiryCTA";
 import type { RoomTypeCardData } from "@/types/public-villas";
-
-const formatIDR = (value: number) =>
-  new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(value);
 
 const WaIcon = () => (
   <svg className="h-3.5 w-3.5 fill-current flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
@@ -38,123 +34,77 @@ export function VillaUnitCard({ room, priority = false }: { room: RoomTypeCardDa
   );
 
   return (
-    <PriceBlock room={room}>
-      {(pricing) => (
-        <article
-          className="group overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg hover:border-slate-200"
-          aria-label={room.name}
-        >
-          <div className="flex flex-col lg:flex-row lg:min-h-[200px]">
-            {/* Image */}
-            <div className="relative aspect-[4/3] flex-shrink-0 overflow-hidden lg:aspect-auto lg:w-[280px] xl:w-[300px]">
-              <RoomImageCarousel
-                images={sortedImages}
-                roomName={room.name}
-                rootClassName="h-full w-full group/img"
-                imageClassName="group-hover/img:scale-[1.05] transition-transform duration-500"
-                sizes="(max-width: 1024px) 100vw, (max-width: 1280px) 280px, 300px"
-                priority={priority}
-                topOverlayClassName={pricing.hasPromo ? "h-12 bg-gradient-to-b from-black/30 to-transparent" : undefined}
-                bottomOverlayClassName="h-16 bg-gradient-to-t from-black/50 to-transparent"
-                leftNavClassName="left-2 h-7 w-7 bg-white/20 opacity-0 group-hover/img:opacity-100 hover:bg-white/40"
-                rightNavClassName="right-2 h-7 w-7 bg-white/20 opacity-0 group-hover/img:opacity-100 hover:bg-white/40"
-                dotContainerClassName="bottom-2.5 left-1/2 right-auto -translate-x-1/2"
-                activeDotClassName="w-3.5 h-1.5 bg-white"
-                inactiveDotClassName="w-1.5 h-1.5 bg-white/50"
-                showPhotoCounter
-                showCameraIconInCounter
-                photoCounterClassName="bottom-2.5 right-2.5 bg-black/50 px-2 py-0.5 text-[10px] font-semibold"
-                topBadge={
-                  pricing.hasPromo ? (
-                    <div className="absolute left-3 top-3 z-20 flex items-center gap-1 rounded-full bg-rose-500/90 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white shadow-md">
-                      <Percent className="h-2.5 w-2.5" />
-                      -{pricing.discountPercentage}%
-                    </div>
-                  ) : null
-                }
-              />
-            </div>
+    <article
+      className="group overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg hover:border-slate-200"
+      aria-label={room.name}
+    >
+      <div className="flex flex-col lg:flex-row lg:min-h-[200px]">
+        {/* Image */}
+        <div className="relative aspect-[4/3] flex-shrink-0 overflow-hidden lg:aspect-auto lg:w-[280px] xl:w-[300px]">
+          <RoomImageCarousel
+            images={sortedImages}
+            roomName={room.name}
+            rootClassName="h-full w-full group/img"
+            imageClassName="group-hover/img:scale-[1.05] transition-transform duration-500"
+            sizes="(max-width: 1024px) 100vw, (max-width: 1280px) 280px, 300px"
+            priority={priority}
+            bottomOverlayClassName="h-16 bg-gradient-to-t from-black/50 to-transparent"
+            leftNavClassName="left-2 h-7 w-7 bg-white/20 opacity-0 group-hover/img:opacity-100 hover:bg-white/40"
+            rightNavClassName="right-2 h-7 w-7 bg-white/20 opacity-0 group-hover/img:opacity-100 hover:bg-white/40"
+            dotContainerClassName="bottom-2.5 left-1/2 right-auto -translate-x-1/2"
+            activeDotClassName="w-3.5 h-1.5 bg-white"
+            inactiveDotClassName="w-1.5 h-1.5 bg-white/50"
+            showPhotoCounter
+            showCameraIconInCounter
+            photoCounterClassName="bottom-2.5 right-2.5 bg-black/50 px-2 py-0.5 text-[10px] font-semibold"
+          />
+        </div>
 
-            {/* Info panel */}
-            <div className="flex flex-1 flex-col justify-between gap-4 p-5 sm:p-6 lg:border-r lg:border-slate-100/80">
-              <div>
-                <h3 className="text-[18px] font-bold tracking-tight text-slate-900 sm:text-xl">{room.name}</h3>
-                <p className="mt-1 flex items-center gap-1.5 text-[12px] text-slate-500">
-                  <BedDouble className="h-3.5 w-3.5 flex-shrink-0 text-[#3A4A1F]" aria-hidden="true" />
-                  {room.bed_type?.trim() || "Bed setup by request"}
-                </p>
-              </div>
-              {highlights.length > 0 ? (
-                <div>
-                  <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">Unggulan</p>
-                  <AmenityChipGroup amenities={highlights} maxVisible={4} showOverflow={false} chipClassName="bg-[#3A4A1F]/6 text-[#3A4A1F] px-3 py-1.5" iconClassName="text-[#3A4A1F]" />
-                </div>
-              ) : (
-                <p className="text-[12px] italic text-slate-400">Lihat detail untuk fasilitas lengkap</p>
-              )}
-              <div><RoomDetailModal room={room} trigger={detailTrigger} /></div>
-            </div>
-
-            {/* Price + CTA panel — widened to prevent number wrapping */}
-            <div className="flex flex-col justify-between gap-4 bg-slate-50/60 p-5 sm:p-6 lg:w-[240px] lg:flex-shrink-0 xl:w-[256px]">
-              <div>
-                {isComingSoon ? (
-                  <>
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Harga</p>
-                    <p className="mt-1 text-sm font-bold text-slate-600">Segera hadir</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Mulai dari</p>
-                    {pricing.hasPromo && (
-                      <p className="mt-0.5 text-xs font-medium text-slate-400 line-through">{formatIDR(pricing.displayPrice)}</p>
-                    )}
-                    {pricing.hasManagedPrice ? (
-                      <p className={`mt-0.5 text-[24px] font-black leading-tight tracking-tight ${pricing.hasPromo ? "text-emerald-700" : "text-[#3A4A1F]"}`}>
-                        {formatIDR(pricing.finalPrice)}
-                      </p>
-                    ) : (
-                      <p className="mt-1 text-base font-bold text-slate-500">Cek harga</p>
-                    )}
-                    <p className="mt-0.5 text-[11px] font-medium text-slate-400">
-                      {pricing.hasManagedPrice ? "/ malam" : "konfirmasi WhatsApp"}
-                    </p>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {pricing.priceSource === "override" && (
-                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-700">Harga hari ini</span>
-                      )}
-                      {pricing.hasPromo && (
-                        <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-bold uppercase text-rose-600">Hemat {pricing.discountPercentage}%</span>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <InquiryCTA
-                  isBookable={isActiveVilla && !isComingSoon}
-                  whatsappNumber={room.villaWhatsapp}
-                  villaName={room.villaName}
-                  roomTypeName={room.name}
-                  buttonLabel="Pesan Sekarang"
-                  title={`Pesan ${room.name}`}
-                  buttonClassName="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-[12px] font-bold text-white shadow-sm transition-colors hover:bg-[#1ebe5d] active:scale-95"
-                  fallback={
-                    <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 py-3 text-xs font-medium text-slate-400">
-                      <MessageCircle className="h-3.5 w-3.5" />Segera Tersedia
-                    </div>
-                  }
-                >
-                  <WaIcon />Pesan Sekarang
-                </InquiryCTA>
-                <p className="text-center text-[10px] text-slate-400">
-                  {isComingSoon ? "Reservasi segera dibuka" : pricing.hasManagedPrice ? "* Harga dapat berubah" : "* Tanyakan via WhatsApp"}
-                </p>
-              </div>
-            </div>
+        {/* Info panel */}
+        <div className="flex flex-1 flex-col justify-between gap-4 p-5 sm:p-6 lg:border-r lg:border-slate-100/80">
+          <div>
+            <h3 className="text-[18px] font-bold tracking-tight text-slate-900 sm:text-xl">{room.name}</h3>
+            <p className="mt-1 flex items-center gap-1.5 text-[12px] text-slate-500">
+              <BedDouble className="h-3.5 w-3.5 flex-shrink-0 text-[#3A4A1F]" aria-hidden="true" />
+              {room.bed_type?.trim() || "Bed setup by request"}
+            </p>
           </div>
-        </article>
-      )}
-    </PriceBlock>
+          {highlights.length > 0 ? (
+            <div>
+              <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">Unggulan</p>
+              <AmenityChipGroup amenities={highlights} maxVisible={4} showOverflow={false} chipClassName="bg-[#3A4A1F]/6 text-[#3A4A1F] px-3 py-1.5" iconClassName="text-[#3A4A1F]" />
+            </div>
+          ) : (
+            <p className="text-[12px] italic text-slate-400">Lihat detail untuk fasilitas lengkap</p>
+          )}
+          <div><RoomDetailModal room={room} trigger={detailTrigger} /></div>
+        </div>
+
+        {/* CTA panel */}
+        <div className="flex flex-col justify-end gap-4 bg-slate-50/60 p-5 sm:p-6 lg:w-[240px] lg:flex-shrink-0 xl:w-[256px]">
+          <div className="space-y-1.5">
+            <InquiryCTA
+              isBookable={isActiveVilla && !isComingSoon}
+              whatsappNumber={room.villaWhatsapp}
+              villaName={room.villaName}
+              roomTypeName={room.name}
+              buttonLabel="Tanya Harga"
+              title={`Tanya Harga ${room.name}`}
+              buttonClassName="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-[12px] font-bold text-white shadow-sm transition-colors hover:bg-[#1ebe5d] active:scale-95"
+              fallback={
+                <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 py-3 text-xs font-medium text-slate-400">
+                  <MessageCircle className="h-3.5 w-3.5" />Segera Tersedia
+                </div>
+              }
+            >
+              <WaIcon />Tanya Harga
+            </InquiryCTA>
+            <p className="text-center text-[10px] text-slate-400">
+              {isComingSoon ? "Reservasi segera dibuka" : "* Tanyakan via WhatsApp"}
+            </p>
+          </div>
+        </div>
+      </div>
+    </article>
   );
 }
