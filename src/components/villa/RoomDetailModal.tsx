@@ -57,7 +57,6 @@ function ModalGallery({
         fill
         className="object-cover transition-opacity duration-500"
         sizes="(max-width: 768px) 100vw, 80vw"
-        unoptimized
       />
       {/* bottom gradient */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />
@@ -295,7 +294,7 @@ export function RoomDetailModal({ room, trigger }: Props) {
                   roomTypeName={room.name}
                   buttonLabel="Tanya Harga"
                   title={`Tanya Harga ${room.name}`}
-                  buttonClassName="flex flex-shrink-0 items-center gap-2 rounded-2xl bg-[#25D366] px-5 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#1ebe5d] active:scale-95 sm:px-7"
+                  buttonClassName="flex flex-shrink-0 items-center gap-2 rounded-2xl bg-[#166534] px-5 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#14532D] active:scale-95 sm:px-7"
                 >
                   <WaIcon />
                   Tanya Harga

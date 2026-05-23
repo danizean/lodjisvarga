@@ -57,7 +57,6 @@ export function VillaDetailHero({
           className="object-cover"
           priority
           sizes="100vw"
-          unoptimized
         />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-[#3A4A1F] to-[#0f1a09]" />

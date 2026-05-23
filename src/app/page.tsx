@@ -21,7 +21,7 @@ export default function Home() {
     url: process.env.NEXT_PUBLIC_BASE_URL || "https://lodjisvarga.com",
     logo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://lodjisvarga.com"}/logo.png`,
     sameAs: [
-      "https://www.instagram.com/lodjisvarga" // Placeholder link IG
+      "https://www.instagram.com/lodjisvarga"
     ]
   };
 

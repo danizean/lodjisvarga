@@ -58,7 +58,7 @@ export function VillaFloatingCTA({ whatsappNumber, villaName, isActive }: VillaF
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Tanya ketersediaan via WhatsApp"
-        className="inline-flex items-center gap-2.5 rounded-full bg-[#25D366] px-5 py-3 text-sm font-bold text-white shadow-xl shadow-black/20 transition-all hover:bg-[#1ebe5d] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366]/50"
+        className="inline-flex items-center gap-2.5 rounded-full bg-[#166534] px-5 py-3 text-sm font-bold text-white shadow-xl shadow-black/20 transition-all hover:bg-[#14532D] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#166534]/50"
       >
         <WaIcon />
         Tanya via WhatsApp

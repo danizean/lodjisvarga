@@ -100,7 +100,6 @@ export function RoomImageCarousel({
                 alt={`${roomName} - foto ${index + 1}`}
                 fill
                 priority={priority && index === 0}
-                unoptimized={src.includes("supabase.co")}
                 className={cn("object-cover transition-transform duration-700 ease-in-out", imageClassName)}
                 sizes={sizes}
               />

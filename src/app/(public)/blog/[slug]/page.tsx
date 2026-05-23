@@ -122,9 +122,9 @@ function WaButton({ href, label }: { href: string; label: string }) {
       rel="noopener noreferrer"
       className="
         inline-flex items-center gap-2.5
-        rounded-full bg-[#25D366] px-6 py-3
+        rounded-full bg-[#166534] px-6 py-3
         text-sm font-bold text-white
-        shadow-md hover:bg-[#22c55e] hover:shadow-lg
+        shadow-md hover:bg-[#14532D] hover:shadow-lg
         transition-all duration-200 hover:-translate-y-0.5
       "
     >

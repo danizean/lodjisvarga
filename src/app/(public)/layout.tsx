@@ -4,74 +4,143 @@ import { Footer } from "@/components/shared/Footer";
 import { SITE_URL } from "@/lib/constants/site";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
   title: {
     template: "%s | Lodjisvarga Villa Jogja",
-    default: "Lodjisvarga Villa – Jagonya Nyaman Villa di Jogja",
+    default: "Lodjisvarga Villa Jogja – Villa Private Pool Jagonya Nyaman",
   },
-  description: "Cari penginapan yang Jagonya Nyaman? Lodjisvarga Villa Jogja menawarkan villa private pool mewah di lokasi strategis Sleman dan Seturan. Pilihan terbaik untuk staycation keluarga dan rombongan di Yogyakarta.",
-  keywords: [
-    "lodjisvarga villa jogja",
-    "villa private pool jogja",
-    "penginapan private pool jogja",
-    "lodjisvarga jagonya nyaman",
-    "villa kolam renang pribadi jogja",
-    "staycation jogja private pool",
-    "villa mewah yogyakarta",
-    "penginapan keluarga jogja",
-    "sewa villa harian jogja",
-    "luxury villa jogja",
-    "villa estetik jogja",
-    "villa rombongan jogja",
-  ],
+  description:
+    "Lodjisvarga Villa Jogja menawarkan penginapan villa private pool di lokasi strategis Sleman dan Seturan. Cocok untuk staycation keluarga, rombongan, dan liburan nyaman di Yogyakarta.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Lodjisvarga Villa Jogja – Jagonya Nyaman",
-    description: "Nikmati ketenangan staycation dengan private pool di Sleman dan Seturan. Lodjisvarga, Jagonya Nyaman untuk liburan Anda di Yogyakarta.",
+    title: "Lodjisvarga Villa Jogja – Villa Private Pool Jagonya Nyaman",
+    description:
+      "Nikmati staycation nyaman di villa private pool Lodjisvarga, berlokasi strategis di Sleman dan Seturan, Yogyakarta.",
     url: "/",
     siteName: "Lodjisvarga Villa",
     locale: "id_ID",
     type: "website",
+    images: [
+      {
+        url: "/images/og-lodjisvarga.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Lodjisvarga Villa Jogja private pool",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Lodjisvarga Villa Jogja – Jagonya Nyaman",
-    description: "Nikmati ketenangan staycation dengan private pool di Sleman dan Seturan.",
+    title: "Lodjisvarga Villa Jogja – Villa Private Pool Jagonya Nyaman",
+    description:
+      "Villa private pool nyaman di Jogja untuk staycation keluarga dan rombongan.",
+    images: ["/images/og-lodjisvarga.jpg"],
   },
 };
 
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  const organizationLd = {
+export default function PublicLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const lodgingBusinessLd = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["LodgingBusiness", "Hotel"],
+    "@id": `${SITE_URL}/#lodgingbusiness`,
     name: "Lodjisvarga Villa",
     url: SITE_URL,
-    logo: `${SITE_URL}/apple-touch-icon.png`,
-    description: "Jagonya Nyaman Villa di Jogja",
+    logo: `${SITE_URL}/logo-lodji.png`,
+    image: [
+      `${SITE_URL}/images/og-lodjisvarga.jpg`,
+      `${SITE_URL}/images/villa-private-pool-jogja.jpg`,
+    ],
+    description:
+      "Lodjisvarga Villa adalah penginapan villa private pool di Jogja yang cocok untuk staycation keluarga, rombongan, dan liburan nyaman di Yogyakarta.",
+    slogan: "Jagonya Nyaman Villa di Jogja",
+    priceRange: "Rp",
     address: {
       "@type": "PostalAddress",
-      addressLocality: "Yogyakarta",
-      addressCountry: "ID"
+      addressLocality: "Sleman",
+      addressRegion: "Daerah Istimewa Yogyakarta",
+      addressCountry: "ID",
     },
+    areaServed: [
+      {
+        "@type": "Place",
+        name: "Yogyakarta",
+      },
+      {
+        "@type": "Place",
+        name: "Sleman",
+      },
+      {
+        "@type": "Place",
+        name: "Seturan",
+      },
+    ],
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",
-      availableLanguage: ["Indonesian", "English"]
-    }
+      availableLanguage: ["Indonesian", "English"],
+    },
+    amenityFeature: [
+      {
+        "@type": "LocationFeatureSpecification",
+        name: "Private Pool",
+        value: true,
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        name: "WiFi",
+        value: true,
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        name: "AC",
+        value: true,
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        name: "Smart TV",
+        value: true,
+      },
+    ],
+  };
+
+  const websiteLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    url: SITE_URL,
+    name: "Lodjisvarga Villa",
+    description:
+      "Website resmi Lodjisvarga Villa Jogja untuk informasi villa private pool, fasilitas, lokasi, dan reservasi.",
+    publisher: {
+      "@id": `${SITE_URL}/#lodgingbusiness`,
+    },
+    inLanguage: "id-ID",
   };
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(lodgingBusinessLd),
+        }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(websiteLd),
+        }}
+      />
+
       <Navbar />
-      <main className="min-h-screen">
-        {children}
-      </main>
+
+      <main className="min-h-screen">{children}</main>
+
       <Footer />
     </>
   );

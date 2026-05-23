@@ -74,7 +74,7 @@ export function AboutExperience() {
                           fill
                           sizes="(max-width: 768px) 340px, 420px"
                           className="object-cover"
-                          priority={img.id === 1}
+                          loading="lazy"
                         />
                       </div>
                     ))}
@@ -86,13 +86,18 @@ export function AboutExperience() {
                         key={index}
                         onClick={() => scrollTo(index)}
                         aria-label={`Go to slide ${index + 1}`}
-                        className={cn(
-                          "transition-all duration-300 rounded-full",
-                          index === current
-                            ? "w-4 h-1.5 bg-[#D4AF37] opacity-100"
-                            : "w-1.5 h-1.5 bg-[#D4AF37] opacity-50 hover:opacity-75"
-                        )}
-                      />
+                        className="relative inline-flex h-11 w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]/50"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            "block rounded-full transition-all duration-300",
+                            index === current
+                              ? "h-1.5 w-4 bg-[#D4AF37] opacity-100"
+                              : "h-1.5 w-1.5 bg-[#D4AF37] opacity-50"
+                          )}
+                        />
+                      </button>
                     ))}
                   </div>
                   <div className="absolute top-4 right-4 z-20 px-3 py-1.5 bg-[#3A4A1F]/80 text-white rounded-full backdrop-blur-md flex items-center gap-1.5 border border-white/10">
@@ -143,7 +148,7 @@ export function AboutExperience() {
                     <Icon className="w-4 h-4 md:w-5 md:h-5 text-[#3A4A1F]/70 group-hover:text-[#D4AF37] transition-colors duration-300" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#3A4A1F]">{title}</h4>
+                    <h3 className="text-sm font-bold text-[#3A4A1F]">{title}</h3>
                     <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">{desc}</p>
                   </div>
                 </div>

@@ -154,10 +154,9 @@ export function VillaGallery({
                 src={item.url}
                 alt={item.label}
                 fill
-                priority={isPrimary}
-                unoptimized={item.url.includes("supabase.co")}
+                loading="lazy"
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes={isPrimary ? "(max-width: 768px) 100vw, 58vw" : "(max-width: 768px) 50vw, 28vw"}
+                sizes={isPrimary ? "(max-width: 768px) 92vw, 56vw" : "(max-width: 768px) 44vw, 28vw"}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-3 p-3">
@@ -233,7 +232,7 @@ export function VillaGallery({
                 src={activeItem.url}
                 alt={activeItem.label}
                 fill
-                unoptimized={activeItem.url.includes("supabase.co")}
+                loading="lazy"
                 className="object-contain"
                 sizes="100vw"
               />
@@ -279,7 +278,7 @@ export function VillaGallery({
                       src={item.url}
                       alt={item.label}
                       fill
-                      unoptimized={item.url.includes("supabase.co")}
+                      loading="lazy"
                       className="object-cover"
                       sizes="96px"
                     />

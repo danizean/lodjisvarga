@@ -24,11 +24,11 @@ function TestimonialCard({ item, index }: { item: typeof testimonials[0]; index:
     >
       <div>
         <div className="flex justify-between items-start mb-4">
-          <div className="flex gap-1" aria-label={`Rating: ${item.rating} dari 5 bintang`}>
+          <span className="flex gap-1" role="img" aria-label={`Rating: ${item.rating} dari 5 bintang`}>
             {[...Array(5)].map((_, i) => (
               <Star key={i} className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" aria-hidden="true" />
             ))}
-          </div>
+          </span>
           <Quote className="w-8 h-8 text-[#3A4A1F]/5 group-hover:text-[#D4AF37]/20 transition-colors duration-300" aria-hidden="true" />
         </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Container } from "@/components/shared/Container";
 import { Waves, Car, Tv, Snowflake, Wifi, Refrigerator } from "lucide-react";
@@ -15,17 +15,29 @@ const AMENITIES_DATA = [
 ];
 
 const CARD_WIDTH_RATIO = 0.85;
+const MOBILE_GAP_PX = 16;
 
 export function OurAmenities() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [cardStep, setCardStep] = useState(0);
   const isInteracting = useRef(false);
+  const frameRef = useRef<number | null>(null);
 
-  const getCardWidth = useCallback(() => {
+  useEffect(() => {
     const container = scrollRef.current;
-    if (!container) return 0;
-    // gap-4 = 16px
-    return container.offsetWidth * CARD_WIDTH_RATIO + 16;
+    if (!container) return;
+
+    const updateCardStep = () => {
+      const nextStep = container.clientWidth * CARD_WIDTH_RATIO + MOBILE_GAP_PX;
+      setCardStep(nextStep);
+    };
+
+    updateCardStep();
+    const observer = new ResizeObserver(updateCardStep);
+    observer.observe(container);
+
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -33,37 +45,42 @@ export function OurAmenities() {
     if (!container) return;
 
     const handleScroll = () => {
-      const cardWidth = getCardWidth();
-      if (cardWidth === 0) return;
-      const index = Math.min(
-        Math.round(container.scrollLeft / cardWidth),
-        AMENITIES_DATA.length - 1
-      );
-      setActiveIndex(index);
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+
+      frameRef.current = requestAnimationFrame(() => {
+        if (cardStep <= 0) return;
+        const index = Math.min(
+          Math.round(container.scrollLeft / cardStep),
+          AMENITIES_DATA.length - 1
+        );
+        setActiveIndex(index);
+      });
     };
 
     container.addEventListener("scroll", handleScroll, { passive: true });
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [getCardWidth]);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    };
+  }, [cardStep]);
 
   useEffect(() => {
     const container = scrollRef.current;
-    if (!container) return;
+    if (!container || cardStep <= 0) return;
 
     const interval = setInterval(() => {
       if (isInteracting.current) return;
       const nextIndex = (activeIndex + 1) % AMENITIES_DATA.length;
-      const cardWidth = getCardWidth();
-      container.scrollTo({ left: nextIndex * cardWidth, behavior: "smooth" });
+      container.scrollTo({ left: nextIndex * cardStep, behavior: "smooth" });
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [activeIndex, getCardWidth]);
+  }, [activeIndex, cardStep]);
 
   const scrollToIndex = (index: number) => {
     const container = scrollRef.current;
-    if (!container) return;
-    container.scrollTo({ left: index * getCardWidth(), behavior: "smooth" });
+    if (!container || cardStep <= 0) return;
+    container.scrollTo({ left: index * cardStep, behavior: "smooth" });
   };
 
   return (
@@ -114,7 +131,7 @@ export function OurAmenities() {
           </div>
 
           {/* Clickable dot indicators */}
-          <div className="flex justify-center gap-2 mt-2" role="tablist" aria-label="Fasilitas navigation">
+          <div className="mt-2 flex justify-center gap-1" role="tablist" aria-label="Fasilitas navigation">
             {AMENITIES_DATA.map((_, i) => (
               <button
                 key={i}
@@ -122,10 +139,17 @@ export function OurAmenities() {
                 aria-selected={i === activeIndex}
                 aria-label={`Fasilitas ${i + 1}`}
                 onClick={() => scrollToIndex(i)}
-                className={`transition-all duration-500 rounded-full h-1.5 ${
-                  i === activeIndex ? "w-6 bg-[#3A4A1F]" : "w-1.5 bg-[#3A4A1F]/20 hover:bg-[#3A4A1F]/40"
-                }`}
-              />
+                className="relative inline-flex h-11 w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3A4A1F]/40"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`block rounded-full transition-all duration-500 ${
+                    i === activeIndex
+                      ? "h-1.5 w-6 bg-[#3A4A1F]"
+                      : "h-1.5 w-1.5 bg-[#3A4A1F]/20"
+                  }`}
+                />
+              </button>
             ))}
           </div>
         </div>

@@ -249,7 +249,7 @@ export function WhatsAppMessageForm({
         aria-label={buttonLabel}
         onClick={() => setOpen(true)}
         className={cn(
-          "inline-flex items-center justify-center rounded-lg bg-[#25D366] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#128C7E]",
+          "inline-flex items-center justify-center rounded-lg bg-[#166534] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#14532D]",
           buttonClassName
         )}
       >
@@ -511,7 +511,7 @@ export function WhatsAppMessageForm({
                 <button
                   type="button"
                   onClick={handleSendToWhatsApp}
-                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 text-sm font-bold text-white transition-colors hover:bg-[#128C7E] active:bg-[#0d6e59] sm:h-10 sm:w-auto"
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-5 text-sm font-bold text-white transition-colors hover:bg-[#14532D] active:bg-[#052E16] sm:h-10 sm:w-auto"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

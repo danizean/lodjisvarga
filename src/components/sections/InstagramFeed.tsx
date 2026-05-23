@@ -100,7 +100,7 @@ export function InstagramFeed() {
                 alt={post.caption}
                 fill
                 sizes="260px"
-                priority={idx === 0}
+                loading="lazy"
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#1a2a10]/85 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />

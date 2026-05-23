@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
+import Image from "next/image";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +39,16 @@ function ImageUploadField({ label, value, onChange, placeholder }: { label: stri
       </label>
       {value ? (
         <div className="relative rounded-xl border border-slate-200 overflow-hidden bg-slate-50">
-          <img src={value} className="w-full h-32 object-cover" alt="Preview" />
+          <div className="relative h-32 w-full">
+            <Image
+              src={value}
+              alt="Preview gambar promo"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 320px"
+              loading="lazy"
+            />
+          </div>
         </div>
       ) : (
         <div className="relative flex items-center justify-center h-24 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">

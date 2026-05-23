@@ -100,7 +100,7 @@ export function VillaCard({ room, priority = false }: { room: RoomTypeCardData; 
               roomTypeName={room.name}
               buttonLabel="Tanya Harga"
               title={`Tanya Harga ${room.villaName}`}
-              buttonClassName="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-sm font-bold text-white transition-colors hover:bg-[#128C7E]"
+              buttonClassName="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#166534] py-3 text-sm font-bold text-white transition-colors hover:bg-[#14532D]"
               fallback={
                 <div className="flex w-full items-center justify-center rounded-2xl border border-dashed border-slate-300 py-3 text-sm font-semibold text-slate-400">
                   Segera Tersedia
@@ -119,7 +119,7 @@ export function VillaCard({ room, priority = false }: { room: RoomTypeCardData; 
                 roomTypeName={room.name}
                 buttonLabel="Tanya Harga"
                 title={`Tanya Harga ${room.name}`}
-                buttonClassName="flex items-center justify-center gap-1.5 rounded-2xl bg-[#25D366] py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#128C7E]"
+                buttonClassName="flex items-center justify-center gap-1.5 rounded-2xl bg-[#166534] py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#14532D]"
                 fallback={
                   <div className="flex items-center justify-center rounded-2xl border border-dashed border-slate-300 py-2.5 text-xs font-semibold text-slate-400">
                     Tidak Tersedia

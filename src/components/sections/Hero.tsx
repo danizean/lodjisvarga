@@ -52,14 +52,17 @@ export function Hero() {
         </div>
 
         <div className="flex flex-col items-center">
-          <h1 className="font-serif text-[15vw] md:text-[7rem] lg:text-[9rem] leading-[1.1] tracking-tight bg-gradient-to-b from-[#F3E5AB] via-[#C5A059] to-[#8B5E3C] bg-clip-text text-transparent drop-shadow-md px-4 pb-6">
-            Lodjisvarga
+          <h1 className="sr-only">
+            Lodjisvarga - Villa Private Pool Mewah di Yogyakarta
           </h1>
+          <h2 aria-hidden="true" className="font-serif text-[15vw] md:text-[7rem] lg:text-[9rem] leading-[1.1] tracking-tight bg-gradient-to-b from-[#F3E5AB] via-[#C5A059] to-[#8B5E3C] bg-clip-text text-transparent drop-shadow-md px-4 pb-6">
+            Lodjisvarga
+          </h2>
 
           <div className="flex flex-col items-center -mt-2">
-            <h2 className="text-[#C5A059]/90 font-light italic text-2xl md:text-5xl tracking-[0.15em]">
+            <p className="text-[#C5A059]/90 font-light italic text-2xl md:text-5xl tracking-[0.15em]">
               Mid Town Villas
-            </h2>
+            </p>
 
             <div className="mt-12 flex items-center gap-5 md:gap-8 border-t border-white/20 pt-8">
               <span className="text-white/70 text-[10px] md:text-[11px] tracking-[0.4em] uppercase font-bold">

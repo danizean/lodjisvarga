@@ -327,7 +327,7 @@ export default async function VillaDetailPage({ params }: PageProps) {
       addressCountry: "ID",
     },
     image: allGalleryItems.map((item) => item.url),
-    priceRange: "Hubungi kami",
+    priceRange: "Rp",
     amenityFeature: allFacilityNames.map((name) => ({
       "@type": "LocationFeatureSpecification",
       name,
@@ -360,7 +360,20 @@ export default async function VillaDetailPage({ params }: PageProps) {
     ],
   };
 
-  const jsonLd = [lodgingBusinessLd, breadcrumbLd];
+  const faqPageLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: TRAVELER_FAQS.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+
+  const jsonLd = [lodgingBusinessLd, breadcrumbLd, faqPageLd];
 
   return (
     <>

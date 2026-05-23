@@ -151,7 +151,7 @@ export default async function BlogPage() {
               href={`https://wa.me/${WA_NUMBER.replace(/\D/g, "")}?text=${encodeURIComponent("Halo Lodjisvarga, saya ingin cek ketersediaan villa.")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-7 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#128C7E] transition"
+              className="inline-flex items-center gap-2 rounded-full bg-[#166534] px-7 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#14532D] transition"
             >
               {/* WhatsApp icon */}
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">

@@ -60,7 +60,7 @@ export function VillaBookingCard({
               roomTypeOptions={roomTypeOptions}
               buttonLabel="Book via WhatsApp"
               title={`Reservasi ${villaName}`}
-              buttonClassName="h-13 w-full rounded-2xl bg-[#25D366] text-sm font-bold shadow-md shadow-green-200 transition-colors hover:bg-[#1ebe5d]"
+              buttonClassName="h-13 w-full rounded-2xl bg-[#166534] text-sm font-bold shadow-md shadow-green-900/20 transition-colors hover:bg-[#14532D]"
             >
               <span className="inline-flex items-center gap-2.5">
                 <MessageCircle className="h-4 w-4" />
@@ -125,7 +125,7 @@ export function VillaMobileBookingBar({
           roomTypeOptions={roomTypeOptions}
           buttonLabel="Book Now"
           title={`Reservasi ${villaName}`}
-          buttonClassName="h-12 rounded-2xl bg-[#25D366] px-6 text-sm font-bold text-white shadow-md shadow-green-200 transition-colors hover:bg-[#1ebe5d] shrink-0"
+          buttonClassName="h-12 rounded-2xl bg-[#166534] px-6 text-sm font-bold text-white shadow-md shadow-green-900/20 transition-colors hover:bg-[#14532D] shrink-0"
         >
           <span className="inline-flex items-center gap-2">
             <MessageCircle className="h-4 w-4" />

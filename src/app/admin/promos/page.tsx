@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { getPromos, deletePromo, togglePromoStatus } from "@/lib/actions/promos";
 import { Button } from "@/components/ui/button";
@@ -145,7 +146,16 @@ export default function PromosPage() {
               <div key={promo.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all flex flex-col">
                 <div className="relative">
                   {promo.image_url ? (
-                    <img src={promo.image_url} alt={promo.title} className="w-full h-36 object-cover" />
+                    <div className="relative h-36 w-full">
+                      <Image
+                        src={promo.image_url}
+                        alt={promo.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 1024px) 100vw, 33vw"
+                        loading="lazy"
+                      />
+                    </div>
                   ) : (
                     <div className="w-full h-36 bg-slate-100 flex items-center justify-center">
                       <Percent className="w-8 h-8 text-slate-300" />

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Container } from "@/components/shared/Container";
 import { MapPin, Navigation, Star, Clock } from "lucide-react";
+import { LazyGoogleMapEmbed } from "@/components/sections/LazyGoogleMapEmbed";
 
 const locations = [
   { title: "Masjid Agung Sleman", time: "2 menit", desc: "Tempat ibadah utama Sleman, bisa dijangkau dengan jalan kaki santai." },
@@ -86,13 +87,9 @@ export function LocationHighlight() {
           >
             <div className="relative w-full max-w-[420px] aspect-square rounded-[2.5rem] bg-white p-3 shadow-[0_20px_50px_rgba(58,74,31,0.1)] border border-white">
               <div className="relative w-full h-full rounded-[2rem] overflow-hidden">
-                <iframe
+                <LazyGoogleMapEmbed
                   title="Lokasi Lodjisvarga Villa di Google Maps"
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.7181638114434!2d110.35467617476525!3d-7.71336029230447!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5f002a693b21%3A0xbd135fb0b7d7091e!2sLODJISVARGA%20VILLA%20JOGYA!5e0!3m2!1sid!2sid!4v1776119419862!5m2!1sid!2sid"
-                  className="absolute inset-0 w-full h-full border-0 grayscale-[0.1] contrast-[1.05]"
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
                 />
                 {/* Map CTA */}
                 <div className="absolute bottom-6 left-6 right-6">
