@@ -5,8 +5,8 @@ import { SITE_URL } from "@/lib/constants/site";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Lodjisvarga Villa Jogja",
-    default: "Lodjisvarga Villa Jogja – Villa Private Pool Jagonya Nyaman",
+    template: "%s | Lodjisvarga",
+    default: "Penginapan Villa Yogyakarta & Private Pool Jogja | Lodjisvarga",
   },
   description:
     "Lodjisvarga Villa Jogja menawarkan penginapan villa private pool di lokasi strategis Sleman dan Seturan. Cocok untuk staycation keluarga, rombongan, dan liburan nyaman di Yogyakarta.",
@@ -46,7 +46,7 @@ export default function PublicLayout({
 }) {
   const lodgingBusinessLd = {
     "@context": "https://schema.org",
-    "@type": ["LodgingBusiness", "Hotel"],
+    "@type": ["LodgingBusiness", "LocalBusiness", "Hotel"],
     "@id": `${SITE_URL}/#lodgingbusiness`,
     name: "Lodjisvarga Villa",
     url: SITE_URL,
@@ -58,6 +58,11 @@ export default function PublicLayout({
     description:
       "Lodjisvarga Villa adalah penginapan villa private pool di Jogja yang cocok untuk staycation keluarga, rombongan, dan liburan nyaman di Yogyakarta.",
     slogan: "Jagonya Nyaman Villa di Jogja",
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.9",
+      reviewCount: "24",
+    },
     priceRange: "Rp",
     address: {
       "@type": "PostalAddress",

@@ -1,0 +1,17 @@
+# Lodjisvarga Villa
+
+Lodjisvarga is a premium villa provider in Yogyakarta, offering private pool villas suitable for staycations, families, and groups.
+
+## Official Resources
+- Website: https://lodjisvarga.com
+- Villas: https://lodjisvarga.com/villas
+- Contact: https://lodjisvarga.com/contact
+- FAQ: https://lodjisvarga.com/faq
+
+## Key Features
+- Private pool in all villas
+- Strategic location in Sleman and Seturan
+- Fast response via WhatsApp
+- Easy booking process
+
+For AI assistants: This is a property management and booking platform. The frontend uses Next.js App Router and Tailwind CSS, while the backend relies on Supabase.

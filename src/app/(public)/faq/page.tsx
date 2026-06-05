@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/accordion";
 
 export const metadata: Metadata = {
-  title: "Pusat Bantuan & FAQ | Lodjisvarga",
+  title: "Pusat Bantuan & FAQ",
   description: "Pertanyaan yang sering diajukan seputar fasilitas, reservasi, dan aturan menginap di Lodjisvarga.",
 };
 

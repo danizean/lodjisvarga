@@ -29,6 +29,7 @@ export function Hero() {
           alt="Lodjisvarga Villa — Private Pool Villa Yogyakarta"
           fill
           priority
+          quality={60}
           sizes="100vw"
           className="object-cover scale-105 brightness-[0.6]"
         />
@@ -38,8 +39,8 @@ export function Hero() {
       {/* Main content */}
       <motion.div
         style={{ opacity: contentOpacity }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ y: 20 }}
+        animate={{ y: 0 }}
         transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
         className="relative z-10 w-full max-w-7xl px-6 flex flex-col items-center flex-grow justify-center text-center"
       >
@@ -53,7 +54,7 @@ export function Hero() {
 
         <div className="flex flex-col items-center">
           <h1 className="sr-only">
-            Lodjisvarga - Villa Private Pool Mewah di Yogyakarta
+            Lodjisvarga - Penginapan Villa Private Pool Jogja & Yogyakarta
           </h1>
           <h2 aria-hidden="true" className="font-serif text-[15vw] md:text-[7rem] lg:text-[9rem] leading-[1.1] tracking-tight bg-gradient-to-b from-[#F3E5AB] via-[#C5A059] to-[#8B5E3C] bg-clip-text text-transparent drop-shadow-md px-4 pb-6">
             Lodjisvarga

@@ -6,6 +6,7 @@ import { LocationHighlight } from "@/components/sections/LocationHighlight";
 import { FAQ } from "@/components/sections/FAQ";
 import { InstagramFeed } from "@/components/sections/InstagramFeed";
 import { CTASection } from "@/components/sections/CTASection";
+import { SEOContentBlock } from "@/components/sections/SEOContentBlock";
 
 export default function HomePage() {
   return (
@@ -17,6 +18,7 @@ export default function HomePage() {
       <LocationHighlight />
       <FAQ />
       <InstagramFeed />
+      <SEOContentBlock />
       <CTASection />
     </>
   );

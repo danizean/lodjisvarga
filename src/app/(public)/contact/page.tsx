@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Mail, MapPin, Smartphone, ArrowRight, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Hubungi Kami | Lodjisvarga Villa",
+  title: "Hubungi Kami",
   description: "Hubungi tim Lodjisvarga Villa Jogja untuk reservasi, kolaborasi, dan pertanyaan seputar akomodasi private pool.",
 };
 

@@ -45,7 +45,7 @@ export function Footer() {
               <a
                 href="https://www.instagram.com/lodjisvarga/"
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener noreferrer nofollow"
                 aria-label="Instagram Lodjisvarga"
                 className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/70 hover:bg-[#D4AF37] hover:text-white transition-all duration-300"
               >
@@ -55,7 +55,7 @@ export function Footer() {
               <a
                 href="https://www.tiktok.com/@lodjisvarga.villa"
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener noreferrer nofollow"
                 aria-label="TikTok Lodjisvarga"
                 className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/70 hover:bg-[#D4AF37] hover:text-white transition-all duration-300"
               >
@@ -111,7 +111,7 @@ export function Footer() {
                 <div>
                   <Mail className="w-4 h-4 text-[#D4AF37]" />
                 </div>
-                <a href="mailto:hello@lodjisvarga.com" className="hover:text-white transition-colors duration-300">
+                <a href="mailto:hello@lodjisvarga.com" rel="noopener noreferrer nofollow" className="hover:text-white transition-colors duration-300">
                   hello@lodjisvarga.com
                 </a>
               </div>
@@ -121,13 +121,13 @@ export function Footer() {
                   <div>
                     <Smartphone className="w-4 h-4 text-[#D4AF37]" />
                   </div>
-                  <a href="https://wa.me/6285184779808" className="hover:text-white transition-colors duration-300">
+                  <a href="https://wa.me/6285184779808" rel="noopener noreferrer nofollow" className="hover:text-white transition-colors duration-300">
                     0851-8477-9808
                   </a>
                 </div>
                 <div className="flex items-center gap-3.5 group">
                   <div className="w-4 opacity-0" />
-                  <a href="https://wa.me/6285123518847" className="hover:text-white transition-colors duration-300">
+                  <a href="https://wa.me/6285123518847" rel="noopener noreferrer nofollow" className="hover:text-white transition-colors duration-300">
                     0851-2351-8847
                   </a>
                 </div>

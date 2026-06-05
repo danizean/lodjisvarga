@@ -136,7 +136,7 @@ export function Navbar() {
               <a
                 href={whatsappUrl}
                 target="_blank"
-                rel="noopener noreferrer"
+                    rel="noopener noreferrer nofollow"
                 className={`inline-flex items-center justify-center h-10 px-6 rounded-full text-sm font-bold tracking-wide transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] focus-visible:ring-offset-2 ${
                   isDarkText
                     ? "bg-[#3A4A1F] text-white hover:bg-[#2D3621] hover:shadow-lg hover:shadow-[#3A4A1F]/20"
@@ -202,7 +202,7 @@ export function Navbar() {
                   <a
                     href={whatsappUrl}
                     target="_blank"
-                    rel="noopener noreferrer"
+                        rel="noopener noreferrer nofollow"
                     className="flex items-center justify-center h-12 w-full rounded-full bg-[#3A4A1F] text-white text-sm font-bold tracking-wide shadow-lg active:scale-95 transition-all hover:bg-[#2D3621]"
                   >
                     Cek Ketersediaan

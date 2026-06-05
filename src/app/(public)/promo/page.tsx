@@ -6,7 +6,7 @@ import Link from "next/link";
 import { PromoCard } from "./PromoCard";
 
 export const metadata: Metadata = {
-  title: "Promo & Penawaran Eksklusif | Lodjisvarga",
+  title: "Promo & Penawaran Eksklusif",
   description:
     "Temukan promo, diskon, dan penawaran eksklusif terbaru untuk menginap di Lodjisvarga Yogyakarta.",
 };
