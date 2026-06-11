@@ -111,8 +111,8 @@ export function Footer() {
                 <div>
                   <Mail className="w-4 h-4 text-[#D4AF37]" />
                 </div>
-                <a href="mailto:hello@lodjisvarga.com" rel="noopener noreferrer nofollow" className="hover:text-white transition-colors duration-300">
-                  hello@lodjisvarga.com
+                <a href="mailto:lodjisvargavilla@gmail.com" rel="noopener noreferrer nofollow" className="hover:text-white transition-colors duration-300">
+                  lodjisvargavilla@gmail.com
                 </a>
               </div>
 

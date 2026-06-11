@@ -72,6 +72,22 @@ export function FeaturedVillasClient({ villas, activePromo = null }: Props) {
           >
             Unit Kamar <span className="italic text-[#D4AF37]">Lodjisvarga</span>
           </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.15 }}
+            className="mt-4 text-lg md:text-xl text-gray-400 leading-snug tracking-wide"
+          >
+            Harga mulai dari{" "}
+            <strong className="font-bold text-[#3A4A1F] text-xl md:text-2xl">
+              Rp370.000&nbsp;/&nbsp;malam
+            </strong>{" "}
+            <em className="text-xs md:text-sm font-normal not-italic italic text-gray-400">
+              (S&amp;K Berlaku)
+            </em>
+          </motion.p>
         </div>
 
         {/* Filter Bar */}

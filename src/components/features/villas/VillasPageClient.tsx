@@ -88,16 +88,31 @@ export function VillasPageClient({ villas, activePromo = null }: Props) {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08, duration: 0.55 }}
-            className="font-serif text-[#3A4A1F] text-4xl md:text-5xl lg:text-6xl mb-6 leading-tight"
+            className="font-serif text-[#3A4A1F] text-4xl md:text-5xl lg:text-6xl mb-4 leading-tight"
           >
             Temukan <span className="italic text-[#D4AF37]">Kenyamanan</span>{" "}
             Anda
           </motion.h1>
 
           <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="mt-4 mb-6 text-lg md:text-xl text-gray-400 leading-snug tracking-wide"
+          >
+            Harga mulai dari{" "}
+            <strong className="font-bold text-[#3A4A1F] text-xl md:text-2xl">
+              Rp370.000&nbsp;/&nbsp;malam
+            </strong>{" "}
+            <em className="text-xs md:text-sm font-normal not-italic italic text-gray-400">
+              (S&amp;K Berlaku)
+            </em>
+          </motion.p>
+
+          <motion.p
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18, duration: 0.5 }}
+            transition={{ delay: 0.25, duration: 0.5 }}
             className="text-[#3A4A1F]/60 max-w-xl mx-auto text-sm md:text-base font-light leading-relaxed"
           >
             {totalActive} unit villa yang dirancang khusus untuk ketenangan
