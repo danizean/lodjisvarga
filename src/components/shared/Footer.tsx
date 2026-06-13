@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/shared/Container";
 import { MapPin, Mail, Smartphone } from "lucide-react";
+import { trackEvent } from "@/lib/analytics/gtm";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -116,18 +117,28 @@ export function Footer() {
                 </a>
               </div>
 
-              <div className="flex flex-col gap-2 pt-2">
+                <div className="flex flex-col gap-2 pt-2">
                 <div className="flex items-center gap-3.5 group">
                   <div>
                     <Smartphone className="w-4 h-4 text-[#D4AF37]" />
                   </div>
-                  <a href="https://wa.me/6285184779808" rel="noopener noreferrer nofollow" className="hover:text-white transition-colors duration-300">
+                  <a href="tel:+6285184779808" onClick={() => trackEvent("click_phone", {
+                    phone_number: "6285184779808",
+                    source: "footer",
+                    page_path: window.location.pathname,
+                    page_location: window.location.href,
+                  })} rel="noopener noreferrer nofollow" className="hover:text-white transition-colors duration-300">
                     0851-8477-9808
                   </a>
                 </div>
                 <div className="flex items-center gap-3.5 group">
                   <div className="w-4 opacity-0" />
-                  <a href="https://wa.me/6285123518847" rel="noopener noreferrer nofollow" className="hover:text-white transition-colors duration-300">
+                  <a href="tel:+6285123518847" onClick={() => trackEvent("click_phone", {
+                    phone_number: "6285123518847",
+                    source: "footer",
+                    page_path: window.location.pathname,
+                    page_location: window.location.href,
+                  })} rel="noopener noreferrer nofollow" className="hover:text-white transition-colors duration-300">
                     0851-2351-8847
                   </a>
                 </div>

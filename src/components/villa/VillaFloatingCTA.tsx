@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { WhatsAppCTA } from "@/components/shared/WhatsAppCTA";
 
 interface VillaFloatingCTAProps {
   whatsappNumber: string | null;
@@ -42,9 +43,7 @@ export function VillaFloatingCTA({ whatsappNumber, villaName, isActive }: VillaF
 
   if (!isActive || !whatsappNumber) return null;
 
-  const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-    `Halo Lodjisvarga, saya ingin menanyakan ketersediaan kamar di ${villaName}. Reff: Villa Detail`
-  )}`;
+  const customMessage = `Halo Lodjisvarga, saya ingin menanyakan ketersediaan kamar di ${villaName}. Reff: Villa Detail`;
 
   return (
     <div
@@ -53,16 +52,15 @@ export function VillaFloatingCTA({ whatsappNumber, villaName, isActive }: VillaF
       }`}
       aria-hidden={!visible}
     >
-      <a
-        href={waUrl}
-        target="_blank"
-        rel="noopener noreferrer"
+      <WhatsAppCTA
+        source={`villa-floating-${villaName}`}
+        message={customMessage}
         aria-label="Tanya ketersediaan via WhatsApp"
         className="inline-flex items-center gap-2.5 rounded-full bg-[#166534] px-5 py-3 text-sm font-bold text-white shadow-xl shadow-black/20 transition-all hover:bg-[#14532D] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#166534]/50"
       >
         <WaIcon />
         Tanya via WhatsApp
-      </a>
+      </WhatsAppCTA>
     </div>
   );
 }

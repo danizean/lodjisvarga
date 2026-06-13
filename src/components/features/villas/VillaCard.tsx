@@ -6,6 +6,7 @@ import { AmenityChipGroup } from "@/components/features/villas/primitives/Amenit
 import { RoomImageCarousel } from "@/components/features/villas/primitives/RoomImageCarousel";
 import { InquiryCTA } from "@/components/features/villas/primitives/InquiryCTA";
 import type { RoomTypeCardData } from "@/types/public-villas";
+import { trackEvent } from "@/lib/analytics/gtm";
 
 const WhatsAppIcon = () => (
   <svg className="w-3.5 h-3.5 fill-current flex-shrink-0" viewBox="0 0 24 24">
@@ -132,6 +133,13 @@ export function VillaCard({ room, priority = false }: { room: RoomTypeCardData; 
 
               <Link
                 href={`/villas/${room.villaSlug}`}
+                onClick={() => trackEvent("select_item", {
+                  item_id: room.id,
+                  item_name: room.name,
+                  item_category: "villa",
+                  page_path: window.location.pathname,
+                  page_location: window.location.href,
+                })}
                 className="flex items-center justify-center gap-1.5 rounded-2xl bg-[#3A4A1F] py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#2A3A0F]"
               >
                 Selengkapnya

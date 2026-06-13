@@ -10,13 +10,29 @@ import {
 import { Container } from "@/components/shared/Container";
 import { TipTapRenderer } from "@/components/features/blog/TipTapRenderer";
 import { ArticleCard } from "@/components/features/blog/ArticleCard";
+import { BlogEngagementTracker } from "@/components/analytics/BlogEngagementTracker";
 import {
   getArticleBySlug,
   getPublishedSlugs,
   getRelatedArticles,
 } from "@/lib/queries/blog";
 import { formatDate } from "@/lib/utils/format";
-import { SITE_NAME, SITE_URL, WA_NUMBER } from "@/lib/constants/site";
+import { SITE_NAME, SITE_URL, WA_NUMBER, DEFAULT_OG_IMAGE_URL } from "@/lib/constants/site";
+import { WhatsAppCTA } from "@/components/shared/WhatsAppCTA";
+
+function resolveSeoImageUrl(imageUrl?: string | null) {
+  if (!imageUrl) return DEFAULT_OG_IMAGE_URL;
+
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+    return imageUrl;
+  }
+
+  if (imageUrl.startsWith("/")) {
+    return `${SITE_URL}${imageUrl}`;
+  }
+
+  return `${SITE_URL}/${imageUrl}`;
+}
 
 // ─── ISR config ───────────────────────────────────────────────────────────────
 export const revalidate = 60;
@@ -36,43 +52,71 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
-  if (!article) return { title: "Artikel Tidak Ditemukan" };
 
-  const ogImage = article.thumbnail_url
-    ? [{ url: article.thumbnail_url, width: 1200, height: 630, alt: article.title }]
-    : [];
+  if (!article) {
+    return {
+      title: "Artikel Tidak Ditemukan",
+    };
+  }
+
+  const description =
+    article.meta_description ?? article.excerpt ?? undefined;
+
+  const imageUrl = resolveSeoImageUrl(article.thumbnail_url);
 
   return {
     title: article.title,
-    description: article.meta_description ?? article.excerpt ?? undefined,
-    alternates: { canonical: `${SITE_URL}/blog/${slug}` },
+    description,
+    alternates: {
+      canonical: `/blog/${slug}`,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
     openGraph: {
       title: article.title,
-      description: article.meta_description ?? article.excerpt ?? undefined,
+      description,
       url: `${SITE_URL}/blog/${slug}`,
       type: "article",
       publishedTime: article.published_at ?? undefined,
       modifiedTime: article.updated_at ?? undefined,
       authors: [SITE_NAME],
-      images: ogImage,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: article.title,
-      description: article.meta_description ?? article.excerpt ?? undefined,
-      images: ogImage.map((i) => i.url),
+      description,
+      images: [imageUrl],
     },
   };
 }
 
 // ─── JSON-LD ──────────────────────────────────────────────────────────────────
 function buildJsonLd(article: NonNullable<Awaited<ReturnType<typeof getArticleBySlug>>>) {
+  const imageUrl = resolveSeoImageUrl(article.thumbnail_url);
+
   const articleLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: article.title,
     description: article.meta_description ?? article.excerpt ?? "",
-    image: article.thumbnail_url ?? `${SITE_URL}/assets/og-default.jpg`,
+    image: [imageUrl],
     datePublished: article.published_at ?? article.created_at ?? new Date().toISOString(),
     dateModified: article.updated_at ?? article.published_at ?? new Date().toISOString(),
     url: `${SITE_URL}/blog/${article.slug}`,
@@ -114,12 +158,11 @@ function buildJsonLd(article: NonNullable<Awaited<ReturnType<typeof getArticleBy
 }
 
 // ─── Inline WhatsApp CTA (used twice — mid-article + footer) ─────────────────
-function WaButton({ href, label }: { href: string; label: string }) {
+function WaButton({ message, label, source }: { message: string; label: string; source: string }) {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+    <WhatsAppCTA
+      source={source}
+      message={message}
       className="
         inline-flex items-center gap-2.5
         rounded-full bg-[#166534] px-6 py-3
@@ -134,7 +177,7 @@ function WaButton({ href, label }: { href: string; label: string }) {
         <path d="M12 0C5.373 0 0 5.373 0 12c0 2.094.541 4.061 1.488 5.773L.057 23.998l6.375-1.406A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.817 9.817 0 0 1-5.006-1.368l-.358-.214-3.724.977.993-3.62-.234-.371A9.818 9.818 0 0 1 2.182 12C2.182 6.573 6.573 2.182 12 2.182S21.818 6.573 21.818 12 17.427 21.818 12 21.818z"/>
       </svg>
       {label}
-    </a>
+    </WhatsAppCTA>
   );
 }
 
@@ -155,10 +198,7 @@ export default async function BlogDetailPage({ params }: Props) {
     ? formatDate(new Date(article.published_at))
     : null;
 
-  const waText = encodeURIComponent(
-    `Halo Lodjisvarga, saya tertarik setelah membaca artikel "${article.title}". Boleh saya cek ketersediaan villa?`
-  );
-  const waHref = `https://wa.me/${WA_NUMBER.replace(/\D/g, "")}?text=${waText}`;
+  const waText = `Halo Lodjisvarga, saya tertarik setelah membaca artikel "${article.title}". Boleh saya cek ketersediaan villa?`;
 
   return (
     <>
@@ -166,6 +206,7 @@ export default async function BlogDetailPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(buildJsonLd(article)) }}
       />
+      <BlogEngagementTracker slug={article.slug} title={article.title} />
 
       {/* ── Breadcrumb ───────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-100 pt-24">
@@ -242,10 +283,9 @@ export default async function BlogDetailPage({ params }: Props) {
             </div>
 
             {/* Inline micro-CTA — natural, not pushy */}
-            <a
-              href={waHref}
-              target="_blank"
-              rel="noopener noreferrer"
+            <WhatsAppCTA
+              source={`blog-detail-${article.slug}`}
+              message={waText}
               className="
                 hidden sm:inline-flex items-center gap-1.5
                 text-[11px] font-bold text-[#3A4A1F]/60
@@ -256,22 +296,20 @@ export default async function BlogDetailPage({ params }: Props) {
             >
               <MessageCircle className="w-3 h-3" />
               Tanya Villa
-            </a>
+            </WhatsAppCTA>
           </div>
 
           {/* ── Hero image ── */}
-          {article.thumbnail_url && (
-            <div className="relative w-full overflow-hidden rounded-2xl bg-gray-100 shadow-sm mt-4 mb-8" style={{ aspectRatio: "21/9", maxHeight: "60vh" }}>
-              <Image
-                src={article.thumbnail_url}
-                alt={article.title}
-                fill
-                sizes="(max-width: 900px) 100vw, 900px"
-                className="object-cover"
-                priority
-              />
-            </div>
-          )}
+          <div className="relative w-full overflow-hidden rounded-2xl bg-gray-100 shadow-sm mt-4 mb-8" style={{ aspectRatio: "21/9", maxHeight: "60vh" }}>
+            <Image
+              src={resolveSeoImageUrl(article.thumbnail_url)}
+              alt={article.title}
+              fill
+              sizes="(max-width: 900px) 100vw, 900px"
+              className="object-cover"
+              priority
+            />
+          </div>
           
           <div className="w-full h-px bg-gray-100" />
         </Container>
@@ -308,7 +346,7 @@ export default async function BlogDetailPage({ params }: Props) {
                 Cek ketersediaan langsung dan dapatkan penawaran terbaik via WhatsApp.
               </p>
               <div className="flex flex-wrap gap-3">
-                <WaButton href={waHref} label="Cek Ketersediaan" />
+                <WaButton source={`blog-detail-mid-${article.slug}`} message={waText} label="Cek Ketersediaan" />
                 <Link
                   href="/villas"
                   className="
@@ -374,7 +412,7 @@ export default async function BlogDetailPage({ params }: Props) {
             Booking sekarang dan nikmati pengalaman menginap yang berbeda.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
-            <WaButton href={waHref} label="Cek Ketersediaan via WhatsApp" />
+            <WaButton source={`blog-detail-bottom-${article.slug}`} message={waText} label="Cek Ketersediaan via WhatsApp" />
             <Link
               href="/villas"
               className="

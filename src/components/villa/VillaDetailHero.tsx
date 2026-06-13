@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Camera, MapPin, Users } from "lucide-react";
+import { WhatsAppCTA } from "@/components/shared/WhatsAppCTA";
 
 type GalleryItem = {
   url: string;
@@ -36,11 +37,7 @@ export function VillaDetailHero({
   totalPhotos,
   whatsappNumber,
 }: VillaDetailHeroProps) {
-  const waUrl = whatsappNumber
-    ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-        "Halo Lodjisvarga, saya ingin menanyakan ketersediaan kamar. Reff: Villa Detail"
-      )}`
-    : null;
+  const customMessage = "Halo Lodjisvarga, saya ingin menanyakan ketersediaan kamar. Reff: Villa Detail";
 
   return (
     <section
@@ -149,16 +146,15 @@ export function VillaDetailHero({
               </a>
 
               {/* Secondary: WhatsApp */}
-              {waUrl && !isComingSoon && (
-                <a
-                  href={waUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              {whatsappNumber && !isComingSoon && (
+                <WhatsAppCTA
+                  source={`villa-hero-${name}`}
+                  message={customMessage}
                   className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/20 active:scale-95"
                 >
                   <WaIconSmall />
                   Tanya via WhatsApp
-                </a>
+                </WhatsAppCTA>
               )}
 
               {/* Gallery shortcut */}

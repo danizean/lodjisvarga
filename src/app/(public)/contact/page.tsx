@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Mail, MapPin, Smartphone, ArrowRight, Clock } from "lucide-react";
+import { WhatsAppCTA } from "@/components/shared/WhatsAppCTA";
 
 export const metadata: Metadata = {
   title: "Hubungi Kami",
@@ -44,10 +45,9 @@ export default function ContactPage() {
             </div>
             
             <div className="p-10 md:p-12 flex flex-col justify-center bg-white space-y-6">
-              <a 
-                href="https://wa.me/6285184779808" 
-                target="_blank" 
-                rel="noopener noreferrer"
+              <WhatsAppCTA
+                source="contact-cs-1"
+                message="Halo Lodjisvarga Villa, saya ingin menanyakan ketersediaan kamar. Bisa dibantu? Reff: Website Contact"
                 className="group flex items-center justify-between p-6 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-[#3A4A1F]/5 hover:border-[#3A4A1F]/20 transition-all duration-300"
               >
                 <div>
@@ -57,12 +57,11 @@ export default function ContactPage() {
                 <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <ArrowRight className="w-5 h-5 text-[#3A4A1F]" />
                 </div>
-              </a>
+              </WhatsAppCTA>
 
-              <a 
-                href="https://wa.me/6285123518847" 
-                target="_blank" 
-                rel="noopener noreferrer"
+              <WhatsAppCTA
+                source="contact-cs-2"
+                message="Halo Lodjisvarga Villa, saya ingin menanyakan ketersediaan kamar. Bisa dibantu? Reff: Website Contact"
                 className="group flex items-center justify-between p-6 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-[#3A4A1F]/5 hover:border-[#3A4A1F]/20 transition-all duration-300"
               >
                 <div>
@@ -72,7 +71,7 @@ export default function ContactPage() {
                 <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <ArrowRight className="w-5 h-5 text-[#3A4A1F]" />
                 </div>
-              </a>
+              </WhatsAppCTA>
             </div>
           </div>
         </div>

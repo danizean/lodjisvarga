@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Container } from "@/components/shared/Container";
+import { WhatsAppCTA } from "@/components/shared/WhatsAppCTA";
 
 /**
  * Konfigurasi untuk Navbar agar mudah diubah di satu tempat
@@ -29,10 +30,7 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  // 1. Logika Pembuatan Link WhatsApp
-  const whatsappUrl = `https://wa.me/${NAV_CONFIG.whatsapp.number}?text=${encodeURIComponent(
-    NAV_CONFIG.whatsapp.message
-  )}`;
+  // 1. Logika Pembuatan Link WhatsApp (Dipindah ke komponen WhatsAppCTA)
 
   // 2. Scroll Detection (Optimized with useCallback)
   const handleScroll = useCallback(() => {
@@ -133,10 +131,8 @@ export function Navbar() {
               </nav>
 
               {/* DESKTOP CTA */}
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                    rel="noopener noreferrer nofollow"
+              <WhatsAppCTA
+                source="navbar-desktop"
                 className={`inline-flex items-center justify-center h-10 px-6 rounded-full text-sm font-bold tracking-wide transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] focus-visible:ring-offset-2 ${
                   isDarkText
                     ? "bg-[#3A4A1F] text-white hover:bg-[#2D3621] hover:shadow-lg hover:shadow-[#3A4A1F]/20"
@@ -144,7 +140,7 @@ export function Navbar() {
                 }`}
               >
                 Cek Ketersediaan
-              </a>
+              </WhatsAppCTA>
             </div>
 
             {/* MOBILE TOGGLE BUTTON */}
@@ -199,14 +195,12 @@ export function Navbar() {
                   transition={{ delay: 0.3 }}
                   className="pt-4 mt-2 border-t border-gray-100"
                 >
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                        rel="noopener noreferrer nofollow"
+                  <WhatsAppCTA
+                    source="navbar-mobile"
                     className="flex items-center justify-center h-12 w-full rounded-full bg-[#3A4A1F] text-white text-sm font-bold tracking-wide shadow-lg active:scale-95 transition-all hover:bg-[#2D3621]"
                   >
                     Cek Ketersediaan
-                  </a>
+                  </WhatsAppCTA>
                 </motion.div>
               </nav>
             </motion.div>

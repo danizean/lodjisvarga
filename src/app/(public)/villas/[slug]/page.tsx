@@ -22,6 +22,7 @@ import { VillaKeyInfoGrid } from "@/components/villa/VillaKeyInfoGrid";
 import { VillaSupportingAccordion } from "@/components/villa/VillaSupportingAccordion";
 import { VillaUnitCard } from "@/components/villa/VillaUnitCard";
 import { VillaGallery } from "@/components/features/villas/VillaGallery";
+import { ViewItemTracker } from "@/components/analytics/ViewItemTracker";
 import { SITE_URL } from "@/lib/constants/site";
 import {
   buildDetailGalleryItems,
@@ -380,6 +381,11 @@ export default async function VillaDetailPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ViewItemTracker
+        itemId={villa.id}
+        itemName={villa.name}
+        itemCategory="villa"
       />
 
       <VillaDetailHero

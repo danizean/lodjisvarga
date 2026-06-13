@@ -7,6 +7,7 @@ import { Calendar, Tag, Percent, ArrowRight } from "lucide-react";
 import { format as formatDate } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import type { Database } from "@/types/database";
+import { trackEvent } from "@/lib/analytics/gtm";
 
 type PromoRow = Database["public"]["Tables"]["promos"]["Row"];
 function formatDiscount(promo: PromoRow): string {
@@ -140,6 +141,12 @@ function PromoCard({ promo, index }: { promo: PromoRow; index: number }) {
           {/* CTA */}
           <Link
             href="/villas"
+            onClick={() => trackEvent("promo_click", {
+              promo_id: promo.id,
+              promo_name: promo.title,
+              page_path: window.location.pathname,
+              page_location: window.location.href,
+            })}
             className="flex items-center justify-center gap-2 w-full bg-[#3A4A1F] hover:bg-[#2A3A0F] text-white rounded-xl py-3.5 text-xs font-bold transition-colors duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3A4A1F]/50 group/link"
           >
             Lihat Unit

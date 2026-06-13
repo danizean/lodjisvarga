@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Container } from "@/components/shared/Container";
 import { MessageCircle } from "lucide-react";
+import { WhatsAppCTA } from "@/components/shared/WhatsAppCTA";
 
 // 1. Konfigurasi diletakkan di luar komponen agar rapi dan mudah di-maintenance
 const WA_CONFIG = {
@@ -11,10 +12,6 @@ const WA_CONFIG = {
 };
 
 export function CTASection() {
-  // 2. Membuat URL WhatsApp yang sudah ter-encode
-  const whatsappUrl = `https://wa.me/${WA_CONFIG.phoneNumber}?text=${encodeURIComponent(
-    WA_CONFIG.message
-  )}`;
 
   // 3. Helper untuk class agar JSX tidak terlalu "berantakan"
   const buttonClasses = `
@@ -68,15 +65,14 @@ export function CTASection() {
           transition={{ duration: 0.5, delay: 0.28, ease: "easeOut" }}
           className="pt-4 flex justify-center"
         >
-          <a 
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <WhatsAppCTA 
+            source="cta-section"
+            message={WA_CONFIG.message}
             className={buttonClasses}
           >
             <MessageCircle className="w-5 h-5 text-[#D4AF37]" aria-hidden="true" />
             Cek via WhatsApp
-          </a>
+          </WhatsAppCTA>
         </motion.div>
 
         {/* Micro copy */}

@@ -4,7 +4,8 @@ import { BookOpen, Rss } from "lucide-react";
 import { Container } from "@/components/shared/Container";
 import { ArticleCard } from "@/components/features/blog/ArticleCard";
 import { getPublishedArticles } from "@/lib/queries/blog";
-import { SITE_NAME, SITE_URL, WA_NUMBER } from "@/lib/constants/site";
+import { SITE_NAME, SITE_URL, WA_NUMBER, DEFAULT_OG_IMAGE } from "@/lib/constants/site";
+import { WhatsAppCTA } from "@/components/shared/WhatsAppCTA";
 
 // ─── ISR: re-generate every 60 s ─────────────────────────────────────────────
 export const revalidate = 60;
@@ -14,13 +15,29 @@ export const metadata: Metadata = {
   title: "Blog",
   description: `Tips wisata, panduan villa, dan inspirasi menginap mewah di Yogyakarta — dari ${SITE_NAME}.`,
   alternates: {
-    canonical: `${SITE_URL}/blog`,
+    canonical: "/blog",
   },
   openGraph: {
     title: `Blog | ${SITE_NAME}`,
-    description: "Tips wisata, panduan villa, dan inspirasi liburan mewah di Jogja.",
+    description:
+      "Tips wisata, panduan villa, dan inspirasi liburan mewah di Jogja.",
     url: `${SITE_URL}/blog`,
     type: "website",
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "Blog Lodjisvarga Villa Jogja",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Blog | ${SITE_NAME}`,
+    description:
+      "Tips wisata, panduan villa, dan inspirasi liburan mewah di Jogja.",
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 
@@ -147,10 +164,9 @@ export default async function BlogPage() {
             liburan Anda di Yogyakarta.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <a
-              href={`https://wa.me/${WA_NUMBER.replace(/\D/g, "")}?text=${encodeURIComponent("Halo Lodjisvarga, saya ingin cek ketersediaan villa.")}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <WhatsAppCTA
+              source="blog-cta"
+              message="Halo Lodjisvarga, saya ingin cek ketersediaan villa."
               className="inline-flex items-center gap-2 rounded-full bg-[#166534] px-7 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#14532D] transition"
             >
               {/* WhatsApp icon */}
@@ -159,7 +175,7 @@ export default async function BlogPage() {
                 <path d="M12 0C5.373 0 0 5.373 0 12c0 2.094.541 4.061 1.488 5.773L.057 23.998l6.375-1.406A11.95 11.95 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.817 9.817 0 0 1-5.006-1.368l-.358-.214-3.724.977.993-3.62-.234-.371A9.818 9.818 0 0 1 2.182 12C2.182 6.573 6.573 2.182 12 2.182S21.818 6.573 21.818 12 17.427 21.818 12 21.818z" />
               </svg>
               Cek via WhatsApp
-            </a>
+            </WhatsAppCTA>
             <Link
               href="/villas"
               className="inline-flex items-center gap-2 rounded-full border border-[#3A4A1F]/30 px-7 py-3 text-sm font-bold text-[#3A4A1F] hover:bg-[#3A4A1F] hover:text-white transition"
